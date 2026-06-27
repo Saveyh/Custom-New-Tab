@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workspace</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="background-glow background-glow-left" aria-hidden="true"></div>
+      <div class="background-glow background-glow-right" aria-hidden="true"></div>
+
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow" id="greetingLabel">Bonjour</p>
+          <h1>Workspace</h1>
+          <p class="hero-text">
+            Une page de depart nette pour retrouver vos liens utiles et relancer
+            vos sessions de travail sans friction.
+          </p>
+        </div>
+
+        <div class="hero-tools">
+          <label class="search-field" for="searchInput">
+            <span>Recherche</span>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Chercher un lien, une section, un projet..."
+              autocomplete="off"
+            />
+          </label>
+
+          <div class="hero-actions">
+            <button id="editModeButton" class="button button-secondary" type="button">
+              Mode edition
+            </button>
+            <button class="button button-ghost" type="button" data-action="add-section">
+              Nouvelle section
+            </button>
+            <button class="button button-ghost" type="button" data-action="add-link">
+              Ajouter un lien
+            </button>
+            <button class="button" type="button" data-action="add-project">
+              Nouveau projet
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+
+      <main class="layout">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Quick Links</p>
+              <h2>Liens rapides</h2>
+            </div>
+            <span class="panel-counter" id="sectionsCounter"></span>
+          </div>
+
+          <div id="sectionsRoot" class="section-stack"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Projects</p>
+              <h2>Projets & sessions</h2>
+            </div>
+            <span class="panel-counter" id="projectsCounter"></span>
+          </div>
+
+          <div id="projectsRoot" class="project-stack"></div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="formDialog" class="dialog">
+      <form id="entityForm" class="dialog-form" method="dialog" novalidate>
+        <div class="dialog-header">
+          <div>
+            <p class="dialog-kicker" id="dialogKicker">Edition</p>
+            <h3 id="dialogTitle">Modifier</h3>
+          </div>
+          <button class="icon-button" id="dialogCloseButton" type="button" aria-label="Fermer">
+            ×
+          </button>
+        </div>
+
+        <div id="dialogFields" class="dialog-fields"></div>
+        <p id="formError" class="form-error" role="alert"></p>
+
+        <div class="dialog-actions">
+          <button class="button button-secondary" id="dialogCancelButton" type="button">
+            Annuler
+          </button>
+          <button class="button" id="dialogSubmitButton" type="submit">
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
