@@ -75,8 +75,9 @@ svg {
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 42px;
-  margin: 0 0 10px;
+  min-height: 48px;
+  min-width: 0;
+  margin: 0;
   overflow-x: auto;
   padding: 0 0 2px;
   scrollbar-width: none;
@@ -86,10 +87,21 @@ svg {
   display: none;
 }
 
-.dashboard-tab {
+.dashboard-tab-item,
+.dashboard-add-button {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
+  gap: 8px;
+}
+
+.dashboard-tab-item {
+  position: relative;
+}
+
+.dashboard-tab {
+  display: inline-flex;
+  align-items: center;
   gap: 9px;
   min-height: 40px;
   padding: 0 14px;
@@ -118,6 +130,40 @@ svg {
   color: #75f69b;
 }
 
+.dashboard-tab-actions {
+  display: none;
+  gap: 6px;
+}
+
+.is-editing .dashboard-tab-actions {
+  display: inline-flex;
+}
+
+.dashboard-tab-draggable {
+  cursor: grab;
+}
+
+.dashboard-tab-draggable:active {
+  cursor: grabbing;
+}
+
+.dashboard-add-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+
+.dashboard-add-button:hover,
+.dashboard-add-button:focus-visible {
+  outline: 0;
+  border-color: var(--border-strong);
+  background: #151515;
+  color: var(--text);
+}
+
 .dashboard-tab-icon {
   display: grid;
   place-items: center;
@@ -138,17 +184,16 @@ svg {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 18px;
-  padding: 14px 0 24px;
+  padding: 14px 0 20px;
   background: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.96) 72%, rgba(0, 0, 0, 0) 100%);
 }
 
 .smart-search {
-  justify-self: center;
   display: grid;
   grid-template-columns: 22px minmax(80px, 1fr) auto 38px;
   align-items: center;
   gap: 10px;
-  width: min(760px, 100%);
+  width: 100%;
   min-height: 48px;
   padding: 5px 7px 5px 16px;
   border: 1px solid var(--border);
@@ -222,7 +267,7 @@ svg {
   overflow: hidden;
   font-size: 13px;
   font-weight: 650;
-  line-height: 1;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -439,6 +484,23 @@ svg {
   padding: 12px 14px;
 }
 
+.search-widget {
+  position: relative;
+}
+
+.search-widget-editable {
+  padding-top: 18px;
+}
+
+.search-widget-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
 .widget-header,
 .widget-title,
 .widget-actions,
@@ -580,6 +642,10 @@ svg {
   align-content: center;
 }
 
+.spacer-gap {
+  width: 100%;
+}
+
 .spacer-preview {
   min-height: 32px;
   border: 1px dashed var(--border);
@@ -599,9 +665,69 @@ svg {
 .text-diff-widget,
 .image-compression-widget,
 .uptime-widget,
-.quiz-widget {
+.quiz-widget,
+.browser-session-widget {
   display: grid;
   gap: 12px;
+}
+
+.browser-session-list {
+  display: grid;
+  gap: 10px;
+}
+
+.browser-session-item {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0b0b0b;
+}
+
+.browser-session-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.browser-session-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted-strong);
+  font-size: 12px;
+}
+
+.browser-session-title-row strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser-session-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.browser-session-link-pill {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 6px 10px;
+  border: 1px solid #242424;
+  border-radius: 999px;
+  background: #141414;
+  color: var(--muted-strong);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser-session-link-pill-muted {
+  color: var(--muted);
 }
 
 .todo-add-row,
@@ -1267,6 +1393,12 @@ svg {
   outline-offset: 7px;
 }
 
+.dashboard-tab-item.is-drop-target {
+  outline: 1px dashed var(--border-strong);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
 .link-card.is-drop-before::before,
 .link-card.is-drop-after::after {
   position: absolute;
@@ -1409,7 +1541,6 @@ svg {
 
   .dashboard-nav {
     gap: 8px;
-    margin-bottom: 8px;
     padding-bottom: 4px;
   }
 
@@ -1420,13 +1551,12 @@ svg {
   }
 
   .topbar {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
     gap: 12px;
   }
 
   .smart-search {
     grid-template-columns: 20px minmax(0, 1fr) auto 38px;
-    width: 100%;
   }
 
   .engine-button {
@@ -1451,6 +1581,10 @@ svg {
     justify-content: center;
   }
 
+  .dashboard-tab-actions {
+    display: none !important;
+  }
+
   .sections {
     gap: 42px;
   }
@@ -1464,6 +1598,11 @@ svg {
   .widget-footer-row,
   .widget-field-inline {
     align-items: stretch;
+    flex-direction: column;
+  }
+
+  .browser-session-title-row {
+    align-items: flex-start;
     flex-direction: column;
   }
 

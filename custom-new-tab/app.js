@@ -1,5 +1,5 @@
 const STORAGE_KEY = "navigateur.newtab.v1";
-const DATA_VERSION = 3;
+const DATA_VERSION = 5;
 const DEFAULT_DASHBOARD_ID = "work";
 
 const searchEngines = [
@@ -48,34 +48,52 @@ const sectionIconOptions = [
   { id: "folder", label: "Folder" }
 ];
 
-const dashboardViews = [
+const defaultDashboards = [
   {
     id: "work",
     label: "Travail",
     icon: "terminal",
-    sectionIds: ["section_ai_services", "section_developer_resources", "section_hosting_deployment"]
+    order: 0
   },
   {
     id: "university",
     label: "Universite",
     icon: "graduation",
-    sectionIds: ["section_travail", "section_universite", "section_creation"]
+    order: 1
   },
   {
     id: "leisure",
     label: "Loisirs",
     icon: "gamepad",
-    sectionIds: ["section_loisirs", "section_achats"]
-  },
-  {
-    id: "all",
-    label: "Tout",
-    icon: "grid",
-    sectionIds: []
+    order: 2
   }
 ];
 
+const fixedDashboardView = {
+  id: "all",
+  label: "Tout",
+  icon: "grid",
+  order: Number.MAX_SAFE_INTEGER
+};
+
+const dashboardIconOptions = [
+  { id: "terminal", label: "Terminal" },
+  { id: "graduation", label: "Graduation" },
+  { id: "gamepad", label: "Gamepad" },
+  { id: "sparkles", label: "Sparkles" },
+  { id: "code", label: "Code" },
+  { id: "cloud", label: "Cloud" },
+  { id: "folder", label: "Folder" },
+  { id: "grid", label: "Grid" }
+];
+
 const widgetDefinitions = [
+  {
+    type: "search",
+    label: "Search",
+    icon: "search",
+    description: "Smart search bar with selectable destination engine"
+  },
   {
     type: "link-list",
     label: "Link List",
@@ -147,6 +165,12 @@ const widgetDefinitions = [
     label: "Uptime Monitor",
     icon: "uptime",
     description: "Monitor website availability and response times"
+  },
+  {
+    type: "browser-session",
+    label: "Browser Sessions",
+    icon: "windows",
+    description: "Save a set of open windows and tabs, then restore them in one click"
   }
 ];
 
@@ -165,6 +189,7 @@ const defaultData = {
   version: DATA_VERSION,
   selectedEngine: "google",
   selectedDashboard: DEFAULT_DASHBOARD_ID,
+  dashboards: defaultDashboards.map((dashboard) => ({ ...dashboard })),
   widgets: createDefaultWidgets(),
   sections: [
     {
@@ -305,17 +330,13 @@ const state = {
   drag: null,
   editMode: false,
   statusTimer: null,
-  uptimeCheckedWidgets: new Set()
+  uptimeCheckedWidgets: new Set(),
+  searchMenuWidgetId: null
 };
 
 const ui = {
   body: document.body,
   dashboardNav: document.getElementById("dashboardNav"),
-  searchForm: document.getElementById("searchForm"),
-  searchInput: document.getElementById("searchInput"),
-  enginePicker: document.getElementById("enginePicker"),
-  engineButton: document.getElementById("engineButton"),
-  engineMenu: document.getElementById("engineMenu"),
   editToggle: document.getElementById("editToggle"),
   sectionsRoot: document.getElementById("sectionsRoot"),
   statusMessage: document.getElementById("statusMessage"),
@@ -333,7 +354,6 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   paintStaticIcons();
-  renderSearchEngines();
   renderDashboardNav();
   bindEvents();
 
@@ -345,17 +365,12 @@ async function init() {
     showStatus("Stockage local indisponible. Les donnees par defaut sont chargees.");
   }
 
-  syncEngineControl();
   syncDashboardNav();
   render();
 }
 
 function bindEvents() {
-  ui.searchForm.addEventListener("submit", handleSearchSubmit);
   ui.dashboardNav.addEventListener("click", handleDashboardNavClick);
-  ui.engineButton.addEventListener("click", toggleEngineMenu);
-  ui.engineButton.addEventListener("keydown", handleEngineButtonKeydown);
-  ui.engineMenu.addEventListener("click", handleEngineMenuClick);
   ui.editToggle.addEventListener("click", toggleEditMode);
   ui.editorForm.addEventListener("submit", handleDialogSubmit);
   ui.dialogClose.addEventListener("click", closeDialog);
@@ -363,10 +378,10 @@ function bindEvents() {
   ui.editorDialog.addEventListener("click", handleDialogBackdropClick);
 
   document.addEventListener("click", handleDocumentClick);
-  document.addEventListener("click", handleEngineOutsideClick);
   document.addEventListener("keydown", handleGlobalKeydown);
   document.addEventListener("input", handleDocumentInput);
   document.addEventListener("change", handleDocumentChange);
+  document.addEventListener("submit", handleDocumentSubmit);
   document.addEventListener("dragstart", handleDragStart);
   document.addEventListener("dragover", handleDragOver);
   document.addEventListener("dragleave", handleDragLeave);
@@ -427,38 +442,69 @@ function paintStaticIcons() {
 }
 
 function renderDashboardNav() {
-  ui.dashboardNav.innerHTML = dashboardViews
+  const dashboards = getDashboardViews();
+  ui.dashboardNav.innerHTML = dashboards
     .map(
       (dashboard) => `
-        <button
-          class="dashboard-tab"
-          type="button"
-          data-dashboard-id="${dashboard.id}"
-          aria-pressed="false"
+        <div
+          class="dashboard-tab-item ${dashboard.id === fixedDashboardView.id ? "is-fixed" : "dashboard-tab-draggable"}"
+          data-dashboard-drag-id="${dashboard.id}"
+          draggable="${state.editMode && dashboard.id !== fixedDashboardView.id ? "true" : "false"}"
         >
-          <span class="dashboard-tab-icon" aria-hidden="true">${createIcon(dashboard.icon)}</span>
-          <span class="dashboard-tab-label">${escapeHtml(dashboard.label)}</span>
-        </button>
+          <button
+            class="dashboard-tab"
+            type="button"
+            data-dashboard-id="${dashboard.id}"
+            aria-pressed="false"
+          >
+            <span class="dashboard-tab-icon" aria-hidden="true">${createIcon(dashboard.icon)}</span>
+            <span class="dashboard-tab-label">${escapeHtml(dashboard.label)}</span>
+          </button>
+          ${
+            state.editMode && dashboard.id !== fixedDashboardView.id
+              ? `
+                <div class="dashboard-tab-actions">
+                  <button class="small-icon-button" type="button" data-action="edit-dashboard" data-dashboard-id="${dashboard.id}" aria-label="Modifier le dashboard" title="Modifier">${createIcon("edit")}</button>
+                  <button class="small-icon-button" type="button" data-action="delete-dashboard" data-dashboard-id="${dashboard.id}" aria-label="Supprimer le dashboard" title="Supprimer">${createIcon("trash")}</button>
+                </div>
+              `
+              : ""
+          }
+        </div>
       `
     )
     .join("");
+
+  if (state.editMode) {
+    ui.dashboardNav.insertAdjacentHTML(
+      "beforeend",
+      `
+        <button class="dashboard-add-button" type="button" data-action="add-dashboard" aria-label="Ajouter un dashboard" title="Ajouter un dashboard">
+          ${createIcon("plus")}
+          <span>Nouveau</span>
+        </button>
+      `
+    );
+  }
 }
 
-function renderSearchEngines() {
-  ui.engineMenu.innerHTML = searchEngines
-    .map((engine) => createEngineOptionMarkup(engine))
+function createSearchEngineMenuMarkup(widgetId, selectedEngineId) {
+  return searchEngines
+    .map((engine) => createEngineOptionMarkup(engine, selectedEngineId, widgetId))
     .join("");
 }
 
-function createEngineOptionMarkup(engine) {
+function createEngineOptionMarkup(engine, selectedEngineId, widgetId) {
+  const isSelected = engine.id === selectedEngineId;
   return `
     <button
       class="engine-option"
       type="button"
-      role="option"
+      data-action="select-search-engine"
       data-engine-id="${engine.id}"
-      aria-selected="false"
-      tabindex="-1"
+      data-widget-id="${widgetId}"
+      aria-selected="${String(isSelected)}"
+      tabindex="${isSelected ? "0" : "-1"}"
     >
       <span class="engine-option-state" aria-hidden="true"></span>
       ${createEngineLogoMarkup(engine)}
@@ -478,27 +524,37 @@ function createEngineLogoMarkup(engine) {
 }
 
 async function handleSearchSubmit(event) {
-  event.preventDefault();
-
-  const query = ui.searchInput.value.trim();
-  if (!query) {
-    ui.searchInput.focus();
+  const form = event.target.closest("[data-search-widget-form]");
+  if (!form) {
     return;
   }
 
-  const engine = getSelectedEngine();
+  event.preventDefault();
+
+  const input = form.querySelector("[data-search-query]");
+  const query = input?.value.trim() || "";
+  if (!query) {
+    input?.focus();
+    return;
+  }
+
+  const widget = getWidget(form.dataset.widgetId);
+  const engine = getSelectedEngine(widget?.config?.engineId);
+  if (widget) {
+    widget.config.engineId = engine.id;
+  }
   state.data.selectedEngine = engine.id;
   await saveData(state.data);
   window.location.assign(engine.buildUrl(query));
 }
 
 async function handleDashboardNavClick(event) {
-  const tab = event.target.closest("[data-dashboard-id]");
+  const tab = event.target.closest(".dashboard-tab[data-dashboard-id]");
   if (!tab) {
     return;
   }
 
-  const dashboard = dashboardViews.find((item) => item.id === tab.dataset.dashboardId);
+  const dashboard = getDashboardViews().find((item) => item.id === tab.dataset.dashboardId);
   if (!dashboard || dashboard.id === state.data.selectedDashboard) {
     return;
   }
@@ -510,122 +566,39 @@ async function handleDashboardNavClick(event) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function toggleEngineMenu(event) {
-  event.stopPropagation();
-  setEngineMenuOpen(ui.engineMenu.hidden);
-}
-
-function handleEngineButtonKeydown(event) {
-  if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    setEngineMenuOpen(true);
-    focusSelectedEngineOption();
-  }
-}
-
-async function handleEngineMenuClick(event) {
-  const option = event.target.closest("[data-engine-id]");
-  if (!option) {
-    return;
-  }
-
-  await selectSearchEngine(option.dataset.engineId);
-}
-
-function handleEngineOutsideClick(event) {
-  if (!ui.enginePicker.contains(event.target)) {
-    setEngineMenuOpen(false);
-  }
-}
-
 function handleGlobalKeydown(event) {
   if (event.key === "Escape") {
-    setEngineMenuOpen(false);
+    closeSearchMenus();
     return;
   }
-
-  if (ui.engineMenu.hidden || !["ArrowDown", "ArrowUp", "Home", "End", "Enter", " "].includes(event.key)) {
-    return;
-  }
-
-  const options = Array.from(ui.engineMenu.querySelectorAll("[data-engine-id]"));
-  if (!options.length) {
-    return;
-  }
-
-  const currentIndex = Math.max(0, options.indexOf(document.activeElement));
-
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    document.activeElement?.click?.();
-    return;
-  }
-
-  event.preventDefault();
-
-  if (event.key === "Home") {
-    options[0]?.focus();
-    return;
-  }
-
-  if (event.key === "End") {
-    options[options.length - 1]?.focus();
-    return;
-  }
-
-  const direction = event.key === "ArrowDown" ? 1 : -1;
-  const nextIndex = (currentIndex + direction + options.length) % options.length;
-  options[nextIndex]?.focus();
 }
 
-async function selectSearchEngine(engineId) {
+async function selectSearchEngine(widgetId, engineId) {
   const engine = searchEngines.find((item) => item.id === engineId);
   if (!engine) {
     return;
   }
 
+  const widget = getWidget(widgetId);
+  if (widget) {
+    widget.config.engineId = engine.id;
+  }
   state.data.selectedEngine = engine.id;
-  syncEngineControl();
-  setEngineMenuOpen(false);
+  closeSearchMenus();
+  render();
   await saveData(state.data);
   showStatus("Moteur mis a jour.");
 }
 
-function syncEngineControl() {
-  const engine = getSelectedEngine();
-  ui.engineButton.innerHTML = `
-    ${createEngineLogoMarkup(engine)}
-    <span class="engine-button-label">${escapeHtml(engine.label)}</span>
-    <span class="engine-chevron" aria-hidden="true">${createIcon("chevron-down")}</span>
-  `;
-  ui.engineButton.title = engine.label;
-  ui.engineMenu.querySelectorAll("[data-engine-id]").forEach((option) => {
-    const isSelected = option.dataset.engineId === engine.id;
-    option.setAttribute("aria-selected", String(isSelected));
-    option.tabIndex = isSelected ? 0 : -1;
-  });
-  syncSearchPlaceholder();
+function getSelectedEngine(engineId = state.data.selectedEngine) {
+  return searchEngines.find((engine) => engine.id === engineId) || searchEngines[0];
 }
 
-function setEngineMenuOpen(isOpen) {
-  ui.engineMenu.hidden = !isOpen;
-  ui.engineButton.setAttribute("aria-expanded", String(isOpen));
-  ui.enginePicker.classList.toggle("is-open", isOpen);
-}
-
-function focusSelectedEngineOption() {
-  const selectedOption =
-    ui.engineMenu.querySelector("[aria-selected='true']") ||
-    ui.engineMenu.querySelector("[data-engine-id]");
-  selectedOption?.focus();
-}
-
-function syncSearchPlaceholder() {
-  ui.searchInput.placeholder = getSelectedEngine().placeholder;
-}
-
-function getSelectedEngine() {
-  return searchEngines.find((engine) => engine.id === state.data.selectedEngine) || searchEngines[0];
+function closeSearchMenus() {
+  if (state.searchMenuWidgetId) {
+    state.searchMenuWidgetId = null;
+    render();
+  }
 }
 
 function toggleEditMode() {
@@ -636,6 +609,10 @@ function toggleEditMode() {
 }
 
 async function handleDocumentClick(event) {
+  if (!event.target.closest(".search-engine-control")) {
+    closeSearchMenus();
+  }
+
   const linkHit = event.target.closest(".link-hit");
   if (state.editMode && linkHit) {
     event.preventDefault();
@@ -648,11 +625,28 @@ async function handleDocumentClick(event) {
 
   try {
     switch (actionTarget.dataset.action) {
+      case "add-dashboard":
+        openDashboardDialog();
+        break;
+      case "edit-dashboard":
+        openDashboardDialog(getMutableDashboards().find((dashboard) => dashboard.id === actionTarget.dataset.dashboardId) || null);
+        break;
+      case "delete-dashboard":
+        await deleteDashboard(actionTarget.dataset.dashboardId);
+        break;
       case "add-widget":
         openWidgetSelectorDialog();
         break;
       case "create-widget":
         await createWidgetFromType(actionTarget.dataset.widgetType);
+        break;
+      case "toggle-search-engine-menu":
+        state.searchMenuWidgetId =
+          state.searchMenuWidgetId === actionTarget.dataset.widgetId ? null : actionTarget.dataset.widgetId;
+        render();
+        break;
+      case "select-search-engine":
+        await selectSearchEngine(actionTarget.dataset.widgetId, actionTarget.dataset.engineId);
         break;
       case "delete-widget":
         await deleteWidget(actionTarget.dataset.widgetId);
@@ -738,12 +732,33 @@ async function handleDocumentClick(event) {
       case "refresh-uptime":
         await checkUptimeWidget(actionTarget.dataset.widgetId, { force: true });
         break;
+      case "save-browser-session":
+        await saveBrowserSession(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId || null);
+        break;
+      case "open-browser-session":
+        await openBrowserSession(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId);
+        break;
+      case "copy-browser-session-links":
+        await copyBrowserSessionLinks(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId);
+        break;
+      case "delete-browser-session":
+        await deleteBrowserSession(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId);
+        break;
       default:
         break;
     }
   } catch (error) {
     console.error(error);
     showStatus("Action impossible.");
+  }
+}
+
+function handleDocumentSubmit(event) {
+  if (event.target.closest("[data-search-widget-form]")) {
+    handleSearchSubmit(event).catch((error) => {
+      console.error(error);
+      showStatus("Recherche impossible.");
+    });
   }
 }
 
@@ -817,6 +832,7 @@ async function handleDocumentChange(event) {
 
 function render() {
   ui.body.classList.toggle("is-editing", state.editMode);
+  renderDashboardNav();
   syncDashboardNav();
   renderWidgets();
   scheduleVisibleUptimeChecks();
@@ -855,6 +871,7 @@ function renderWidget(widget) {
 }
 
 const widgetRegistry = {
+  search: renderSearchWidget,
   "link-list": renderLinkListWidget,
   spacer: renderSpacerWidget,
   todo: renderTodoWidget,
@@ -866,8 +883,68 @@ const widgetRegistry = {
   kanban: renderKanbanWidget,
   "daily-quiz": renderDailyQuizWidget,
   "image-compression": renderImageCompressionWidget,
-  "uptime-monitor": renderUptimeMonitorWidget
+  "uptime-monitor": renderUptimeMonitorWidget,
+  "browser-session": renderBrowserSessionWidget
 };
+
+function renderSearchWidget(widget) {
+  const engine = getSelectedEngine(widget.config?.engineId);
+  const isMenuOpen = state.searchMenuWidgetId === widget.id;
+
+  return `
+    <section
+      class="dashboard-widget search-widget ${state.editMode ? "search-widget-editable" : ""}"
+      data-widget-id="${widget.id}"
+      data-widget-type="${widget.type}"
+      draggable="${state.editMode ? "true" : "false"}"
+    >
+      ${
+        state.editMode
+          ? `
+            <div class="search-widget-actions">
+              <button class="small-icon-button" type="button" data-action="delete-widget" data-widget-id="${widget.id}" aria-label="Supprimer le widget" title="Supprimer le widget">${createIcon("trash")}</button>
+            </div>
+          `
+          : ""
+      }
+      <form class="smart-search" autocomplete="off" data-search-widget-form="true" data-widget-id="${widget.id}">
+        <span class="search-glyph" aria-hidden="true">${createIcon("search")}</span>
+
+        <input
+          name="query"
+          type="search"
+          placeholder="${escapeHtml(engine.placeholder)}"
+          autocomplete="off"
+          spellcheck="false"
+          data-search-query="true"
+        />
+
+        <div class="engine-picker search-engine-control ${isMenuOpen ? "is-open" : ""}">
+          <button
+            class="engine-button"
+            type="button"
+            data-action="toggle-search-engine-menu"
+            data-widget-id="${widget.id}"
+            aria-haspopup="listbox"
+            aria-expanded="${String(isMenuOpen)}"
+            aria-label="Choisir le moteur de recherche"
+          >
+            ${createEngineLogoMarkup(engine)}
+            <span class="engine-button-label">${escapeHtml(engine.label)}</span>
+            <span class="engine-chevron" aria-hidden="true">${createIcon("chevron-down")}</span>
+          </button>
+          <div class="engine-menu" role="listbox" aria-label="Moteur de recherche" ${isMenuOpen ? "" : "hidden"}>
+            ${createSearchEngineMenuMarkup(widget.id, engine.id)}
+          </div>
+        </div>
+
+        <button class="submit-button" type="submit" aria-label="Lancer la recherche">
+          ${createIcon("arrow-right")}
+        </button>
+      </form>
+    </section>
+  `;
+}
 
 function renderLinkListWidget(widget) {
   const section = getSection(widget.config?.sectionId);
@@ -972,6 +1049,17 @@ function renderUnknownWidget(widget) {
 
 function renderSpacerWidget(widget) {
   const height = clampNumber(widget.config?.height, 32, 220, 80);
+  if (!state.editMode) {
+    return `
+      <section
+        class="dashboard-widget spacer-gap"
+        data-widget-id="${widget.id}"
+        data-widget-type="${widget.type}"
+        style="height: ${height}px"
+      ></section>
+    `;
+  }
+
   return renderWidgetCard(
     widget,
     `
@@ -1314,11 +1402,89 @@ function renderUptimeMonitorWidget(widget) {
   );
 }
 
+function renderBrowserSessionWidget(widget) {
+  const sessions = getBrowserSessions(widget);
+  const body = sessions.length
+    ? sessions
+        .map(
+          (session) => `
+            <article class="browser-session-item">
+              <div class="browser-session-meta">
+                <div class="browser-session-title-row">
+                  <strong>${escapeHtml(session.name)}</strong>
+                  <span>${formatBrowserSessionStats(session)}</span>
+                </div>
+                <span class="widget-muted">${escapeHtml(formatDateTime(session.savedAt) || "Sauvegarde locale")}</span>
+              </div>
+              <div class="browser-session-links">
+                ${session.windows
+                  .flatMap((windowItem) => windowItem.tabs)
+                  .slice(0, 5)
+                  .map(
+                    (tab) => `
+                      <span class="browser-session-link-pill" title="${escapeHtml(tab.url)}">
+                        ${escapeHtml(tab.title || formatHost(tab.url))}
+                      </span>
+                    `
+                  )
+                  .join("")}
+                ${
+                  countBrowserSessionTabs(session) > 5
+                    ? `<span class="browser-session-link-pill browser-session-link-pill-muted">+${countBrowserSessionTabs(session) - 5}</span>`
+                    : ""
+                }
+              </div>
+              <div class="widget-button-row">
+                <button class="text-button" type="button" data-action="save-browser-session" data-widget-id="${widget.id}" data-session-id="${session.id}">
+                  Mettre a jour
+                </button>
+                <button class="text-button" type="button" data-action="open-browser-session" data-widget-id="${widget.id}" data-session-id="${session.id}">
+                  Ouvrir
+                </button>
+                <button class="text-button" type="button" data-action="copy-browser-session-links" data-widget-id="${widget.id}" data-session-id="${session.id}">
+                  Copier les liens
+                </button>
+                <button class="text-button" type="button" data-action="delete-browser-session" data-widget-id="${widget.id}" data-session-id="${session.id}">
+                  Supprimer
+                </button>
+              </div>
+            </article>
+          `
+        )
+        .join("")
+    : `<p class="widget-muted">Aucune session enregistree. Capture ton contexte de travail avant de fermer l'ordinateur.</p>`;
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel browser-session-widget">
+        <div class="widget-toolbar-row">
+          <div>
+            <p class="widget-description">Sauvegarde les fenetres et onglets ouverts, puis restaure-les plus tard en un clic.</p>
+          </div>
+          <button class="text-button" type="button" data-action="save-browser-session" data-widget-id="${widget.id}">
+            Sauvegarder la session actuelle
+          </button>
+        </div>
+        <div class="browser-session-list">${body}</div>
+      </div>
+    `
+  );
+}
+
 function getWidgetDefinition(type) {
   return widgetDefinitions.find((definition) => definition.type === type) || null;
 }
 
 function createDefaultWidgets() {
+  const searchWidget = {
+    id: "widget_search_primary",
+    type: "search",
+    title: "Search",
+    dashboardIds: defaultDashboards.map((dashboard) => dashboard.id),
+    order: 0,
+    config: { engineId: "google" }
+  };
   const linkWidgets = [
     { sectionId: "section_ai_services", title: "AI Services" },
     { sectionId: "section_developer_resources", title: "Developpement" },
@@ -1330,18 +1496,23 @@ function createDefaultWidgets() {
     { sectionId: "section_achats", title: "Achats" }
   ];
 
-  return linkWidgets.map((item, index) => ({
-    id: `widget_link_${item.sectionId}`,
-    type: "link-list",
-    title: item.title,
-    dashboardIds: defaultSectionDashboardIds[item.sectionId] || [],
-    order: index,
-    config: { sectionId: item.sectionId }
-  }));
+  return [
+    searchWidget,
+    ...linkWidgets.map((item, index) => ({
+      id: `widget_link_${item.sectionId}`,
+      type: "link-list",
+      title: item.title,
+      dashboardIds: defaultSectionDashboardIds[item.sectionId] || [],
+      order: index + 1,
+      config: { sectionId: item.sectionId }
+    }))
+  ];
 }
 
 function createDefaultWidgetConfig(type) {
   switch (type) {
+    case "search":
+      return { engineId: state.data?.selectedEngine || "google" };
     case "link-list":
       return { sectionId: "" };
     case "spacer":
@@ -1397,6 +1568,8 @@ function createDefaultWidgetConfig(type) {
           { id: "service_netlify", name: "Netlify", url: "https://app.netlify.com/", history: [] }
         ]
       };
+    case "browser-session":
+      return { sessions: [] };
     default:
       return {};
   }
@@ -1412,6 +1585,52 @@ function createWidget(type, title, dashboardIds, config = {}) {
     order: getNextWidgetOrder(),
     config: sanitizeWidgetConfig(definition.type, config)
   };
+}
+
+function getStoredDashboards(sourceData = state.data) {
+  const source = Array.isArray(sourceData?.dashboards) && sourceData.dashboards.length
+    ? sourceData.dashboards
+    : defaultDashboards;
+
+  return source
+    .map((dashboard, index) => sanitizeDashboard(dashboard, index))
+    .filter(Boolean)
+    .sort((a, b) => a.order - b.order);
+}
+
+function getMutableDashboards() {
+  if (!Array.isArray(state.data.dashboards)) {
+    state.data.dashboards = getStoredDashboards().map((dashboard) => ({ ...dashboard }));
+  }
+
+  return state.data.dashboards;
+}
+
+function getDashboardViews(sourceData = state.data) {
+  return [...getStoredDashboards(sourceData), fixedDashboardView];
+}
+
+function getNextDashboardOrder() {
+  const dashboards = getMutableDashboards();
+  return dashboards.length ? Math.max(...dashboards.map((dashboard) => Number(dashboard.order) || 0)) + 1 : 0;
+}
+
+function createDashboardId(label) {
+  const base = normalizeText(label)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "dashboard";
+  const existingIds = new Set(getMutableDashboards().map((dashboard) => dashboard.id));
+  if (!existingIds.has(base)) {
+    return base;
+  }
+
+  let index = 2;
+  while (existingIds.has(`${base}-${index}`)) {
+    index += 1;
+  }
+
+  return `${base}-${index}`;
 }
 
 function getNextWidgetOrder() {
@@ -1461,6 +1680,33 @@ async function deleteWidget(widgetId) {
 
   state.data.widgets = state.data.widgets.filter((item) => item.id !== widgetId);
   await persist("Widget supprime.");
+}
+
+async function deleteDashboard(dashboardId) {
+  const dashboard = getMutableDashboards().find((item) => item.id === dashboardId);
+  if (!dashboard) {
+    return;
+  }
+
+  if (!confirm(`Supprimer le dashboard "${dashboard.label}" ?`)) {
+    return;
+  }
+
+  state.data.dashboards = getMutableDashboards().filter((item) => item.id !== dashboardId);
+  state.data.sections = state.data.sections.map((section) => ({
+    ...section,
+    dashboards: (section.dashboards || []).filter((id) => id !== dashboardId)
+  }));
+  state.data.widgets = state.data.widgets.map((widget) => ({
+    ...widget,
+    dashboardIds: (widget.dashboardIds || []).filter((id) => id !== dashboardId)
+  }));
+
+  if (state.data.selectedDashboard === dashboardId) {
+    state.data.selectedDashboard = getStoredDashboards({ dashboards: state.data.dashboards })[0]?.id || fixedDashboardView.id;
+  }
+
+  await persist("Dashboard supprime.");
 }
 
 function createUniqueSectionTitle(baseTitle) {
@@ -2086,6 +2332,24 @@ function getUptimeServices(widget) {
     : createDefaultWidgetConfig("uptime-monitor").services;
 }
 
+function getBrowserSessions(widget) {
+  return Array.isArray(widget.config?.sessions) ? widget.config.sessions : [];
+}
+
+function countBrowserSessionTabs(session) {
+  return Array.isArray(session?.windows)
+    ? session.windows.reduce((total, windowItem) => total + (Array.isArray(windowItem.tabs) ? windowItem.tabs.length : 0), 0)
+    : 0;
+}
+
+function formatBrowserSessionStats(session) {
+  const windowCount = Array.isArray(session?.windows) ? session.windows.length : 0;
+  const tabCount = countBrowserSessionTabs(session);
+  const windowLabel = windowCount > 1 ? "fenetres" : "fenetre";
+  const tabLabel = tabCount > 1 ? "onglets" : "onglet";
+  return `${windowCount} ${windowLabel} - ${tabCount} ${tabLabel}`;
+}
+
 function renderUptimeBars(history) {
   const items = Array.isArray(history) ? history.slice(-18) : [];
   if (!items.length) {
@@ -2124,6 +2388,157 @@ async function checkUptimeWidget(widgetId, options = {}) {
   }
 
   await updateWidgetConfig(widgetId, { services }, { render: true, message: options.force ? "Uptime actualise." : undefined });
+}
+
+async function saveBrowserSession(widgetId, sessionId = null) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  ensureBrowserSessionApi();
+  const snapshot = await captureCurrentBrowserSession();
+  const sessions = getBrowserSessions(widget).slice();
+  const existingSession = sessionId ? sessions.find((item) => item.id === sessionId) : null;
+  const session = {
+    id: existingSession?.id || createId("session"),
+    name: existingSession?.name || buildBrowserSessionName(snapshot, sessions.length),
+    savedAt: new Date().toISOString(),
+    windows: snapshot.windows
+  };
+
+  const nextSessions = existingSession
+    ? sessions.map((item) => (item.id === session.id ? session : item))
+    : [session, ...sessions].slice(0, 12);
+
+  await updateWidgetConfig(widgetId, { sessions: nextSessions }, { render: true, message: "Session enregistree." });
+}
+
+async function openBrowserSession(widgetId, sessionId) {
+  const session = getBrowserSessions(getWidget(widgetId)).find((item) => item.id === sessionId);
+  if (!session) {
+    return;
+  }
+
+  ensureBrowserSessionApi();
+
+  for (const windowItem of session.windows) {
+    const urls = windowItem.tabs.map((tab) => tab.url).filter(Boolean);
+    if (!urls.length) {
+      continue;
+    }
+
+    await chrome.windows.create({
+      url: urls,
+      focused: false,
+      type: "normal",
+      ...(Number.isFinite(windowItem.left) ? { left: windowItem.left } : {}),
+      ...(Number.isFinite(windowItem.top) ? { top: windowItem.top } : {}),
+      ...(Number.isFinite(windowItem.width) ? { width: windowItem.width } : {}),
+      ...(Number.isFinite(windowItem.height) ? { height: windowItem.height } : {})
+    });
+  }
+
+  showStatus("Session rouverte.");
+}
+
+async function copyBrowserSessionLinks(widgetId, sessionId) {
+  const session = getBrowserSessions(getWidget(widgetId)).find((item) => item.id === sessionId);
+  if (!session) {
+    return;
+  }
+
+  const content = session.windows
+    .map((windowItem, index) => {
+      const lines = windowItem.tabs.map((tab) => `${tab.title || formatHost(tab.url)}\n${tab.url}`);
+      return [`Fenetre ${index + 1}`, ...lines].join("\n");
+    })
+    .join("\n\n");
+
+  await copyText(content);
+}
+
+async function deleteBrowserSession(widgetId, sessionId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const session = getBrowserSessions(widget).find((item) => item.id === sessionId);
+  if (!session) {
+    return;
+  }
+
+  if (!confirm(`Supprimer la session "${session.name}" ?`)) {
+    return;
+  }
+
+  await updateWidgetConfig(
+    widgetId,
+    { sessions: getBrowserSessions(widget).filter((item) => item.id !== sessionId) },
+    { render: true, message: "Session supprimee." }
+  );
+}
+
+function buildBrowserSessionName(snapshot, existingCount = 0) {
+  const titles = snapshot.windows
+    .flatMap((windowItem) => windowItem.tabs)
+    .map((tab) => normalizeText(tab.title))
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (titles.length) {
+    return titles.join(" + ");
+  }
+
+  return `Session ${existingCount + 1}`;
+}
+
+async function captureCurrentBrowserSession() {
+  const windows = await chrome.windows.getAll({
+    populate: true,
+    windowTypes: ["normal"]
+  });
+  const currentTabUrl = location.href;
+  const normalizedWindows = windows
+    .map((windowItem) => ({
+      left: Number.isFinite(windowItem.left) ? windowItem.left : null,
+      top: Number.isFinite(windowItem.top) ? windowItem.top : null,
+      width: Number.isFinite(windowItem.width) ? windowItem.width : null,
+      height: Number.isFinite(windowItem.height) ? windowItem.height : null,
+      tabs: (windowItem.tabs || [])
+        .filter((tab) => isRestorableBrowserTab(tab, currentTabUrl))
+        .map((tab) => ({
+          url: tab.url,
+          title: normalizeText(tab.title) || formatHost(tab.url)
+        }))
+    }))
+    .filter((windowItem) => windowItem.tabs.length);
+
+  if (!normalizedWindows.length) {
+    throw new Error("Aucun onglet restorable trouve.");
+  }
+
+  return { windows: normalizedWindows };
+}
+
+function isRestorableBrowserTab(tab, currentTabUrl) {
+  const url = normalizeText(tab?.url);
+  if (!url) {
+    return false;
+  }
+
+  if (url === currentTabUrl) {
+    return false;
+  }
+
+  return /^https?:\/\//.test(url);
+}
+
+function ensureBrowserSessionApi() {
+  if (typeof chrome === "undefined" || !chrome.windows?.getAll || !chrome.windows?.create) {
+    throw new Error("Chrome windows API unavailable.");
+  }
 }
 
 async function checkUptimeService(service) {
@@ -2184,13 +2599,13 @@ function downloadBlob(blob, filename) {
 }
 
 function getSelectedDashboard() {
-  return dashboardViews.find((dashboard) => dashboard.id === state.data.selectedDashboard) || dashboardViews[0];
+  return getDashboardViews().find((dashboard) => dashboard.id === state.data.selectedDashboard) || getDashboardViews()[0];
 }
 
 function syncDashboardNav() {
   const dashboard = getSelectedDashboard();
   state.data.selectedDashboard = dashboard.id;
-  ui.dashboardNav.querySelectorAll("[data-dashboard-id]").forEach((tab) => {
+  ui.dashboardNav.querySelectorAll(".dashboard-tab[data-dashboard-id]").forEach((tab) => {
     const isSelected = tab.dataset.dashboardId === dashboard.id;
     tab.classList.toggle("is-active", isSelected);
     tab.setAttribute("aria-pressed", String(isSelected));
@@ -2318,6 +2733,38 @@ function openSectionDialog(section = null) {
   openDialog();
 }
 
+function openDashboardDialog(dashboard = null) {
+  resetDialogActions();
+  state.dialog = {
+    type: "dashboard",
+    dashboardId: dashboard?.id || null
+  };
+
+  ui.dialogTitle.textContent = dashboard ? "Modifier le dashboard" : "Nouveau dashboard";
+  ui.dialogSubmit.textContent = dashboard ? "Mettre a jour" : "Creer";
+  ui.dialogFields.innerHTML = `
+    <div class="field">
+      <label for="dashboardLabel">Nom</label>
+      <input id="dashboardLabel" name="label" type="text" maxlength="32" value="${escapeHtml(dashboard?.label || "")}" required />
+    </div>
+    <div class="field">
+      <label for="dashboardIcon">Icone</label>
+      <select id="dashboardIcon" name="icon">
+        ${dashboardIconOptions
+          .map(
+            (option) => `
+              <option value="${option.id}" ${option.id === (dashboard?.icon || "grid") ? "selected" : ""}>
+                ${escapeHtml(option.label)}
+              </option>
+            `
+          )
+          .join("")}
+      </select>
+    </div>
+  `;
+  openDialog();
+}
+
 function openLinkDialog(link = null, sectionId = null) {
   resetDialogActions();
   if (!state.data.sections.length) {
@@ -2412,6 +2859,10 @@ async function handleDialogSubmit(event) {
   const formData = new FormData(ui.editorForm);
 
   try {
+    if (state.dialog.type === "dashboard") {
+      await saveDashboard(formData, state.dialog.dashboardId);
+    }
+
     if (state.dialog.type === "section") {
       await saveSection(formData, state.dialog.sectionId);
     }
@@ -2422,6 +2873,34 @@ async function handleDialogSubmit(event) {
   } catch (error) {
     ui.formError.textContent = error instanceof Error ? error.message : "Formulaire invalide.";
   }
+}
+
+async function saveDashboard(formData, dashboardId) {
+  const label = requireText(formData.get("label"), "Le nom est obligatoire.");
+  const icon = dashboardIconOptions.some((option) => option.id === formData.get("icon"))
+    ? normalizeText(formData.get("icon"))
+    : "grid";
+
+  if (dashboardId) {
+    const dashboard = getMutableDashboards().find((item) => item.id === dashboardId);
+    if (!dashboard) {
+      throw new Error("Dashboard introuvable.");
+    }
+
+    dashboard.label = label;
+    dashboard.icon = icon;
+    await persist("Dashboard mis a jour.");
+  } else {
+    state.data.dashboards.push({
+      id: createDashboardId(label),
+      label,
+      icon,
+      order: getNextDashboardOrder()
+    });
+    await persist("Dashboard cree.");
+  }
+
+  closeDialog();
 }
 
 async function saveSection(formData, sectionId) {
@@ -2537,6 +3016,18 @@ function handleDragStart(event) {
     return;
   }
 
+  const dashboardItem = event.target.closest(".dashboard-tab-draggable");
+  if (dashboardItem && !event.target.closest(".dashboard-tab-actions")) {
+    state.drag = {
+      type: "dashboard",
+      dashboardId: dashboardItem.dataset.dashboardDragId
+    };
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
+    dashboardItem.classList.add("dragging");
+    return;
+  }
+
   const linkCard = event.target.closest(".link-card");
   if (linkCard) {
     state.drag = {
@@ -2603,6 +3094,15 @@ function handleDragOver(event) {
       widget.classList.add("is-drop-target");
     }
   }
+
+  if (state.drag.type === "dashboard") {
+    const dashboardItem = event.target.closest(".dashboard-tab-draggable");
+    if (dashboardItem && dashboardItem.dataset.dashboardDragId !== state.drag.dashboardId) {
+      event.preventDefault();
+      clearDropClasses();
+      dashboardItem.classList.add("is-drop-target");
+    }
+  }
 }
 
 function handleDragLeave(event) {
@@ -2655,6 +3155,13 @@ async function handleDrop(event) {
     const targetWidget = event.target.closest(".dashboard-widget");
     if (targetWidget) {
       await moveWidget(state.drag.widgetId, targetWidget.dataset.widgetId);
+    }
+  }
+
+  if (state.drag.type === "dashboard") {
+    const targetDashboard = event.target.closest(".dashboard-tab-draggable");
+    if (targetDashboard) {
+      await moveDashboard(state.drag.dashboardId, targetDashboard.dataset.dashboardDragId);
     }
   }
 }
@@ -2717,6 +3224,30 @@ async function moveWidget(sourceWidgetId, targetWidgetId) {
   await persist("Widget deplace.", { keepDrag: false });
 }
 
+async function moveDashboard(sourceDashboardId, targetDashboardId) {
+  if (sourceDashboardId === targetDashboardId) {
+    clearDragState();
+    return;
+  }
+
+  const dashboards = getMutableDashboards().slice().sort((a, b) => a.order - b.order);
+  const sourceIndex = dashboards.findIndex((item) => item.id === sourceDashboardId);
+  const targetIndex = dashboards.findIndex((item) => item.id === targetDashboardId);
+
+  if (sourceIndex < 0 || targetIndex < 0) {
+    clearDragState();
+    return;
+  }
+
+  const [dashboard] = dashboards.splice(sourceIndex, 1);
+  dashboards.splice(targetIndex, 0, dashboard);
+  dashboards.forEach((item, index) => {
+    item.order = index;
+  });
+  state.data.dashboards = dashboards;
+  await persist("Dashboard deplace.", { keepDrag: false });
+}
+
 function clearDragState() {
   state.drag = null;
   clearDropClasses();
@@ -2774,28 +3305,51 @@ async function saveData(data) {
 
 function sanitizeData(input) {
   const data = input && typeof input === "object" ? input : {};
+  const dashboards = Array.isArray(data.dashboards) && data.dashboards.length
+    ? data.dashboards.map(sanitizeDashboard).filter(Boolean)
+    : defaultDashboards.map((dashboard) => ({ ...dashboard }));
+  const allowedDashboardIds = new Set(dashboards.map((dashboard) => dashboard.id));
   const selectedEngine = searchEngines.some((engine) => engine.id === data.selectedEngine)
     ? data.selectedEngine
     : defaultData.selectedEngine;
-  const selectedDashboard = dashboardViews.some((dashboard) => dashboard.id === data.selectedDashboard)
+  const selectedDashboard = data.selectedDashboard === fixedDashboardView.id || allowedDashboardIds.has(data.selectedDashboard)
     ? data.selectedDashboard
-    : defaultData.selectedDashboard;
+    : dashboards[0]?.id || fixedDashboardView.id;
   const version = Number.isFinite(Number(data.version)) ? Number(data.version) : 0;
 
   return {
     version,
     selectedEngine,
     selectedDashboard,
+    dashboards,
     widgets: Array.isArray(data.widgets)
-      ? data.widgets.map(sanitizeWidget).filter(Boolean)
+      ? data.widgets.map((widget, index) => sanitizeWidget(widget, index, allowedDashboardIds)).filter(Boolean)
       : [],
     sections: Array.isArray(data.sections)
-      ? data.sections.map(sanitizeSection).filter(Boolean)
+      ? data.sections.map((section) => sanitizeSection(section, allowedDashboardIds)).filter(Boolean)
       : []
   };
 }
 
-function sanitizeSection(section) {
+function sanitizeDashboard(dashboard, index = 0) {
+  if (!dashboard || typeof dashboard !== "object") {
+    return null;
+  }
+
+  const label = normalizeText(dashboard.label);
+  if (!label) {
+    return null;
+  }
+
+  return {
+    id: normalizeText(dashboard.id) || createId("dashboard"),
+    label,
+    icon: dashboardIconOptions.some((option) => option.id === dashboard.icon) ? dashboard.icon : "grid",
+    order: Number.isFinite(Number(dashboard.order)) ? Number(dashboard.order) : index
+  };
+}
+
+function sanitizeSection(section, allowedDashboardIds = new Set(getStoredDashboards().map((dashboard) => dashboard.id))) {
   if (!section || typeof section !== "object") {
     return null;
   }
@@ -2807,7 +3361,7 @@ function sanitizeSection(section) {
 
   const icon = sectionIconOptions.some((option) => option.id === section.icon) ? section.icon : "grid";
   const id = normalizeText(section.id) || createId("section");
-  const dashboards = sanitizeDashboardIds(section.dashboards);
+  const dashboards = sanitizeDashboardIds(section.dashboards, allowedDashboardIds);
 
   return {
     id,
@@ -2818,7 +3372,7 @@ function sanitizeSection(section) {
   };
 }
 
-function sanitizeWidget(widget, index = 0) {
+function sanitizeWidget(widget, index = 0, allowedDashboardIds = new Set(getStoredDashboards().map((dashboard) => dashboard.id))) {
   if (!widget || typeof widget !== "object") {
     return null;
   }
@@ -2830,7 +3384,7 @@ function sanitizeWidget(widget, index = 0) {
 
   const id = normalizeText(widget.id) || createId("widget");
   const order = Number.isFinite(Number(widget.order)) ? Number(widget.order) : index;
-  const dashboardIds = sanitizeDashboardIds(widget.dashboardIds);
+  const dashboardIds = sanitizeDashboardIds(widget.dashboardIds, allowedDashboardIds);
 
   return {
     id,
@@ -2846,6 +3400,10 @@ function sanitizeWidgetConfig(type, config) {
   const source = config && typeof config === "object" ? config : {};
 
   switch (type) {
+    case "search":
+      return {
+        engineId: getSelectedEngine(normalizeText(source.engineId)).id
+      };
     case "link-list":
       return { sectionId: normalizeText(source.sectionId) };
     case "spacer":
@@ -2892,6 +3450,8 @@ function sanitizeWidgetConfig(type, config) {
       };
     case "uptime-monitor":
       return { services: sanitizeUptimeServices(source.services) };
+    case "browser-session":
+      return { sessions: sanitizeBrowserSessions(source.sessions) };
     default:
       return {};
   }
@@ -2994,13 +3554,72 @@ function sanitizeUptimeHistory(history) {
     .slice(-18);
 }
 
-function sanitizeDashboardIds(value) {
+function sanitizeBrowserSessions(sessions) {
+  if (!Array.isArray(sessions)) {
+    return [];
+  }
+
+  return sessions
+    .map((session, index) => sanitizeBrowserSession(session, index))
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
+function sanitizeBrowserSession(session, index = 0) {
+  if (!session || typeof session !== "object") {
+    return null;
+  }
+
+  const windows = Array.isArray(session.windows)
+    ? session.windows
+        .map(sanitizeBrowserSessionWindow)
+        .filter((windowItem) => windowItem.tabs.length)
+    : [];
+
+  if (!windows.length) {
+    return null;
+  }
+
+  return {
+    id: normalizeText(session.id) || createId("session"),
+    name: normalizeText(session.name) || `Session ${index + 1}`,
+    savedAt: sanitizeDateString(session.savedAt) || new Date().toISOString(),
+    windows
+  };
+}
+
+function sanitizeBrowserSessionWindow(windowItem) {
+  const tabs = Array.isArray(windowItem?.tabs)
+    ? windowItem.tabs
+        .map((tab) => {
+          try {
+            const url = normalizeUrl(tab?.url);
+            return {
+              url,
+              title: normalizeText(tab?.title) || formatHost(url)
+            };
+          } catch (error) {
+            return null;
+          }
+        })
+        .filter(Boolean)
+    : [];
+
+  return {
+    left: Number.isFinite(Number(windowItem?.left)) ? Number(windowItem.left) : null,
+    top: Number.isFinite(Number(windowItem?.top)) ? Number(windowItem.top) : null,
+    width: Number.isFinite(Number(windowItem?.width)) ? Number(windowItem.width) : null,
+    height: Number.isFinite(Number(windowItem?.height)) ? Number(windowItem.height) : null,
+    tabs
+  };
+}
+
+function sanitizeDashboardIds(value, allowedDashboardIds = new Set(getStoredDashboards().map((dashboard) => dashboard.id))) {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  const validIds = new Set(dashboardViews.map((dashboard) => dashboard.id).filter((id) => id !== "all"));
-  return [...new Set(value.map(normalizeText).filter((id) => validIds.has(id)))];
+  return [...new Set(value.map(normalizeText).filter((id) => allowedDashboardIds.has(id)))];
 }
 
 function getNewWidgetDashboardIds() {
@@ -3039,6 +3658,9 @@ function migrateData(data) {
   const shouldApplySeedMigration = Number(data.version) < DATA_VERSION;
 
   migrated.version = DATA_VERSION;
+  migrated.dashboards = Array.isArray(migrated.dashboards) && migrated.dashboards.length
+    ? migrated.dashboards
+    : defaultDashboards.map((dashboard) => ({ ...dashboard }));
   migrated.sections = Array.isArray(migrated.sections) ? migrated.sections : [];
   migrated.widgets = Array.isArray(migrated.widgets) ? migrated.widgets : [];
 
@@ -3084,6 +3706,12 @@ function migrateData(data) {
     dashboards: section.dashboards?.length ? section.dashboards : defaultSectionDashboardIds[section.id] || []
   }));
   migrated.widgets = reconcileWidgetsWithSections(migrated.widgets, migrated.sections);
+  migrated.widgets = reconcileSystemWidgets(migrated.widgets, migrated.dashboards);
+  migrated.selectedDashboard =
+    migrated.selectedDashboard === fixedDashboardView.id ||
+    migrated.dashboards.some((dashboard) => dashboard.id === migrated.selectedDashboard)
+      ? migrated.selectedDashboard
+      : migrated.dashboards[0]?.id || DEFAULT_DASHBOARD_ID;
 
   return sanitizeData(migrated);
 }
@@ -3137,6 +3765,31 @@ function createLinkListWidgetFromSection(section, order) {
     order,
     config: { sectionId: section.id }
   };
+}
+
+function reconcileSystemWidgets(widgets, dashboards) {
+  const reconciled = widgets.slice().sort((a, b) => a.order - b.order);
+  const dashboardIds = dashboards.map((dashboard) => dashboard.id);
+  const searchWidget = reconciled.find((widget) => widget.type === "search");
+
+  if (!searchWidget) {
+    reconciled.unshift({
+      id: "widget_search_primary",
+      type: "search",
+      title: "Search",
+      dashboardIds,
+      order: 0,
+      config: { engineId: "google" }
+    });
+  } else if (!searchWidget.dashboardIds?.length) {
+    searchWidget.dashboardIds = dashboardIds;
+  }
+
+  reconciled.forEach((widget, index) => {
+    widget.order = index;
+  });
+
+  return reconciled;
 }
 
 function getMigratedSectionTitle(section) {
@@ -3333,6 +3986,8 @@ function showStatus(message) {
 function createIcon(name) {
   const icons = {
     plus: '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>',
+    search: '<svg viewBox="0 0 24 24" focusable="false"><circle cx="11" cy="11" r="7"></circle><path d="m16.2 16.2 4.3 4.3"></path></svg>',
+    "arrow-right": '<svg viewBox="0 0 24 24" focusable="false"><path d="M5 12h13"></path><path d="m13 6 6 6-6 6"></path></svg>',
     "chevron-down": '<svg viewBox="0 0 24 24" focusable="false"><path d="m7 10 5 5 5-5"></path></svg>',
     edit: '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 20 4.6-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"></path><path d="m13.5 6.5 4 4"></path></svg>',
     trash: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>',
@@ -3356,6 +4011,7 @@ function createIcon(name) {
     quiz: '<svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 9a2.5 2.5 0 1 1 4.3 1.7c-.9.8-1.8 1.3-1.8 2.8"></path><path d="M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>',
     compress: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 9V4h5"></path><path d="m4 4 6 6"></path><path d="M20 15v5h-5"></path><path d="m20 20-6-6"></path><path d="M15 4h5v5"></path><path d="m20 4-6 6"></path><path d="M9 20H4v-5"></path><path d="m4 20 6-6"></path></svg>',
     uptime: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h4l2-5 4 10 2-5h6"></path></svg>',
+    windows: '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="11" height="14" rx="2"></rect><rect x="10" y="9" width="11" height="10" rx="2"></rect></svg>',
     check: '<svg viewBox="0 0 24 24" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>',
     "chevron-left": '<svg viewBox="0 0 24 24" focusable="false"><path d="m15 18-6-6 6-6"></path></svg>',
     "chevron-right": '<svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"></path></svg>'

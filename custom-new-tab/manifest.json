@@ -4,7 +4,9 @@
   "description": "Nouvel onglet minimaliste avec recherche intelligente et lignes de liens editables.",
   "version": "1.0.0",
   "permissions": [
-    "storage"
+    "storage",
+    "tabs",
+    "windows"
   ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
