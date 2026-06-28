@@ -27,7 +27,23 @@
             autofocus
           />
 
-          <select id="engineSelect" aria-label="Moteur de recherche"></select>
+          <div id="enginePicker" class="engine-picker">
+            <button
+              id="engineButton"
+              class="engine-button"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-label="Choisir le moteur de recherche"
+            ></button>
+            <div
+              id="engineMenu"
+              class="engine-menu"
+              role="listbox"
+              aria-label="Moteur de recherche"
+              hidden
+            ></div>
+          </div>
 
           <button class="submit-button" type="submit" aria-label="Lancer la recherche">
             <svg viewBox="0 0 24 24" focusable="false">

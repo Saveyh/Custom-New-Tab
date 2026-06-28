@@ -5,30 +5,35 @@ const searchEngines = [
   {
     id: "google",
     label: "Google",
+    iconDomain: "google.com",
     placeholder: "Search Google...",
     buildUrl: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`
   },
   {
     id: "youtube",
     label: "YouTube",
+    iconDomain: "youtube.com",
     placeholder: "Search YouTube...",
     buildUrl: (query) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
   },
   {
     id: "github",
     label: "GitHub",
+    iconDomain: "github.com",
     placeholder: "Search GitHub...",
     buildUrl: (query) => `https://github.com/search?q=${encodeURIComponent(query)}`
   },
   {
     id: "chatgpt",
     label: "ChatGPT",
+    iconDomain: "chatgpt.com",
     placeholder: "Message ChatGPT...",
     buildUrl: (query) => `https://chatgpt.com/?q=${encodeURIComponent(query)}`
   },
   {
     id: "stackoverflow",
     label: "Stack Overflow",
+    iconDomain: "stackoverflow.com",
     placeholder: "Search Stack Overflow...",
     buildUrl: (query) => `https://stackoverflow.com/search?q=${encodeURIComponent(query)}`
   }
@@ -190,7 +195,9 @@ const ui = {
   body: document.body,
   searchForm: document.getElementById("searchForm"),
   searchInput: document.getElementById("searchInput"),
-  engineSelect: document.getElementById("engineSelect"),
+  enginePicker: document.getElementById("enginePicker"),
+  engineButton: document.getElementById("engineButton"),
+  engineMenu: document.getElementById("engineMenu"),
   editToggle: document.getElementById("editToggle"),
   sectionsRoot: document.getElementById("sectionsRoot"),
   statusMessage: document.getElementById("statusMessage"),
@@ -225,7 +232,9 @@ async function init() {
 
 function bindEvents() {
   ui.searchForm.addEventListener("submit", handleSearchSubmit);
-  ui.engineSelect.addEventListener("change", handleEngineChange);
+  ui.engineButton.addEventListener("click", toggleEngineMenu);
+  ui.engineButton.addEventListener("keydown", handleEngineButtonKeydown);
+  ui.engineMenu.addEventListener("click", handleEngineMenuClick);
   ui.editToggle.addEventListener("click", toggleEditMode);
   ui.editorForm.addEventListener("submit", handleDialogSubmit);
   ui.dialogClose.addEventListener("click", closeDialog);
@@ -233,6 +242,8 @@ function bindEvents() {
   ui.editorDialog.addEventListener("click", handleDialogBackdropClick);
 
   document.addEventListener("click", handleDocumentClick);
+  document.addEventListener("click", handleEngineOutsideClick);
+  document.addEventListener("keydown", handleGlobalKeydown);
   document.addEventListener("dragstart", handleDragStart);
   document.addEventListener("dragover", handleDragOver);
   document.addEventListener("dragleave", handleDragLeave);
@@ -248,6 +259,13 @@ function bindEvents() {
           icon.dataset.hasError = "true";
         }
       }
+
+      if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='engine-icon']")) {
+        const icon = event.target.closest(".engine-logo");
+        if (icon) {
+          icon.dataset.hasError = "true";
+        }
+      }
     },
     true
   );
@@ -257,6 +275,14 @@ function bindEvents() {
     (event) => {
       if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='favicon']")) {
         const icon = event.target.closest(".link-icon");
+        if (icon) {
+          icon.dataset.hasImage = "true";
+          icon.dataset.hasError = "false";
+        }
+      }
+
+      if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='engine-icon']")) {
+        const icon = event.target.closest(".engine-logo");
         if (icon) {
           icon.dataset.hasImage = "true";
           icon.dataset.hasError = "false";
@@ -278,9 +304,36 @@ function paintStaticIcons() {
 }
 
 function renderSearchEngines() {
-  ui.engineSelect.innerHTML = searchEngines
-    .map((engine) => `<option value="${engine.id}">${escapeHtml(engine.label)}</option>`)
+  ui.engineMenu.innerHTML = searchEngines
+    .map((engine) => createEngineOptionMarkup(engine))
     .join("");
+}
+
+function createEngineOptionMarkup(engine) {
+  return `
+    <button
+      class="engine-option"
+      type="button"
+      role="option"
+      data-engine-id="${engine.id}"
+      aria-selected="false"
+      tabindex="-1"
+    >
+      <span class="engine-option-state" aria-hidden="true"></span>
+      ${createEngineLogoMarkup(engine)}
+      <span class="engine-option-label">${escapeHtml(engine.label)}</span>
+    </button>
+  `;
+}
+
+function createEngineLogoMarkup(engine) {
+  const iconUrl = getFaviconUrl(`https://${engine.iconDomain}`);
+  return `
+    <span class="engine-logo" data-has-image="true" data-has-error="false">
+      <img data-role="engine-icon" src="${escapeHtml(iconUrl)}" alt="" loading="lazy" />
+      <span class="engine-logo-fallback" aria-hidden="true">${escapeHtml(getInitials(engine.label))}</span>
+    </span>
+  `;
 }
 
 async function handleSearchSubmit(event) {
@@ -298,16 +351,114 @@ async function handleSearchSubmit(event) {
   window.location.assign(engine.buildUrl(query));
 }
 
-async function handleEngineChange() {
-  state.data.selectedEngine = ui.engineSelect.value;
-  syncSearchPlaceholder();
-  await persist("Moteur mis a jour.");
+function toggleEngineMenu(event) {
+  event.stopPropagation();
+  setEngineMenuOpen(ui.engineMenu.hidden);
+}
+
+function handleEngineButtonKeydown(event) {
+  if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    setEngineMenuOpen(true);
+    focusSelectedEngineOption();
+  }
+}
+
+async function handleEngineMenuClick(event) {
+  const option = event.target.closest("[data-engine-id]");
+  if (!option) {
+    return;
+  }
+
+  await selectSearchEngine(option.dataset.engineId);
+}
+
+function handleEngineOutsideClick(event) {
+  if (!ui.enginePicker.contains(event.target)) {
+    setEngineMenuOpen(false);
+  }
+}
+
+function handleGlobalKeydown(event) {
+  if (event.key === "Escape") {
+    setEngineMenuOpen(false);
+    return;
+  }
+
+  if (ui.engineMenu.hidden || !["ArrowDown", "ArrowUp", "Home", "End", "Enter", " "].includes(event.key)) {
+    return;
+  }
+
+  const options = Array.from(ui.engineMenu.querySelectorAll("[data-engine-id]"));
+  if (!options.length) {
+    return;
+  }
+
+  const currentIndex = Math.max(0, options.indexOf(document.activeElement));
+
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    document.activeElement?.click?.();
+    return;
+  }
+
+  event.preventDefault();
+
+  if (event.key === "Home") {
+    options[0]?.focus();
+    return;
+  }
+
+  if (event.key === "End") {
+    options[options.length - 1]?.focus();
+    return;
+  }
+
+  const direction = event.key === "ArrowDown" ? 1 : -1;
+  const nextIndex = (currentIndex + direction + options.length) % options.length;
+  options[nextIndex]?.focus();
+}
+
+async function selectSearchEngine(engineId) {
+  const engine = searchEngines.find((item) => item.id === engineId);
+  if (!engine) {
+    return;
+  }
+
+  state.data.selectedEngine = engine.id;
+  syncEngineControl();
+  setEngineMenuOpen(false);
+  await saveData(state.data);
+  showStatus("Moteur mis a jour.");
 }
 
 function syncEngineControl() {
   const engine = getSelectedEngine();
-  ui.engineSelect.value = engine.id;
+  ui.engineButton.innerHTML = `
+    ${createEngineLogoMarkup(engine)}
+    <span class="engine-button-label">${escapeHtml(engine.label)}</span>
+    <span class="engine-chevron" aria-hidden="true">${createIcon("chevron-down")}</span>
+  `;
+  ui.engineButton.title = engine.label;
+  ui.engineMenu.querySelectorAll("[data-engine-id]").forEach((option) => {
+    const isSelected = option.dataset.engineId === engine.id;
+    option.setAttribute("aria-selected", String(isSelected));
+    option.tabIndex = isSelected ? 0 : -1;
+  });
   syncSearchPlaceholder();
+}
+
+function setEngineMenuOpen(isOpen) {
+  ui.engineMenu.hidden = !isOpen;
+  ui.engineButton.setAttribute("aria-expanded", String(isOpen));
+  ui.enginePicker.classList.toggle("is-open", isOpen);
+}
+
+function focusSelectedEngineOption() {
+  const selectedOption =
+    ui.engineMenu.querySelector("[aria-selected='true']") ||
+    ui.engineMenu.querySelector("[data-engine-id]");
+  selectedOption?.focus();
 }
 
 function syncSearchPlaceholder() {
@@ -1223,6 +1374,7 @@ function showStatus(message) {
 function createIcon(name) {
   const icons = {
     plus: '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>',
+    "chevron-down": '<svg viewBox="0 0 24 24" focusable="false"><path d="m7 10 5 5 5-5"></path></svg>',
     edit: '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 20 4.6-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"></path><path d="m13.5 6.5 4 4"></path></svg>',
     trash: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>',
     close: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg>',

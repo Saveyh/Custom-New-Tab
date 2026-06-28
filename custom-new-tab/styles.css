@@ -126,20 +126,173 @@ svg {
   filter: invert(0.65);
 }
 
-.smart-search select {
-  max-width: 128px;
-  height: 36px;
-  padding: 0 28px 0 12px;
+.engine-picker {
+  position: relative;
+  z-index: 45;
+}
+
+.engine-button {
+  display: grid;
+  grid-template-columns: 24px minmax(0, auto) 16px;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  min-width: 116px;
+  max-width: 170px;
+  padding: 0 10px 0 8px;
   border: 1px solid var(--border);
   border-radius: 999px;
   outline: 0;
-  color: var(--muted-strong);
-  background:
-    linear-gradient(45deg, transparent 50%, var(--muted) 50%) calc(100% - 16px) 15px / 5px 5px no-repeat,
-    linear-gradient(135deg, var(--muted) 50%, transparent 50%) calc(100% - 11px) 15px / 5px 5px no-repeat,
-    var(--surface-soft);
-  appearance: none;
+  background: var(--surface-soft);
+  color: var(--text);
+  transition:
+    border-color var(--transition),
+    background-color var(--transition),
+    color var(--transition);
+}
+
+.engine-button:hover,
+.engine-button:focus-visible,
+.engine-picker.is-open .engine-button {
+  border-color: var(--border-strong);
+  background: var(--surface-strong);
+}
+
+.engine-button-label {
+  overflow: hidden;
   font-size: 13px;
+  font-weight: 650;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.engine-chevron {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: transform var(--transition), color var(--transition);
+}
+
+.engine-chevron svg {
+  width: 15px;
+  height: 15px;
+}
+
+.engine-picker.is-open .engine-chevron {
+  color: var(--text);
+  transform: rotate(180deg);
+}
+
+.engine-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  gap: 3px;
+  width: 250px;
+  padding: 10px 8px;
+  border: 1px solid #3b3b3b;
+  border-radius: 26px;
+  background: #303030;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.52);
+}
+
+.engine-menu[hidden] {
+  display: none;
+}
+
+.engine-option {
+  display: grid;
+  grid-template-columns: 26px 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  outline: 0;
+  color: #f0f0f0;
+  text-align: left;
+}
+
+.engine-option:hover,
+.engine-option:focus-visible {
+  background: #3b3b3b;
+}
+
+.engine-option-state {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #4a4a4a;
+  border-radius: 999px;
+  background: #3d3d3d;
+}
+
+.engine-option-state::after {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #a7a7a7;
+  content: "";
+}
+
+.engine-option[aria-selected="true"] .engine-option-state {
+  border-color: #77e89b;
+  background: #77e89b;
+}
+
+.engine-option[aria-selected="true"] .engine-option-state::after {
+  background: #14291b;
+}
+
+.engine-logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.engine-logo img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.engine-logo[data-has-error="true"] img,
+.engine-logo:not([data-has-image="true"]) img {
+  display: none;
+}
+
+.engine-logo-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.engine-logo[data-has-error="true"] .engine-logo-fallback,
+.engine-logo:not([data-has-image="true"]) .engine-logo-fallback {
+  display: grid;
+}
+
+.engine-option-label {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .submit-button,
@@ -529,14 +682,26 @@ svg {
   }
 
   .smart-search {
-    grid-template-columns: 20px minmax(0, 1fr) 38px;
+    grid-template-columns: 20px minmax(0, 1fr) auto 38px;
     width: 100%;
   }
 
-  .smart-search select {
-    grid-column: 1 / -1;
-    max-width: none;
-    width: 100%;
+  .engine-button {
+    min-width: 46px;
+    width: 46px;
+    grid-template-columns: 24px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .engine-button-label,
+  .engine-chevron {
+    display: none;
+  }
+
+  .engine-menu {
+    right: -46px;
+    width: min(250px, calc(100vw - 28px));
   }
 
   .toolbar {
