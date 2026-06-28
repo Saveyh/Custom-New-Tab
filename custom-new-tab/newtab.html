@@ -3,101 +3,82 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Workspace</title>
+    <title>Navigateur</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <div class="background-glow background-glow-left" aria-hidden="true"></div>
-      <div class="background-glow background-glow-right" aria-hidden="true"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <form id="searchForm" class="smart-search" autocomplete="off">
+          <span class="search-glyph" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m16.2 16.2 4.3 4.3"></path>
+            </svg>
+          </span>
 
-      <header class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow" id="greetingLabel">Bonjour</p>
-          <h1>Workspace</h1>
-          <p class="hero-text">
-            Une page de depart nette pour retrouver vos liens utiles et relancer
-            vos sessions de travail sans friction.
-          </p>
-        </div>
+          <input
+            id="searchInput"
+            name="query"
+            type="search"
+            placeholder="Search Google..."
+            autocomplete="off"
+            spellcheck="false"
+            autofocus
+          />
 
-        <div class="hero-tools">
-          <label class="search-field" for="searchInput">
-            <span>Recherche</span>
-            <input
-              id="searchInput"
-              type="search"
-              placeholder="Chercher un lien, une section, un projet..."
-              autocomplete="off"
-            />
-          </label>
+          <select id="engineSelect" aria-label="Moteur de recherche"></select>
 
-          <div class="hero-actions">
-            <button id="editModeButton" class="button button-secondary" type="button">
-              Mode edition
-            </button>
-            <button class="button button-ghost" type="button" data-action="add-section">
-              Nouvelle section
-            </button>
-            <button class="button button-ghost" type="button" data-action="add-link">
-              Ajouter un lien
-            </button>
-            <button class="button" type="button" data-action="add-project">
-              Nouveau projet
-            </button>
-          </div>
+          <button class="submit-button" type="submit" aria-label="Lancer la recherche">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M5 12h13"></path>
+              <path d="m13 6 6 6-6 6"></path>
+            </svg>
+          </button>
+        </form>
+
+        <div class="toolbar" aria-label="Actions">
+          <button
+            id="editToggle"
+            class="icon-button"
+            type="button"
+            aria-label="Activer l'edition"
+            title="Edition"
+          ></button>
+          <button
+            class="icon-button"
+            type="button"
+            data-action="add-section"
+            aria-label="Ajouter une ligne"
+            title="Ajouter une ligne"
+          ></button>
         </div>
       </header>
 
       <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
 
-      <main class="layout">
-        <section class="panel">
-          <div class="panel-header">
-            <div>
-              <p class="panel-kicker">Quick Links</p>
-              <h2>Liens rapides</h2>
-            </div>
-            <span class="panel-counter" id="sectionsCounter"></span>
-          </div>
-
-          <div id="sectionsRoot" class="section-stack"></div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <div>
-              <p class="panel-kicker">Projects</p>
-              <h2>Projets & sessions</h2>
-            </div>
-            <span class="panel-counter" id="projectsCounter"></span>
-          </div>
-
-          <div id="projectsRoot" class="project-stack"></div>
-        </section>
-      </main>
+      <main id="sectionsRoot" class="sections" aria-label="Liens rapides"></main>
     </div>
 
-    <dialog id="formDialog" class="dialog">
-      <form id="entityForm" class="dialog-form" method="dialog" novalidate>
+    <dialog id="editorDialog" class="dialog">
+      <form id="editorForm" class="dialog-panel" method="dialog" novalidate>
         <div class="dialog-header">
-          <div>
-            <p class="dialog-kicker" id="dialogKicker">Edition</p>
-            <h3 id="dialogTitle">Modifier</h3>
-          </div>
-          <button class="icon-button" id="dialogCloseButton" type="button" aria-label="Fermer">
-            ×
-          </button>
+          <h2 id="dialogTitle">Modifier</h2>
+          <button
+            id="dialogClose"
+            class="icon-button"
+            type="button"
+            aria-label="Fermer"
+            title="Fermer"
+          ></button>
         </div>
 
         <div id="dialogFields" class="dialog-fields"></div>
         <p id="formError" class="form-error" role="alert"></p>
 
         <div class="dialog-actions">
-          <button class="button button-secondary" id="dialogCancelButton" type="button">
-            Annuler
-          </button>
-          <button class="button" id="dialogSubmitButton" type="submit">
+          <button id="dialogCancel" class="text-button" type="button">Annuler</button>
+          <button id="dialogSubmit" class="text-button text-button-primary" type="submit">
             Enregistrer
           </button>
         </div>

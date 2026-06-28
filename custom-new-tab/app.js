@@ -1,202 +1,265 @@
-const STORAGE_KEY = "customNewTabData";
+const STORAGE_KEY = "navigateur.newtab.v1";
+const DATA_VERSION = 2;
+
+const searchEngines = [
+  {
+    id: "google",
+    label: "Google",
+    placeholder: "Search Google...",
+    buildUrl: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`
+  },
+  {
+    id: "youtube",
+    label: "YouTube",
+    placeholder: "Search YouTube...",
+    buildUrl: (query) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
+  },
+  {
+    id: "github",
+    label: "GitHub",
+    placeholder: "Search GitHub...",
+    buildUrl: (query) => `https://github.com/search?q=${encodeURIComponent(query)}`
+  },
+  {
+    id: "chatgpt",
+    label: "ChatGPT",
+    placeholder: "Message ChatGPT...",
+    buildUrl: (query) => `https://chatgpt.com/?q=${encodeURIComponent(query)}`
+  },
+  {
+    id: "stackoverflow",
+    label: "Stack Overflow",
+    placeholder: "Search Stack Overflow...",
+    buildUrl: (query) => `https://stackoverflow.com/search?q=${encodeURIComponent(query)}`
+  }
+];
+
+const sectionIconOptions = [
+  { id: "sparkles", label: "Sparkles" },
+  { id: "code", label: "Code" },
+  { id: "cloud", label: "Cloud" },
+  { id: "grid", label: "Grid" },
+  { id: "folder", label: "Folder" }
+];
 
 const defaultData = {
+  version: DATA_VERSION,
+  selectedEngine: "google",
   sections: [
     {
-      id: "section_ai",
-      title: "IA",
+      id: "section_ai_services",
+      title: "AI Services",
+      icon: "sparkles",
       links: [
-        {
-          id: "link_chatgpt",
-          title: "ChatGPT",
-          url: "https://chatgpt.com",
-          icon: "https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64"
-        },
-        {
-          id: "link_claude",
-          title: "Claude",
-          url: "https://claude.ai",
-          icon: "https://www.google.com/s2/favicons?domain=claude.ai&sz=64"
-        },
-        {
-          id: "link_gemini",
-          title: "Gemini",
-          url: "https://gemini.google.com",
-          icon: "https://www.google.com/s2/favicons?domain=gemini.google.com&sz=64"
-        }
+        createSeedLink("ChatGPT", "https://chatgpt.com/"),
+        createSeedLink("Claude", "https://claude.ai/"),
+        createSeedLink("Gemini", "https://gemini.google.com/"),
+        createSeedLink("NotebookLM", "https://notebooklm.google.com/"),
+        createSeedLink("Mistral", "https://chat.mistral.ai/"),
+        createSeedLink("Cloud AI", "https://cloud.ai/")
       ]
     },
     {
-      id: "section_dev",
+      id: "section_developer_resources",
       title: "Developpement",
+      icon: "code",
       links: [
-        {
-          id: "link_github",
-          title: "GitHub",
-          url: "https://github.com",
-          icon: "https://www.google.com/s2/favicons?domain=github.com&sz=64"
-        },
-        {
-          id: "link_supabase",
-          title: "Supabase",
-          url: "https://supabase.com",
-          icon: "https://www.google.com/s2/favicons?domain=supabase.com&sz=64"
-        },
-        {
-          id: "link_netlify",
-          title: "Netlify",
-          url: "https://app.netlify.com",
-          icon: "https://www.google.com/s2/favicons?domain=app.netlify.com&sz=64"
-        }
+        createSeedLink("GitHub", "https://github.com/"),
+        createSeedLink("Supabase", "https://supabase.com/")
       ]
     },
     {
-      id: "section_design",
-      title: "Design",
+      id: "section_hosting_deployment",
+      title: "Hosting & Monitoring",
+      icon: "cloud",
       links: [
-        {
-          id: "link_figma",
-          title: "Figma",
-          url: "https://figma.com",
-          icon: "https://www.google.com/s2/favicons?domain=figma.com&sz=64"
-        },
-        {
-          id: "link_dribbble",
-          title: "Dribbble",
-          url: "https://dribbble.com",
-          icon: "https://www.google.com/s2/favicons?domain=dribbble.com&sz=64"
-        }
-      ]
-    }
-  ],
-  projects: [
-    {
-      id: "project_mcprod",
-      title: "Dashboard MCProd",
-      description: "Raccourcis utiles pour relancer le dashboard rapidement.",
-      links: [
-        {
-          id: "project_link_supabase",
-          title: "Supabase",
-          url: "https://supabase.com",
-          icon: "https://www.google.com/s2/favicons?domain=supabase.com&sz=64"
-        },
-        {
-          id: "project_link_github",
-          title: "GitHub",
-          url: "https://github.com",
-          icon: "https://www.google.com/s2/favicons?domain=github.com&sz=64"
-        },
-        {
-          id: "project_link_netlify",
-          title: "Netlify",
-          url: "https://app.netlify.com",
-          icon: "https://www.google.com/s2/favicons?domain=app.netlify.com&sz=64"
-        }
+        createSeedLink("Vercel", "https://vercel.com/dashboard"),
+        createSeedLink("Netlify", "https://app.netlify.com/"),
+        createSeedLink("UptimeRobot", "https://dashboard.uptimerobot.com/"),
+        createSeedLink("Infomaniak Manager", "https://manager.infomaniak.com/")
       ]
     },
     {
-      id: "project_design_frontend",
-      title: "Design & Front-end",
-      description: "Les outils principaux pour maquette, inspiration et implementation.",
+      id: "section_travail",
+      title: "Travail",
+      icon: "folder",
       links: [
-        {
-          id: "project_link_figma",
-          title: "Figma",
-          url: "https://figma.com",
-          icon: "https://www.google.com/s2/favicons?domain=figma.com&sz=64"
-        },
-        {
-          id: "project_link_codepen",
-          title: "CodePen",
-          url: "https://codepen.io",
-          icon: "https://www.google.com/s2/favicons?domain=codepen.io&sz=64"
-        },
-        {
-          id: "project_link_github_design",
-          title: "GitHub",
-          url: "https://github.com",
-          icon: "https://www.google.com/s2/favicons?domain=github.com&sz=64"
-        }
+        createSeedLink("Microsoft 365", "https://m365.cloud.microsoft/"),
+        createSeedLink("Osmo Supply", "https://osmo.supply/"),
+        createSeedLink("Intranet MCProd", "https://intranet-agence-mcprod.netlify.app/")
+      ]
+    },
+    {
+      id: "section_universite",
+      title: "Universite",
+      icon: "folder",
+      links: [
+        createSeedLink("Academia UniNE", "https://academia.unine.ch/"),
+        createSeedLink("Moodle UniNE", "https://moodle.unine.ch/")
+      ]
+    },
+    {
+      id: "section_creation",
+      title: "Creation",
+      icon: "grid",
+      links: [
+        createSeedLink("Canva", "https://canva.com/"),
+        createSeedLink("Pinterest", "https://fr.pinterest.com/")
+      ]
+    },
+    {
+      id: "section_loisirs",
+      title: "Loisirs",
+      icon: "grid",
+      links: [
+        createSeedLink("YouTube", "https://www.youtube.com/"),
+        createSeedLink("Twitch", "https://www.twitch.tv/"),
+        createSeedLink("MyTennis", "https://mytennis.ch/")
+      ]
+    },
+    {
+      id: "section_achats",
+      title: "Achats",
+      icon: "folder",
+      links: [
+        createSeedLink("Galaxus", "https://www.galaxus.ch/")
       ]
     }
   ]
 };
 
+const removedSeedLinks = [
+  "App Store Connect",
+  "Apple Developer",
+  "AWS Console",
+  "Cloudflare Dashboard",
+  "Dev.to",
+  "DigitalOcean",
+  "FAL",
+  "Framer",
+  "Full",
+  "GitHub Copilot",
+  "Google AI Studio",
+  "Google Cloud Console",
+  "Grok",
+  "Hacker News",
+  "npm",
+  "OpenAI Platform",
+  "OpenRouter",
+  "Perplexity",
+  "Postman",
+  "Railway",
+  "Stack Overflow",
+  "Test",
+  "Test QA",
+  "Webflow Dashboard"
+];
+
+const removedSeedHosts = [
+  "appstoreconnect.apple.com",
+  "cloud.digitalocean.com",
+  "console.aws.amazon.com",
+  "console.cloud.google.com",
+  "dash.cloudflare.com",
+  "dev.to",
+  "developer.apple.com",
+  "fal.ai",
+  "framer.com",
+  "github.com/features/copilot",
+  "grok.com",
+  "news.ycombinator.com",
+  "openrouter.ai",
+  "platform.openai.com",
+  "postman.com",
+  "railway.app",
+  "stackoverflow.com",
+  "webflow.com",
+  "www.npmjs.com",
+  "www.perplexity.ai"
+];
+
 const state = {
   data: cloneData(defaultData),
-  searchQuery: "",
-  editMode: false,
   dialog: null,
+  drag: null,
+  editMode: false,
   statusTimer: null
 };
 
 const ui = {
-  greetingLabel: document.getElementById("greetingLabel"),
+  body: document.body,
+  searchForm: document.getElementById("searchForm"),
   searchInput: document.getElementById("searchInput"),
-  editModeButton: document.getElementById("editModeButton"),
-  statusMessage: document.getElementById("statusMessage"),
+  engineSelect: document.getElementById("engineSelect"),
+  editToggle: document.getElementById("editToggle"),
   sectionsRoot: document.getElementById("sectionsRoot"),
-  projectsRoot: document.getElementById("projectsRoot"),
-  sectionsCounter: document.getElementById("sectionsCounter"),
-  projectsCounter: document.getElementById("projectsCounter"),
-  formDialog: document.getElementById("formDialog"),
-  entityForm: document.getElementById("entityForm"),
-  dialogKicker: document.getElementById("dialogKicker"),
+  statusMessage: document.getElementById("statusMessage"),
+  editorDialog: document.getElementById("editorDialog"),
+  editorForm: document.getElementById("editorForm"),
   dialogTitle: document.getElementById("dialogTitle"),
   dialogFields: document.getElementById("dialogFields"),
-  formError: document.getElementById("formError"),
-  dialogCloseButton: document.getElementById("dialogCloseButton"),
-  dialogCancelButton: document.getElementById("dialogCancelButton"),
-  dialogSubmitButton: document.getElementById("dialogSubmitButton")
+  dialogSubmit: document.getElementById("dialogSubmit"),
+  dialogClose: document.getElementById("dialogClose"),
+  dialogCancel: document.getElementById("dialogCancel"),
+  formError: document.getElementById("formError")
 };
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  paintStaticIcons();
+  renderSearchEngines();
   bindEvents();
-  updateGreeting();
 
   try {
     state.data = await loadData();
-    renderApp();
-    showStatus("Vos liens et projets sont prets.");
   } catch (error) {
     console.error(error);
     state.data = cloneData(defaultData);
-    renderApp();
-    showStatus("Impossible de charger les donnees locales. Les donnees d'exemple ont ete restaurees.", "error");
+    showStatus("Stockage local indisponible. Les donnees par defaut sont chargees.");
   }
+
+  syncEngineControl();
+  render();
 }
 
 function bindEvents() {
-  ui.searchInput.addEventListener("input", handleSearchInput);
-  ui.editModeButton.addEventListener("click", handleToggleEditMode);
-  ui.entityForm.addEventListener("submit", handleFormSubmit);
-  ui.dialogCloseButton.addEventListener("click", closeDialog);
-  ui.dialogCancelButton.addEventListener("click", closeDialog);
-  ui.formDialog.addEventListener("click", handleDialogBackdropClick);
+  ui.searchForm.addEventListener("submit", handleSearchSubmit);
+  ui.engineSelect.addEventListener("change", handleEngineChange);
+  ui.editToggle.addEventListener("click", toggleEditMode);
+  ui.editorForm.addEventListener("submit", handleDialogSubmit);
+  ui.dialogClose.addEventListener("click", closeDialog);
+  ui.dialogCancel.addEventListener("click", closeDialog);
+  ui.editorDialog.addEventListener("click", handleDialogBackdropClick);
+
   document.addEventListener("click", handleDocumentClick);
+  document.addEventListener("dragstart", handleDragStart);
+  document.addEventListener("dragover", handleDragOver);
+  document.addEventListener("dragleave", handleDragLeave);
+  document.addEventListener("drop", handleDrop);
+  document.addEventListener("dragend", clearDragState);
+
   document.addEventListener(
     "error",
     (event) => {
       if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='favicon']")) {
-        const avatar = event.target.closest(".link-avatar");
-        if (avatar) {
-          avatar.dataset.hasError = "true";
+        const icon = event.target.closest(".link-icon");
+        if (icon) {
+          icon.dataset.hasError = "true";
         }
       }
     },
     true
   );
+
   document.addEventListener(
     "load",
     (event) => {
       if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='favicon']")) {
-        const avatar = event.target.closest(".link-avatar");
-        if (avatar) {
-          avatar.dataset.hasError = "false";
-          avatar.dataset.hasImage = "true";
+        const icon = event.target.closest(".link-icon");
+        if (icon) {
+          icon.dataset.hasImage = "true";
+          icon.dataset.hasError = "false";
         }
       }
     },
@@ -204,449 +267,235 @@ function bindEvents() {
   );
 }
 
-function handleSearchInput(event) {
-  state.searchQuery = event.target.value.trim().toLowerCase();
-  renderApp();
-}
+function paintStaticIcons() {
+  ui.editToggle.innerHTML = createIcon("edit");
+  ui.dialogClose.innerHTML = createIcon("close");
 
-function handleToggleEditMode() {
-  state.editMode = !state.editMode;
-  ui.editModeButton.textContent = state.editMode ? "Quitter l'edition" : "Mode edition";
-  ui.editModeButton.classList.toggle("button", state.editMode);
-  ui.editModeButton.classList.toggle("button-secondary", !state.editMode);
-  renderApp();
-}
-
-function handleDialogBackdropClick(event) {
-  if (event.target === ui.formDialog) {
-    closeDialog();
+  const addSectionButton = document.querySelector("[data-action='add-section']");
+  if (addSectionButton) {
+    addSectionButton.innerHTML = createIcon("plus");
   }
 }
 
+function renderSearchEngines() {
+  ui.engineSelect.innerHTML = searchEngines
+    .map((engine) => `<option value="${engine.id}">${escapeHtml(engine.label)}</option>`)
+    .join("");
+}
+
+async function handleSearchSubmit(event) {
+  event.preventDefault();
+
+  const query = ui.searchInput.value.trim();
+  if (!query) {
+    ui.searchInput.focus();
+    return;
+  }
+
+  const engine = getSelectedEngine();
+  state.data.selectedEngine = engine.id;
+  await saveData(state.data);
+  window.location.assign(engine.buildUrl(query));
+}
+
+async function handleEngineChange() {
+  state.data.selectedEngine = ui.engineSelect.value;
+  syncSearchPlaceholder();
+  await persist("Moteur mis a jour.");
+}
+
+function syncEngineControl() {
+  const engine = getSelectedEngine();
+  ui.engineSelect.value = engine.id;
+  syncSearchPlaceholder();
+}
+
+function syncSearchPlaceholder() {
+  ui.searchInput.placeholder = getSelectedEngine().placeholder;
+}
+
+function getSelectedEngine() {
+  return searchEngines.find((engine) => engine.id === state.data.selectedEngine) || searchEngines[0];
+}
+
+function toggleEditMode() {
+  state.editMode = !state.editMode;
+  ui.body.classList.toggle("is-editing", state.editMode);
+  ui.editToggle.setAttribute("aria-label", state.editMode ? "Quitter l'edition" : "Activer l'edition");
+  render();
+}
+
 async function handleDocumentClick(event) {
+  const linkHit = event.target.closest(".link-hit");
+  if (state.editMode && linkHit) {
+    event.preventDefault();
+  }
+
   const actionTarget = event.target.closest("[data-action]");
   if (!actionTarget) {
     return;
   }
 
-  const { action } = actionTarget.dataset;
-
   try {
-    switch (action) {
+    switch (actionTarget.dataset.action) {
       case "add-section":
-        openSectionForm();
+        openSectionDialog();
         break;
       case "edit-section":
-        openSectionForm(getSectionById(actionTarget.dataset.sectionId));
+        openSectionDialog(getSection(actionTarget.dataset.sectionId));
         break;
       case "delete-section":
         await deleteSection(actionTarget.dataset.sectionId);
         break;
       case "add-link":
-        openQuickLinkForm(null, actionTarget.dataset.sectionId || null);
+        openLinkDialog(null, actionTarget.dataset.sectionId);
         break;
       case "edit-link":
-        openQuickLinkForm(
-          getSectionLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId),
-          actionTarget.dataset.sectionId
-        );
+        openLinkDialog(getLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId), actionTarget.dataset.sectionId);
         break;
       case "delete-link":
-        await deleteQuickLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId);
-        break;
-      case "open-link":
-        openQuickLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId);
-        break;
-      case "add-project":
-        openProjectForm();
-        break;
-      case "edit-project":
-        openProjectForm(getProjectById(actionTarget.dataset.projectId));
-        break;
-      case "delete-project":
-        await deleteProject(actionTarget.dataset.projectId);
-        break;
-      case "open-project-link":
-        openProjectLink(actionTarget.dataset.projectId, actionTarget.dataset.linkId);
-        break;
-      case "add-project-link":
-        openProjectLinkForm(null, actionTarget.dataset.projectId || null);
-        break;
-      case "edit-project-link":
-        openProjectLinkForm(
-          getProjectLink(actionTarget.dataset.projectId, actionTarget.dataset.linkId),
-          actionTarget.dataset.projectId
-        );
-        break;
-      case "delete-project-link":
-        await deleteProjectLink(actionTarget.dataset.projectId, actionTarget.dataset.linkId);
-        break;
-      case "open-project":
-        await openProject(actionTarget.dataset.projectId);
-        break;
-      case "save-current-tabs":
-        await saveCurrentTabsToProject(actionTarget.dataset.projectId);
+        await deleteLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId);
         break;
       default:
         break;
     }
   } catch (error) {
     console.error(error);
-    showStatus("Une erreur inattendue est survenue. Reessayez.", "error");
+    showStatus("Action impossible.");
   }
 }
 
-async function handleFormSubmit(event) {
-  event.preventDefault();
-  ui.formError.textContent = "";
-
-  if (!state.dialog) {
-    return;
-  }
-
-  const formData = new FormData(ui.entityForm);
-
-  try {
-    switch (state.dialog.type) {
-      case "section":
-        await saveSectionFromForm(formData, state.dialog.sectionId || null);
-        break;
-      case "quick-link":
-        await saveQuickLinkFromForm(formData, state.dialog.sectionId || null, state.dialog.linkId || null);
-        break;
-      case "project":
-        await saveProjectFromForm(formData, state.dialog.projectId || null);
-        break;
-      case "project-link":
-        await saveProjectLinkFromForm(formData, state.dialog.projectId || null, state.dialog.linkId || null);
-        break;
-      default:
-        break;
-    }
-  } catch (error) {
-    ui.formError.textContent = error instanceof Error ? error.message : "Le formulaire est invalide.";
-  }
-}
-
-function renderApp() {
+function render() {
+  ui.body.classList.toggle("is-editing", state.editMode);
   renderSections();
-  renderProjects();
 }
 
 function renderSections() {
-  const visibleSections = filterSections(state.data.sections, state.searchQuery);
-  ui.sectionsCounter.textContent = createCounterLabel(visibleSections.length, "section");
-
-  if (!visibleSections.length) {
-    ui.sectionsRoot.innerHTML = createEmptyStateMarkup(
-      "Aucune section visible",
-      state.searchQuery
-        ? "Aucun lien rapide ne correspond a votre recherche."
-        : "Ajoutez une section puis des liens rapides pour demarrer."
-    );
+  if (!state.data.sections.length) {
+    ui.sectionsRoot.innerHTML = `
+      <div class="empty-state">
+        <span>Aucune ligne</span>
+      </div>
+    `;
     return;
   }
 
-  ui.sectionsRoot.innerHTML = visibleSections
-    .map((section) => {
-      const linksMarkup = section.visibleLinks.length
-        ? section.visibleLinks.map((link) => createQuickLinkCardMarkup(section.id, link)).join("")
-        : createEmptyStateMarkup(
-            "Section vide",
-            "Ajoutez un premier lien rapide dans cette section."
-          );
-
-      return `
-        <article class="section-card">
+  ui.sectionsRoot.innerHTML = state.data.sections
+    .map(
+      (section) => `
+        <section
+          class="link-section"
+          data-section-id="${section.id}"
+          draggable="${state.editMode ? "true" : "false"}"
+        >
           <div class="section-header">
-            <div>
-              <h3>${escapeHtml(section.title)}</h3>
-              <p class="subtle-meta">${section.visibleLinks.length} lien${section.visibleLinks.length > 1 ? "s" : ""}</p>
+            <div class="section-title">
+              <span class="section-symbol" aria-hidden="true">${createIcon(section.icon || "grid")}</span>
+              <h2>${escapeHtml(section.title)}</h2>
             </div>
             <div class="section-actions">
-              <button class="toolbar-button" type="button" data-action="add-link" data-section-id="${section.id}">
-                Ajouter un lien
-              </button>
-              ${
-                state.editMode
-                  ? `
-                    <button class="toolbar-button" type="button" data-action="edit-section" data-section-id="${section.id}">
-                      Renommer
-                    </button>
-                    <button class="toolbar-button chip-action-danger" type="button" data-action="delete-section" data-section-id="${section.id}">
-                      Supprimer
-                    </button>
-                  `
-                  : ""
-              }
+              <button
+                class="small-icon-button"
+                type="button"
+                data-action="add-link"
+                data-section-id="${section.id}"
+                aria-label="Ajouter un lien"
+                title="Ajouter un lien"
+              >${createIcon("plus")}</button>
+              <button
+                class="small-icon-button"
+                type="button"
+                data-action="edit-section"
+                data-section-id="${section.id}"
+                aria-label="Modifier la ligne"
+                title="Modifier la ligne"
+              >${createIcon("edit")}</button>
+              <button
+                class="small-icon-button"
+                type="button"
+                data-action="delete-section"
+                data-section-id="${section.id}"
+                aria-label="Supprimer la ligne"
+                title="Supprimer la ligne"
+              >${createIcon("trash")}</button>
             </div>
           </div>
-          <div class="section-links">
-            ${linksMarkup}
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-}
 
-function renderProjects() {
-  const visibleProjects = filterProjects(state.data.projects, state.searchQuery);
-  ui.projectsCounter.textContent = createCounterLabel(visibleProjects.length, "projet");
-
-  if (!visibleProjects.length) {
-    ui.projectsRoot.innerHTML = createEmptyStateMarkup(
-      "Aucun projet visible",
-      state.searchQuery
-        ? "Aucun projet ne correspond a votre recherche."
-        : "Creez un projet pour sauvegarder et reouvrir vos sessions d'onglets."
-    );
-    return;
-  }
-
-  ui.projectsRoot.innerHTML = visibleProjects
-    .map((project) => {
-      const linksMarkup = project.visibleLinks.length
-        ? project.visibleLinks.map((link) => createProjectLinkCardMarkup(project.id, link)).join("")
-        : createEmptyStateMarkup(
-            "Projet sans lien",
-            "Ajoutez des liens ou sauvegardez les onglets ouverts."
-          );
-
-      return `
-        <article class="project-card">
-          <div class="project-head">
-            <div>
-              <h3>${escapeHtml(project.title)}</h3>
-              <p class="project-description">
-                ${escapeHtml(project.description || "Aucune description pour ce projet.")}
-              </p>
-            </div>
-            <div class="project-actions">
-              <button class="toolbar-button" type="button" data-action="open-project" data-project-id="${project.id}">
-                Ouvrir tout
-              </button>
-              <button class="toolbar-button" type="button" data-action="save-current-tabs" data-project-id="${project.id}">
-                Sauvegarder les onglets
-              </button>
-            </div>
-          </div>
-          <div class="project-toolbar">
-            <button class="toolbar-button" type="button" data-action="add-project-link" data-project-id="${project.id}">
-              Ajouter un lien
-            </button>
+          <div class="links-grid" data-section-id="${section.id}">
             ${
-              state.editMode
-                ? `
-                  <button class="toolbar-button" type="button" data-action="edit-project" data-project-id="${project.id}">
-                    Modifier
-                  </button>
-                  <button class="toolbar-button chip-action-danger" type="button" data-action="delete-project" data-project-id="${project.id}">
-                    Supprimer
-                  </button>
-                `
-                : ""
+              section.links.length
+                ? section.links.map((link) => createLinkMarkup(section.id, link)).join("")
+                : `<div class="empty-state"><span>Aucun lien</span></div>`
             }
           </div>
-          <div class="project-links">
-            ${linksMarkup}
-          </div>
-        </article>
-      `;
-    })
+        </section>
+      `
+    )
     .join("");
 }
 
-function createQuickLinkCardMarkup(sectionId, link) {
+function createLinkMarkup(sectionId, link) {
+  const icon = escapeHtml(link.icon || getFaviconUrl(link.url));
   return `
-    <article class="quick-link-card">
-      <button
-        class="quick-link-main"
-        type="button"
-        data-action="open-link"
-        data-section-id="${sectionId}"
-        data-link-id="${link.id}"
-      >
-        ${createAvatarMarkup(link)}
-        <span>
-          <span class="link-title">${escapeHtml(link.title)}</span>
-          <span class="link-meta">${escapeHtml(formatHostname(link.url))}</span>
+    <article
+      class="link-card"
+      data-section-id="${sectionId}"
+      data-link-id="${link.id}"
+      draggable="${state.editMode ? "true" : "false"}"
+    >
+      <a class="link-hit" href="${escapeHtml(link.url)}" title="${escapeHtml(formatHost(link.url))}">
+        <span class="link-icon" data-has-image="${icon ? "true" : "false"}" data-has-error="false">
+          ${icon ? `<img data-role="favicon" src="${icon}" alt="" loading="lazy" />` : ""}
+          <span class="link-initial" aria-hidden="true">${escapeHtml(getInitials(link.title))}</span>
         </span>
-      </button>
-      ${
-        state.editMode
-          ? `
-            <div class="link-chip-actions">
-              <button class="chip-action" type="button" data-action="edit-link" data-section-id="${sectionId}" data-link-id="${link.id}">
-                Modifier
-              </button>
-              <button class="chip-action chip-action-danger" type="button" data-action="delete-link" data-section-id="${sectionId}" data-link-id="${link.id}">
-                Supprimer
-              </button>
-            </div>
-          `
-          : ""
-      }
+        <span class="link-name">${escapeHtml(link.title)}</span>
+      </a>
+
+      <div class="tile-actions">
+        <button
+          class="small-icon-button"
+          type="button"
+          data-action="edit-link"
+          data-section-id="${sectionId}"
+          data-link-id="${link.id}"
+          aria-label="Modifier le lien"
+          title="Modifier le lien"
+        >${createIcon("edit")}</button>
+        <button
+          class="small-icon-button"
+          type="button"
+          data-action="delete-link"
+          data-section-id="${sectionId}"
+          data-link-id="${link.id}"
+          aria-label="Supprimer le lien"
+          title="Supprimer le lien"
+        >${createIcon("trash")}</button>
+      </div>
     </article>
   `;
 }
 
-function createProjectLinkCardMarkup(projectId, link) {
-  return `
-    <article class="project-link-card">
-      <button
-        class="project-link-main"
-        type="button"
-        data-action="open-project-link"
-        data-project-id="${projectId}"
-        data-link-id="${link.id}"
-      >
-        ${createAvatarMarkup(link)}
-        <span>
-          <span class="link-title">${escapeHtml(link.title)}</span>
-          <span class="link-meta">${escapeHtml(formatHostname(link.url))}</span>
-        </span>
-      </button>
-      ${
-        state.editMode
-          ? `
-            <div class="link-chip-actions">
-              <button class="chip-action" type="button" data-action="edit-project-link" data-project-id="${projectId}" data-link-id="${link.id}">
-                Modifier
-              </button>
-              <button class="chip-action chip-action-danger" type="button" data-action="delete-project-link" data-project-id="${projectId}" data-link-id="${link.id}">
-                Supprimer
-              </button>
-            </div>
-          `
-          : ""
-      }
-    </article>
-  `;
-}
-
-function createAvatarMarkup(link) {
-  const initial = getInitials(link.title);
-  const icon = link.icon ? escapeHtml(link.icon) : "";
-  return `
-    <span class="link-avatar" data-has-image="${icon ? "true" : "false"}" data-has-error="false">
-      ${icon ? `<img class="link-favicon" data-role="favicon" src="${icon}" alt="" loading="lazy" />` : ""}
-      <span class="link-initial" aria-hidden="true">${escapeHtml(initial)}</span>
-    </span>
-  `;
-}
-
-function createEmptyStateMarkup(title, description) {
-  return `
-    <div class="empty-state">
-      <h3>${escapeHtml(title)}</h3>
-      <p>${escapeHtml(description)}</p>
-    </div>
-  `;
-}
-
-function createCounterLabel(count, singular) {
-  return `${count} ${count === 1 ? singular : `${singular}s`}`;
-}
-
-function filterSections(sections, searchQuery) {
-  return sections
-    .map((section) => {
-      const visibleLinks = section.links.filter((link) => matchesQuery([section.title, link.title, link.url], searchQuery));
-      const sectionMatches = matchesQuery([section.title], searchQuery);
-
-      if (!searchQuery || sectionMatches || visibleLinks.length) {
-        return {
-          ...section,
-          visibleLinks: searchQuery && !sectionMatches ? visibleLinks : section.links
-        };
-      }
-
-      return null;
-    })
-    .filter(Boolean);
-}
-
-function filterProjects(projects, searchQuery) {
-  return projects
-    .map((project) => {
-      const visibleLinks = project.links.filter((link) =>
-        matchesQuery([project.title, project.description, link.title, link.url], searchQuery)
-      );
-      const projectMatches = matchesQuery([project.title, project.description], searchQuery);
-
-      if (!searchQuery || projectMatches || visibleLinks.length) {
-        return {
-          ...project,
-          visibleLinks: searchQuery && !projectMatches ? visibleLinks : project.links
-        };
-      }
-
-      return null;
-    })
-    .filter(Boolean);
-}
-
-function matchesQuery(values, query) {
-  if (!query) {
-    return true;
-  }
-
-  return values.some((value) => String(value || "").toLowerCase().includes(query));
-}
-
-function openSectionForm(section = null) {
+function openSectionDialog(section = null) {
   state.dialog = {
     type: "section",
     sectionId: section?.id || null
   };
 
-  ui.dialogKicker.textContent = section ? "Section" : "Nouvelle section";
-  ui.dialogTitle.textContent = section ? "Renommer la section" : "Creer une section";
-  ui.dialogSubmitButton.textContent = section ? "Mettre a jour" : "Creer";
+  ui.dialogTitle.textContent = section ? "Modifier la ligne" : "Nouvelle ligne";
+  ui.dialogSubmit.textContent = section ? "Mettre a jour" : "Creer";
   ui.dialogFields.innerHTML = `
     <div class="field">
-      <label for="sectionTitle">Nom de la section</label>
-      <input id="sectionTitle" name="title" type="text" maxlength="60" value="${escapeHtml(section?.title || "")}" required />
-    </div>
-  `;
-  openDialog();
-}
-
-function openQuickLinkForm(link = null, preferredSectionId = null) {
-  if (!state.data.sections.length) {
-    showStatus("Creez d'abord une section avant d'ajouter un lien rapide.", "error");
-    return;
-  }
-
-  state.dialog = {
-    type: "quick-link",
-    sectionId: preferredSectionId || findSectionIdByLinkId(link?.id) || state.data.sections[0].id,
-    linkId: link?.id || null
-  };
-
-  const selectedSectionId = state.dialog.sectionId;
-  ui.dialogKicker.textContent = link ? "Lien rapide" : "Nouveau lien";
-  ui.dialogTitle.textContent = link ? "Modifier le lien rapide" : "Ajouter un lien rapide";
-  ui.dialogSubmitButton.textContent = link ? "Mettre a jour" : "Ajouter";
-  ui.dialogFields.innerHTML = `
-    <div class="field">
-      <label for="quickLinkTitle">Nom du lien</label>
-      <input id="quickLinkTitle" name="title" type="text" maxlength="80" value="${escapeHtml(link?.title || "")}" required />
+      <label for="sectionTitle">Titre</label>
+      <input id="sectionTitle" name="title" type="text" maxlength="64" value="${escapeHtml(section?.title || "")}" required />
     </div>
     <div class="field">
-      <label for="quickLinkUrl">URL</label>
-      <input id="quickLinkUrl" name="url" type="text" placeholder="https://example.com" value="${escapeHtml(link?.url || "")}" required />
-      <p class="form-hint">Si vous oubliez le protocole, https:// sera ajoute automatiquement.</p>
-    </div>
-    <div class="field">
-      <label for="quickLinkSection">Section</label>
-      <select id="quickLinkSection" name="sectionId" required>
-        ${state.data.sections
+      <label for="sectionIcon">Icone</label>
+      <select id="sectionIcon" name="icon">
+        ${sectionIconOptions
           .map(
-            (section) => `
-              <option value="${section.id}" ${section.id === selectedSectionId ? "selected" : ""}>
-                ${escapeHtml(section.title)}
+            (option) => `
+              <option value="${option.id}" ${option.id === (section?.icon || "grid") ? "selected" : ""}>
+                ${escapeHtml(option.label)}
               </option>
             `
           )
@@ -657,61 +506,39 @@ function openQuickLinkForm(link = null, preferredSectionId = null) {
   openDialog();
 }
 
-function openProjectForm(project = null) {
-  state.dialog = {
-    type: "project",
-    projectId: project?.id || null
-  };
-
-  ui.dialogKicker.textContent = project ? "Projet" : "Nouveau projet";
-  ui.dialogTitle.textContent = project ? "Modifier le projet" : "Creer un projet";
-  ui.dialogSubmitButton.textContent = project ? "Mettre a jour" : "Creer";
-  ui.dialogFields.innerHTML = `
-    <div class="field">
-      <label for="projectTitle">Titre du projet</label>
-      <input id="projectTitle" name="title" type="text" maxlength="80" value="${escapeHtml(project?.title || "")}" required />
-    </div>
-    <div class="field">
-      <label for="projectDescription">Description</label>
-      <textarea id="projectDescription" name="description" maxlength="220" placeholder="Ex. Liens utiles pour reprendre rapidement ce travail.">${escapeHtml(project?.description || "")}</textarea>
-    </div>
-  `;
-  openDialog();
-}
-
-function openProjectLinkForm(link = null, preferredProjectId = null) {
-  if (!state.data.projects.length) {
-    showStatus("Creez d'abord un projet avant d'ajouter un lien de session.", "error");
+function openLinkDialog(link = null, sectionId = null) {
+  if (!state.data.sections.length) {
+    showStatus("Cree une ligne avant d'ajouter un lien.");
     return;
   }
 
+  const targetSectionId = sectionId || findSectionIdByLinkId(link?.id) || state.data.sections[0].id;
+
   state.dialog = {
-    type: "project-link",
-    projectId: preferredProjectId || findProjectIdByLinkId(link?.id) || state.data.projects[0].id,
+    type: "link",
+    sectionId: targetSectionId,
     linkId: link?.id || null
   };
 
-  const selectedProjectId = state.dialog.projectId;
-  ui.dialogKicker.textContent = link ? "Lien de projet" : "Nouveau lien de projet";
-  ui.dialogTitle.textContent = link ? "Modifier le lien du projet" : "Ajouter un lien au projet";
-  ui.dialogSubmitButton.textContent = link ? "Mettre a jour" : "Ajouter";
+  ui.dialogTitle.textContent = link ? "Modifier le lien" : "Nouveau lien";
+  ui.dialogSubmit.textContent = link ? "Mettre a jour" : "Ajouter";
   ui.dialogFields.innerHTML = `
     <div class="field">
-      <label for="projectLinkTitle">Nom du lien</label>
-      <input id="projectLinkTitle" name="title" type="text" maxlength="80" value="${escapeHtml(link?.title || "")}" required />
+      <label for="linkTitle">Nom</label>
+      <input id="linkTitle" name="title" type="text" maxlength="72" value="${escapeHtml(link?.title || "")}" required />
     </div>
     <div class="field">
-      <label for="projectLinkUrl">URL</label>
-      <input id="projectLinkUrl" name="url" type="text" placeholder="https://example.com" value="${escapeHtml(link?.url || "")}" required />
+      <label for="linkUrl">URL</label>
+      <input id="linkUrl" name="url" type="text" value="${escapeHtml(link?.url || "")}" placeholder="https://example.com" required />
     </div>
     <div class="field">
-      <label for="projectTarget">Projet</label>
-      <select id="projectTarget" name="projectId" required>
-        ${state.data.projects
+      <label for="linkSection">Ligne</label>
+      <select id="linkSection" name="sectionId">
+        ${state.data.sections
           .map(
-            (project) => `
-              <option value="${project.id}" ${project.id === selectedProjectId ? "selected" : ""}>
-                ${escapeHtml(project.title)}
+            (section) => `
+              <option value="${section.id}" ${section.id === targetSectionId ? "selected" : ""}>
+                ${escapeHtml(section.title)}
               </option>
             `
           )
@@ -724,15 +551,17 @@ function openProjectLinkForm(link = null, preferredProjectId = null) {
 
 function openDialog() {
   ui.formError.textContent = "";
-  if (ui.formDialog.open) {
-    ui.formDialog.close();
+  if (ui.editorDialog.open) {
+    ui.editorDialog.close();
   }
-  ui.formDialog.showModal();
-  const firstInput = ui.dialogFields.querySelector("input, textarea, select");
-  if (firstInput) {
-    firstInput.focus();
-    if (firstInput instanceof HTMLInputElement || firstInput instanceof HTMLTextAreaElement) {
-      firstInput.select();
+
+  ui.editorDialog.showModal();
+
+  const firstField = ui.dialogFields.querySelector("input, select");
+  if (firstField) {
+    firstField.focus();
+    if (firstField instanceof HTMLInputElement) {
+      firstField.select();
     }
   }
 }
@@ -740,62 +569,101 @@ function openDialog() {
 function closeDialog() {
   state.dialog = null;
   ui.formError.textContent = "";
-  ui.entityForm.reset();
-  if (ui.formDialog.open) {
-    ui.formDialog.close();
+  ui.editorForm.reset();
+
+  if (ui.editorDialog.open) {
+    ui.editorDialog.close();
   }
 }
 
-async function saveSectionFromForm(formData, sectionId) {
-  const title = requireText(formData.get("title"), "Le nom de la section est obligatoire.");
+function handleDialogBackdropClick(event) {
+  if (event.target === ui.editorDialog) {
+    closeDialog();
+  }
+}
+
+async function handleDialogSubmit(event) {
+  event.preventDefault();
+  ui.formError.textContent = "";
+
+  if (!state.dialog) {
+    return;
+  }
+
+  const formData = new FormData(ui.editorForm);
+
+  try {
+    if (state.dialog.type === "section") {
+      await saveSection(formData, state.dialog.sectionId);
+    }
+
+    if (state.dialog.type === "link") {
+      await saveLink(formData, state.dialog.sectionId, state.dialog.linkId);
+    }
+  } catch (error) {
+    ui.formError.textContent = error instanceof Error ? error.message : "Formulaire invalide.";
+  }
+}
+
+async function saveSection(formData, sectionId) {
+  const title = requireText(formData.get("title"), "Le titre est obligatoire.");
+  const icon = normalizeText(formData.get("icon")) || "grid";
 
   if (sectionId) {
-    const section = getSectionById(sectionId);
+    const section = getSection(sectionId);
     if (!section) {
-      throw new Error("Section introuvable.");
+      throw new Error("Ligne introuvable.");
     }
 
     section.title = title;
-    await persistState("Section mise a jour.");
+    section.icon = icon;
+    await persist("Ligne mise a jour.");
   } else {
     state.data.sections.push({
       id: createId("section"),
       title,
+      icon,
       links: []
     });
-    await persistState("Section creee.");
+    await persist("Ligne creee.");
   }
 
   closeDialog();
 }
 
-async function saveQuickLinkFromForm(formData, originalSectionId, linkId) {
-  const title = requireText(formData.get("title"), "Le nom du lien est obligatoire.");
-  const url = normalizeUrl(requireText(formData.get("url"), "L'URL du lien est obligatoire."));
-  const targetSectionId = requireText(formData.get("sectionId"), "Choisissez une section.");
-  const targetSection = getSectionById(targetSectionId);
+async function saveLink(formData, originalSectionId, linkId) {
+  const title = requireText(formData.get("title"), "Le nom est obligatoire.");
+  const url = normalizeUrl(requireText(formData.get("url"), "L'URL est obligatoire."));
+  const targetSectionId = requireText(formData.get("sectionId"), "Choisis une ligne.");
+  const targetSection = getSection(targetSectionId);
 
   if (!targetSection) {
-    throw new Error("Section introuvable.");
+    throw new Error("Ligne introuvable.");
   }
 
   if (linkId) {
-    const currentSection = getSectionById(originalSectionId);
-    const link = currentSection?.links.find((item) => item.id === linkId);
-    if (!currentSection || !link) {
+    const sourceSection = getSection(originalSectionId);
+    const sourceIndex = sourceSection?.links.findIndex((item) => item.id === linkId) ?? -1;
+    const existingLink = sourceIndex >= 0 ? sourceSection.links[sourceIndex] : null;
+    if (!sourceSection || !existingLink) {
       throw new Error("Lien introuvable.");
     }
 
     const updatedLink = {
-      ...link,
+      ...existingLink,
       title,
       url,
       icon: getFaviconUrl(url)
     };
 
-    currentSection.links = currentSection.links.filter((item) => item.id !== linkId);
-    targetSection.links.push(updatedLink);
-    await persistState("Lien rapide mis a jour.");
+    if (sourceSection.id === targetSection.id) {
+      sourceSection.links.splice(sourceIndex, 1, updatedLink);
+    } else {
+      sourceSection.links.splice(sourceIndex, 1);
+      targetSection.links.push(updatedLink);
+    }
+
+    await persist("Lien mis a jour.");
   } else {
     targetSection.links.push({
       id: createId("link"),
@@ -803,224 +671,235 @@ async function saveQuickLinkFromForm(formData, originalSectionId, linkId) {
       url,
       icon: getFaviconUrl(url)
     });
-    await persistState("Lien rapide ajoute.");
-  }
-
-  closeDialog();
-}
-
-async function saveProjectFromForm(formData, projectId) {
-  const title = requireText(formData.get("title"), "Le titre du projet est obligatoire.");
-  const description = normalizeOptionalText(formData.get("description"));
-
-  if (projectId) {
-    const project = getProjectById(projectId);
-    if (!project) {
-      throw new Error("Projet introuvable.");
-    }
-
-    project.title = title;
-    project.description = description;
-    await persistState("Projet mis a jour.");
-  } else {
-    state.data.projects.push({
-      id: createId("project"),
-      title,
-      description,
-      links: []
-    });
-    await persistState("Projet cree.");
-  }
-
-  closeDialog();
-}
-
-async function saveProjectLinkFromForm(formData, originalProjectId, linkId) {
-  const title = requireText(formData.get("title"), "Le nom du lien est obligatoire.");
-  const url = normalizeUrl(requireText(formData.get("url"), "L'URL du lien est obligatoire."));
-  const targetProjectId = requireText(formData.get("projectId"), "Choisissez un projet.");
-  const targetProject = getProjectById(targetProjectId);
-
-  if (!targetProject) {
-    throw new Error("Projet introuvable.");
-  }
-
-  if (linkId) {
-    const currentProject = getProjectById(originalProjectId);
-    const link = currentProject?.links.find((item) => item.id === linkId);
-    if (!currentProject || !link) {
-      throw new Error("Lien introuvable.");
-    }
-
-    const updatedLink = {
-      ...link,
-      title,
-      url,
-      icon: getFaviconUrl(url)
-    };
-
-    currentProject.links = currentProject.links.filter((item) => item.id !== linkId);
-    targetProject.links.push(updatedLink);
-    await persistState("Lien du projet mis a jour.");
-  } else {
-    targetProject.links.push({
-      id: createId("project_link"),
-      title,
-      url,
-      icon: getFaviconUrl(url)
-    });
-    await persistState("Lien ajoute au projet.");
+    await persist("Lien ajoute.");
   }
 
   closeDialog();
 }
 
 async function deleteSection(sectionId) {
-  const section = getSectionById(sectionId);
+  const section = getSection(sectionId);
   if (!section) {
     return;
   }
 
-  if (!confirm(`Supprimer la section "${section.title}" et tous ses liens ?`)) {
+  if (!confirm(`Supprimer "${section.title}" et ses liens ?`)) {
     return;
   }
 
   state.data.sections = state.data.sections.filter((item) => item.id !== sectionId);
-  await persistState("Section supprimee.");
+  await persist("Ligne supprimee.");
 }
 
-async function deleteQuickLink(sectionId, linkId) {
-  const section = getSectionById(sectionId);
-  const link = getSectionLink(sectionId, linkId);
+async function deleteLink(sectionId, linkId) {
+  const section = getSection(sectionId);
+  const link = getLink(sectionId, linkId);
   if (!section || !link) {
     return;
   }
 
-  if (!confirm(`Supprimer le lien "${link.title}" ?`)) {
+  if (!confirm(`Supprimer "${link.title}" ?`)) {
     return;
   }
 
   section.links = section.links.filter((item) => item.id !== linkId);
-  await persistState("Lien rapide supprime.");
+  await persist("Lien supprime.");
 }
 
-async function deleteProject(projectId) {
-  const project = getProjectById(projectId);
-  if (!project) {
+function handleDragStart(event) {
+  if (!state.editMode) {
+    event.preventDefault();
     return;
   }
 
-  if (!confirm(`Supprimer le projet "${project.title}" ?`)) {
+  const linkCard = event.target.closest(".link-card");
+  if (linkCard) {
+    state.drag = {
+      type: "link",
+      sectionId: linkCard.dataset.sectionId,
+      linkId: linkCard.dataset.linkId
+    };
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
+    linkCard.classList.add("dragging");
     return;
   }
 
-  state.data.projects = state.data.projects.filter((item) => item.id !== projectId);
-  await persistState("Projet supprime.");
+  const section = event.target.closest(".link-section");
+  if (section && !event.target.closest(".section-actions")) {
+    state.drag = {
+      type: "section",
+      sectionId: section.dataset.sectionId
+    };
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
+    section.classList.add("dragging");
+    return;
+  }
+
+  event.preventDefault();
 }
 
-async function deleteProjectLink(projectId, linkId) {
-  const project = getProjectById(projectId);
-  const link = getProjectLink(projectId, linkId);
-  if (!project || !link) {
+function handleDragOver(event) {
+  if (!state.drag) {
     return;
   }
 
-  if (!confirm(`Supprimer le lien "${link.title}" de ce projet ?`)) {
-    return;
+  if (state.drag.type === "link") {
+    const linkCard = event.target.closest(".link-card");
+    const grid = event.target.closest(".links-grid");
+
+    if (linkCard || grid) {
+      event.preventDefault();
+      clearDropClasses();
+
+      if (linkCard && linkCard.dataset.linkId !== state.drag.linkId) {
+        const after = isAfterHalf(event, linkCard);
+        linkCard.classList.toggle("is-drop-before", !after);
+        linkCard.classList.toggle("is-drop-after", after);
+      } else if (grid) {
+        grid.classList.add("is-drop-target");
+      }
+    }
   }
 
-  project.links = project.links.filter((item) => item.id !== linkId);
-  await persistState("Lien du projet supprime.");
+  if (state.drag.type === "section") {
+    const section = event.target.closest(".link-section");
+    if (section && section.dataset.sectionId !== state.drag.sectionId) {
+      event.preventDefault();
+      clearDropClasses();
+      section.classList.add("is-drop-target");
+    }
+  }
 }
 
-function openQuickLink(sectionId, linkId) {
-  const link = getSectionLink(sectionId, linkId);
-  if (!link) {
-    showStatus("Lien introuvable.", "error");
+function handleDragLeave(event) {
+  const nextTarget = event.relatedTarget;
+  if (nextTarget instanceof Node && event.currentTarget?.contains?.(nextTarget)) {
     return;
   }
-
-  window.location.href = link.url;
 }
 
-function openProjectLink(projectId, linkId) {
-  const link = getProjectLink(projectId, linkId);
-  if (!link) {
-    showStatus("Lien du projet introuvable.", "error");
+async function handleDrop(event) {
+  if (!state.drag) {
     return;
   }
 
-  chrome.tabs.create({ url: link.url });
-}
+  event.preventDefault();
 
-async function openProject(projectId) {
-  const project = getProjectById(projectId);
-  if (!project) {
-    showStatus("Projet introuvable.", "error");
-    return;
-  }
+  if (state.drag.type === "link") {
+    const targetCard = event.target.closest(".link-card");
+    const targetGrid = event.target.closest(".links-grid");
 
-  if (!project.links.length) {
-    showStatus("Ce projet ne contient encore aucun lien.", "error");
-    return;
-  }
-
-  for (const link of project.links) {
-    chrome.tabs.create({ url: link.url });
-  }
-
-  showStatus(`${project.links.length} onglet${project.links.length > 1 ? "s" : ""} ouvert${project.links.length > 1 ? "s" : ""}.`);
-}
-
-async function saveCurrentTabsToProject(projectId) {
-  const project = getProjectById(projectId);
-  if (!project) {
-    showStatus("Projet introuvable.", "error");
-    return;
-  }
-
-  const tabs = await queryCurrentWindowTabs();
-  const existingUrls = new Set(project.links.map((link) => link.url));
-  const newLinks = [];
-
-  tabs.forEach((tab) => {
-    if (!isSavableTab(tab?.url)) {
+    if (targetCard) {
+      const after = isAfterHalf(event, targetCard);
+      await moveLink(
+        state.drag.sectionId,
+        state.drag.linkId,
+        targetCard.dataset.sectionId,
+        targetCard.dataset.linkId,
+        after
+      );
       return;
     }
 
-    const normalizedUrl = normalizeUrl(tab.url);
-    if (existingUrls.has(normalizedUrl)) {
+    if (targetGrid) {
+      await moveLink(state.drag.sectionId, state.drag.linkId, targetGrid.dataset.sectionId, null, true);
       return;
     }
+  }
 
-    existingUrls.add(normalizedUrl);
-    newLinks.push({
-      id: createId("project_link"),
-      title: normalizeOptionalText(tab.title) || normalizedUrl,
-      url: normalizedUrl,
-      icon: getFaviconUrl(normalizedUrl)
-    });
-  });
+  if (state.drag.type === "section") {
+    const targetSection = event.target.closest(".link-section");
+    if (targetSection) {
+      await moveSection(state.drag.sectionId, targetSection.dataset.sectionId);
+    }
+  }
+}
 
-  if (!newLinks.length) {
-    showStatus("Aucun onglet valide nouveau a sauvegarder dans ce projet.", "error");
+async function moveLink(sourceSectionId, linkId, targetSectionId, targetLinkId, placeAfter) {
+  if (linkId === targetLinkId) {
+    clearDragState();
     return;
   }
 
-  project.links.push(...newLinks);
-  await persistState(`${newLinks.length} onglet${newLinks.length > 1 ? "s" : ""} ajoute${newLinks.length > 1 ? "s" : ""} au projet.`);
+  const sourceSection = getSection(sourceSectionId);
+  const targetSection = getSection(targetSectionId);
+  if (!sourceSection || !targetSection) {
+    clearDragState();
+    return;
+  }
+
+  const sourceIndex = sourceSection.links.findIndex((item) => item.id === linkId);
+  if (sourceIndex < 0) {
+    clearDragState();
+    return;
+  }
+
+  const [link] = sourceSection.links.splice(sourceIndex, 1);
+  let targetIndex = targetLinkId ? targetSection.links.findIndex((item) => item.id === targetLinkId) : targetSection.links.length;
+
+  if (targetIndex < 0) {
+    targetIndex = targetSection.links.length;
+  }
+
+  if (placeAfter) {
+    targetIndex += 1;
+  }
+
+  targetSection.links.splice(targetIndex, 0, link);
+  await persist("Lien deplace.", { keepDrag: false });
 }
 
-async function persistState(successMessage) {
+async function moveSection(sourceSectionId, targetSectionId) {
+  if (sourceSectionId === targetSectionId) {
+    clearDragState();
+    return;
+  }
+
+  const sourceIndex = state.data.sections.findIndex((item) => item.id === sourceSectionId);
+  const targetIndex = state.data.sections.findIndex((item) => item.id === targetSectionId);
+
+  if (sourceIndex < 0 || targetIndex < 0) {
+    clearDragState();
+    return;
+  }
+
+  const [section] = state.data.sections.splice(sourceIndex, 1);
+  state.data.sections.splice(targetIndex, 0, section);
+  await persist("Ligne deplacee.", { keepDrag: false });
+}
+
+function clearDragState() {
+  state.drag = null;
+  clearDropClasses();
+  document.querySelectorAll(".dragging").forEach((item) => item.classList.remove("dragging"));
+}
+
+function clearDropClasses() {
+  document
+    .querySelectorAll(".is-drop-target, .is-drop-before, .is-drop-after")
+    .forEach((item) => item.classList.remove("is-drop-target", "is-drop-before", "is-drop-after"));
+}
+
+function isAfterHalf(event, element) {
+  const rect = element.getBoundingClientRect();
+  return event.clientX > rect.left + rect.width / 2;
+}
+
+async function persist(message, options = {}) {
   state.data = sanitizeData(state.data);
   await saveData(state.data);
-  renderApp();
-  showStatus(successMessage);
+  render();
+  showStatus(message);
+
+  if (!options.keepDrag) {
+    clearDragState();
+  }
 }
 
 async function loadData() {
   const stored = await storageGet(STORAGE_KEY);
-
   if (!stored) {
     const initialData = cloneData(defaultData);
     await saveData(initialData);
@@ -1028,33 +907,36 @@ async function loadData() {
   }
 
   const sanitized = sanitizeData(stored);
-  const shouldRestoreDefaults = !sanitized.sections.length && !sanitized.projects.length;
-
-  if (shouldRestoreDefaults) {
-    const restored = cloneData(defaultData);
-    await saveData(restored);
-    return restored;
+  const migrated = migrateData(sanitized);
+  if (!sanitized.sections.length) {
+    const initialData = cloneData(defaultData);
+    await saveData(initialData);
+    return initialData;
   }
 
-  if (JSON.stringify(sanitized) !== JSON.stringify(stored)) {
-    await saveData(sanitized);
+  if (JSON.stringify(migrated) !== JSON.stringify(sanitized)) {
+    await saveData(migrated);
   }
 
-  return sanitized;
+  return migrated;
 }
 
 async function saveData(data) {
-  await storageSet(STORAGE_KEY, data);
+  await storageSet(STORAGE_KEY, sanitizeData(data));
 }
 
 function sanitizeData(input) {
   const data = input && typeof input === "object" ? input : {};
+  const selectedEngine = searchEngines.some((engine) => engine.id === data.selectedEngine)
+    ? data.selectedEngine
+    : defaultData.selectedEngine;
+  const version = Number.isFinite(Number(data.version)) ? Number(data.version) : 0;
+
   return {
+    version,
+    selectedEngine,
     sections: Array.isArray(data.sections)
       ? data.sections.map(sanitizeSection).filter(Boolean)
-      : [],
-    projects: Array.isArray(data.projects)
-      ? data.projects.map(sanitizeProject).filter(Boolean)
       : []
   };
 }
@@ -1064,83 +946,177 @@ function sanitizeSection(section) {
     return null;
   }
 
-  const title = normalizeOptionalText(section.title);
+  const title = normalizeText(section.title);
   if (!title) {
     return null;
   }
 
+  const icon = sectionIconOptions.some((option) => option.id === section.icon) ? section.icon : "grid";
+
   return {
-    id: normalizeOptionalText(section.id) || createId("section"),
+    id: normalizeText(section.id) || createId("section"),
     title,
-    links: Array.isArray(section.links)
-      ? section.links.map((link) => sanitizeLink(link, "link")).filter(Boolean)
-      : []
+    icon,
+    links: Array.isArray(section.links) ? section.links.map(sanitizeLink).filter(Boolean) : []
   };
 }
 
-function sanitizeProject(project) {
-  if (!project || typeof project !== "object") {
-    return null;
-  }
-
-  const title = normalizeOptionalText(project.title);
-  if (!title) {
-    return null;
-  }
-
-  return {
-    id: normalizeOptionalText(project.id) || createId("project"),
-    title,
-    description: normalizeOptionalText(project.description),
-    links: Array.isArray(project.links)
-      ? project.links.map((link) => sanitizeLink(link, "project_link")).filter(Boolean)
-      : []
-  };
-}
-
-function sanitizeLink(link, prefix) {
+function sanitizeLink(link) {
   if (!link || typeof link !== "object") {
     return null;
   }
 
-  const title = normalizeOptionalText(link.title);
-  const rawUrl = normalizeOptionalText(link.url);
+  const title = normalizeText(link.title);
+  const rawUrl = normalizeText(link.url);
   if (!title || !rawUrl) {
     return null;
   }
 
-  let normalizedUrl;
-
   try {
-    normalizedUrl = normalizeUrl(rawUrl);
+    const url = normalizeUrl(rawUrl);
+    return {
+      id: normalizeText(link.id) || createId("link"),
+      title,
+      url,
+      icon: normalizeText(link.icon) || getFaviconUrl(url)
+    };
   } catch (error) {
     return null;
   }
-
-  return {
-    id: normalizeOptionalText(link.id) || createId(prefix),
-    title,
-    url: normalizedUrl,
-    icon: normalizeOptionalText(link.icon) || getFaviconUrl(normalizedUrl)
-  };
 }
 
-function getSectionById(sectionId) {
+function migrateData(data) {
+  if (Number(data.version) >= DATA_VERSION) {
+    return data;
+  }
+
+  const migrated = cloneData(data);
+  const removedTitles = new Set(removedSeedLinks.map(normalizeKey));
+  const removedUrls = new Set(removedSeedHosts.map(normalizeUrlKey));
+
+  migrated.version = DATA_VERSION;
+  migrated.sections = migrated.sections
+    .filter((section) => !removedTitles.has(normalizeKey(section.title)))
+    .map((section) => ({
+      ...section,
+      title: getMigratedSectionTitle(section),
+      links: section.links.filter((link) => !shouldRemoveSeedLink(link, removedTitles, removedUrls))
+    }));
+
+  defaultData.sections.forEach((seedSection) => {
+    let targetSection = findMatchingSection(migrated, seedSection);
+
+    if (!targetSection) {
+      targetSection = {
+        id: seedSection.id,
+        title: seedSection.title,
+        icon: seedSection.icon,
+        links: []
+      };
+      migrated.sections.push(targetSection);
+    } else if (targetSection.id === seedSection.id) {
+      targetSection.title = seedSection.title;
+      targetSection.icon = seedSection.icon;
+    }
+
+    seedSection.links.forEach((seedLink) => {
+      if (!hasLinkWithUrl(migrated, seedLink.url)) {
+        targetSection.links.push(createSeedLink(seedLink.title, seedLink.url));
+      }
+    });
+  });
+
+  return sanitizeData(migrated);
+}
+
+function getMigratedSectionTitle(section) {
+  const sectionTitles = {
+    section_developer_resources: "Developpement",
+    section_hosting_deployment: "Hosting & Monitoring"
+  };
+
+  return sectionTitles[section.id] || section.title;
+}
+
+function findMatchingSection(data, seedSection) {
+  return (
+    data.sections.find((section) => section.id === seedSection.id) ||
+    data.sections.find((section) => normalizeKey(section.title) === normalizeKey(seedSection.title)) ||
+    null
+  );
+}
+
+function hasLinkWithUrl(data, url) {
+  const candidate = normalizeUrlKey(url);
+  return data.sections.some((section) =>
+    section.links.some((link) => normalizeUrlKey(link.url) === candidate)
+  );
+}
+
+function shouldRemoveSeedLink(link, removedTitles, removedUrls) {
+  return removedTitles.has(normalizeKey(link.title)) || removedUrls.has(normalizeUrlKey(link.url));
+}
+
+function normalizeKey(value) {
+  return normalizeText(value).toLowerCase();
+}
+
+function normalizeUrlKey(url) {
+  try {
+    const parsed = new URL(normalizeUrl(url));
+    const pathname = parsed.pathname.replace(/\/$/, "");
+    return `${parsed.hostname.replace(/^www\./, "")}${pathname}`.toLowerCase();
+  } catch (error) {
+    return normalizeKey(url);
+  }
+}
+
+function storageGet(key) {
+  if (hasChromeStorage()) {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get(key, (result) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+
+        resolve(result[key]);
+      });
+    });
+  }
+
+  const raw = window.localStorage.getItem(key);
+  return Promise.resolve(raw ? JSON.parse(raw) : null);
+}
+
+function storageSet(key, value) {
+  if (hasChromeStorage()) {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.set({ [key]: value }, () => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+
+        resolve();
+      });
+    });
+  }
+
+  window.localStorage.setItem(key, JSON.stringify(value));
+  return Promise.resolve();
+}
+
+function hasChromeStorage() {
+  return typeof chrome !== "undefined" && Boolean(chrome.storage?.local);
+}
+
+function getSection(sectionId) {
   return state.data.sections.find((section) => section.id === sectionId) || null;
 }
 
-function getProjectById(projectId) {
-  return state.data.projects.find((project) => project.id === projectId) || null;
-}
-
-function getSectionLink(sectionId, linkId) {
-  const section = getSectionById(sectionId);
-  return section?.links.find((link) => link.id === linkId) || null;
-}
-
-function getProjectLink(projectId, linkId) {
-  const project = getProjectById(projectId);
-  return project?.links.find((link) => link.id === linkId) || null;
+function getLink(sectionId, linkId) {
+  return getSection(sectionId)?.links.find((link) => link.id === linkId) || null;
 }
 
 function findSectionIdByLinkId(linkId) {
@@ -1148,61 +1124,28 @@ function findSectionIdByLinkId(linkId) {
     return null;
   }
 
-  const section = state.data.sections.find((item) => item.links.some((link) => link.id === linkId));
-  return section?.id || null;
+  return state.data.sections.find((section) => section.links.some((link) => link.id === linkId))?.id || null;
 }
 
-function findProjectIdByLinkId(linkId) {
-  if (!linkId) {
-    return null;
-  }
-
-  const project = state.data.projects.find((item) => item.links.some((link) => link.id === linkId));
-  return project?.id || null;
-}
-
-function requireText(value, errorMessage) {
-  const text = normalizeOptionalText(value);
-  if (!text) {
-    throw new Error(errorMessage);
-  }
-
-  return text;
-}
-
-function normalizeOptionalText(value) {
-  return String(value || "").trim();
-}
-
-function normalizeUrl(rawUrl) {
-  let candidate = String(rawUrl || "").trim();
-  if (!candidate) {
-    throw new Error("L'URL est vide.");
-  }
-
-  if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(candidate)) {
-    candidate = `https://${candidate}`;
-  }
-
-  const parsed = new URL(candidate);
-
-  if (!["http:", "https:"].includes(parsed.protocol)) {
-    throw new Error("Utilisez une URL http:// ou https:// valide.");
-  }
-
-  return parsed.toString();
+function createSeedLink(title, url) {
+  return {
+    id: createId("link"),
+    title,
+    url,
+    icon: getFaviconUrl(url)
+  };
 }
 
 function getFaviconUrl(url) {
   try {
-    const domain = new URL(url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    const host = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`;
   } catch (error) {
     return "";
   }
 }
 
-function formatHostname(url) {
+function formatHost(url) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch (error) {
@@ -1210,74 +1153,48 @@ function formatHostname(url) {
   }
 }
 
-function getInitials(value) {
-  const parts = String(value || "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+function normalizeUrl(rawUrl) {
+  let candidate = normalizeText(rawUrl);
+  if (!candidate) {
+    throw new Error("URL vide.");
+  }
 
+  if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(candidate)) {
+    candidate = `https://${candidate}`;
+  }
+
+  const parsed = new URL(candidate);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("URL http ou https uniquement.");
+  }
+
+  return parsed.toString();
+}
+
+function normalizeText(value) {
+  return String(value || "").trim();
+}
+
+function requireText(value, message) {
+  const text = normalizeText(value);
+  if (!text) {
+    throw new Error(message);
+  }
+
+  return text;
+}
+
+function getInitials(value) {
+  const parts = normalizeText(value).split(/\s+/).filter(Boolean).slice(0, 2);
   if (!parts.length) {
-    return "•";
+    return ".";
   }
 
   return parts.map((part) => part[0].toUpperCase()).join("");
 }
 
-function isSavableTab(url) {
-  const trimmedUrl = String(url || "").trim();
-  if (!trimmedUrl) {
-    return false;
-  }
-
-  if (
-    trimmedUrl.startsWith("chrome://") ||
-    trimmedUrl.startsWith("chrome-extension://") ||
-    trimmedUrl.startsWith("edge://") ||
-    trimmedUrl.startsWith("about:blank")
-  ) {
-    return false;
-  }
-
-  try {
-    const parsed = new URL(trimmedUrl);
-    return ["http:", "https:"].includes(parsed.protocol);
-  } catch (error) {
-    return false;
-  }
-}
-
-function updateGreeting() {
-  const hour = new Date().getHours();
-
-  if (hour < 12) {
-    ui.greetingLabel.textContent = "Bonjour";
-    return;
-  }
-
-  if (hour < 18) {
-    ui.greetingLabel.textContent = "Bon apres-midi";
-    return;
-  }
-
-  ui.greetingLabel.textContent = "Bonsoir";
-}
-
-function showStatus(message, tone = "neutral") {
-  ui.statusMessage.textContent = message;
-  ui.statusMessage.dataset.tone = tone;
-
-  window.clearTimeout(state.statusTimer);
-  state.statusTimer = window.setTimeout(() => {
-    if (ui.statusMessage.textContent === message) {
-      ui.statusMessage.textContent = "";
-      ui.statusMessage.dataset.tone = "neutral";
-    }
-  }, 4200);
-}
-
 function createId(prefix) {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
+  return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
 }
 
 function cloneData(data) {
@@ -1293,41 +1210,28 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-function storageGet(key) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.get(key, (result) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-        return;
-      }
-
-      resolve(result[key]);
-    });
-  });
+function showStatus(message) {
+  ui.statusMessage.textContent = message;
+  window.clearTimeout(state.statusTimer);
+  state.statusTimer = window.setTimeout(() => {
+    if (ui.statusMessage.textContent === message) {
+      ui.statusMessage.textContent = "";
+    }
+  }, 2400);
 }
 
-function storageSet(key, value) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.set({ [key]: value }, () => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-        return;
-      }
+function createIcon(name) {
+  const icons = {
+    plus: '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>',
+    edit: '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 20 4.6-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"></path><path d="m13.5 6.5 4 4"></path></svg>',
+    trash: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>',
+    close: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg>',
+    sparkles: '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"></path><path d="M5 15l.9 2.1L8 18l-2.1.9L5 21l-.9-2.1L2 18l2.1-.9L5 15Z"></path><path d="M19 14l.8 1.7 1.7.8-1.7.8L19 19l-.8-1.7-1.7-.8 1.7-.8L19 14Z"></path></svg>',
+    code: '<svg viewBox="0 0 24 24" focusable="false"><path d="m8 9-4 3 4 3"></path><path d="m16 9 4 3-4 3"></path><path d="m14 5-4 14"></path></svg>',
+    cloud: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 18h11a4 4 0 0 0 .5-8 6 6 0 0 0-11.1-1.9A4.7 4.7 0 0 0 6 18Z"></path></svg>',
+    grid: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><rect x="14" y="14" width="6" height="6"></rect></svg>',
+    folder: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7.5h7l2 2H21v8.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"></path><path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1.5"></path></svg>'
+  };
 
-      resolve();
-    });
-  });
-}
-
-function queryCurrentWindowTabs() {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.query({ currentWindow: true }, (tabs) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-        return;
-      }
-
-      resolve(Array.isArray(tabs) ? tabs : []);
-    });
-  });
+  return icons[name] || icons.grid;
 }

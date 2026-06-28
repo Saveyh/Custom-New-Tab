@@ -1,11 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Workspace New Tab",
-  "description": "Page de nouvel onglet personnalisee avec liens rapides et projets reutilisables.",
+  "name": "Navigateur New Tab",
+  "description": "Nouvel onglet minimaliste avec recherche intelligente et lignes de liens editables.",
   "version": "1.0.0",
   "permissions": [
-    "storage",
-    "tabs"
+    "storage"
   ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
