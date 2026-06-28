@@ -1,5 +1,6 @@
 const STORAGE_KEY = "navigateur.newtab.v1";
 const DATA_VERSION = 2;
+const DEFAULT_DASHBOARD_ID = "work";
 
 const searchEngines = [
   {
@@ -47,9 +48,37 @@ const sectionIconOptions = [
   { id: "folder", label: "Folder" }
 ];
 
+const dashboardViews = [
+  {
+    id: "work",
+    label: "Travail",
+    icon: "terminal",
+    sectionIds: ["section_ai_services", "section_developer_resources", "section_hosting_deployment"]
+  },
+  {
+    id: "university",
+    label: "Universite",
+    icon: "graduation",
+    sectionIds: ["section_travail", "section_universite", "section_creation"]
+  },
+  {
+    id: "leisure",
+    label: "Loisirs",
+    icon: "gamepad",
+    sectionIds: ["section_loisirs", "section_achats"]
+  },
+  {
+    id: "all",
+    label: "Tout",
+    icon: "grid",
+    sectionIds: []
+  }
+];
+
 const defaultData = {
   version: DATA_VERSION,
   selectedEngine: "google",
+  selectedDashboard: DEFAULT_DASHBOARD_ID,
   sections: [
     {
       id: "section_ai_services",
@@ -193,6 +222,7 @@ const state = {
 
 const ui = {
   body: document.body,
+  dashboardNav: document.getElementById("dashboardNav"),
   searchForm: document.getElementById("searchForm"),
   searchInput: document.getElementById("searchInput"),
   enginePicker: document.getElementById("enginePicker"),
@@ -216,6 +246,7 @@ document.addEventListener("DOMContentLoaded", init);
 async function init() {
   paintStaticIcons();
   renderSearchEngines();
+  renderDashboardNav();
   bindEvents();
 
   try {
@@ -227,11 +258,13 @@ async function init() {
   }
 
   syncEngineControl();
+  syncDashboardNav();
   render();
 }
 
 function bindEvents() {
   ui.searchForm.addEventListener("submit", handleSearchSubmit);
+  ui.dashboardNav.addEventListener("click", handleDashboardNavClick);
   ui.engineButton.addEventListener("click", toggleEngineMenu);
   ui.engineButton.addEventListener("keydown", handleEngineButtonKeydown);
   ui.engineMenu.addEventListener("click", handleEngineMenuClick);
@@ -303,6 +336,24 @@ function paintStaticIcons() {
   }
 }
 
+function renderDashboardNav() {
+  ui.dashboardNav.innerHTML = dashboardViews
+    .map(
+      (dashboard) => `
+        <button
+          class="dashboard-tab"
+          type="button"
+          data-dashboard-id="${dashboard.id}"
+          aria-pressed="false"
+        >
+          <span class="dashboard-tab-icon" aria-hidden="true">${createIcon(dashboard.icon)}</span>
+          <span class="dashboard-tab-label">${escapeHtml(dashboard.label)}</span>
+        </button>
+      `
+    )
+    .join("");
+}
+
 function renderSearchEngines() {
   ui.engineMenu.innerHTML = searchEngines
     .map((engine) => createEngineOptionMarkup(engine))
@@ -349,6 +400,24 @@ async function handleSearchSubmit(event) {
   state.data.selectedEngine = engine.id;
   await saveData(state.data);
   window.location.assign(engine.buildUrl(query));
+}
+
+async function handleDashboardNavClick(event) {
+  const tab = event.target.closest("[data-dashboard-id]");
+  if (!tab) {
+    return;
+  }
+
+  const dashboard = dashboardViews.find((item) => item.id === tab.dataset.dashboardId);
+  if (!dashboard || dashboard.id === state.data.selectedDashboard) {
+    return;
+  }
+
+  state.data.selectedDashboard = dashboard.id;
+  syncDashboardNav();
+  render();
+  await saveData(state.data);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function toggleEngineMenu(event) {
@@ -518,11 +587,14 @@ async function handleDocumentClick(event) {
 
 function render() {
   ui.body.classList.toggle("is-editing", state.editMode);
+  syncDashboardNav();
   renderSections();
 }
 
 function renderSections() {
-  if (!state.data.sections.length) {
+  const visibleSections = getVisibleSections();
+
+  if (!visibleSections.length) {
     ui.sectionsRoot.innerHTML = `
       <div class="empty-state">
         <span>Aucune ligne</span>
@@ -531,7 +603,7 @@ function renderSections() {
     return;
   }
 
-  ui.sectionsRoot.innerHTML = state.data.sections
+  ui.sectionsRoot.innerHTML = visibleSections
     .map(
       (section) => `
         <section
@@ -583,6 +655,32 @@ function renderSections() {
       `
     )
     .join("");
+}
+
+function getVisibleSections() {
+  const dashboard = getSelectedDashboard();
+  if (dashboard.id === "all") {
+    return state.data.sections;
+  }
+
+  const sectionIds = new Set(dashboard.sectionIds);
+  return state.data.sections.filter(
+    (section) => sectionIds.has(section.id) || section.dashboards?.includes(dashboard.id)
+  );
+}
+
+function getSelectedDashboard() {
+  return dashboardViews.find((dashboard) => dashboard.id === state.data.selectedDashboard) || dashboardViews[0];
+}
+
+function syncDashboardNav() {
+  const dashboard = getSelectedDashboard();
+  state.data.selectedDashboard = dashboard.id;
+  ui.dashboardNav.querySelectorAll("[data-dashboard-id]").forEach((tab) => {
+    const isSelected = tab.dataset.dashboardId === dashboard.id;
+    tab.classList.toggle("is-active", isSelected);
+    tab.setAttribute("aria-pressed", String(isSelected));
+  });
 }
 
 function createLinkMarkup(sectionId, link) {
@@ -774,6 +872,7 @@ async function saveSection(formData, sectionId) {
       id: createId("section"),
       title,
       icon,
+      dashboards: getNewSectionDashboards(),
       links: []
     });
     await persist("Ligne creee.");
@@ -1081,11 +1180,15 @@ function sanitizeData(input) {
   const selectedEngine = searchEngines.some((engine) => engine.id === data.selectedEngine)
     ? data.selectedEngine
     : defaultData.selectedEngine;
+  const selectedDashboard = dashboardViews.some((dashboard) => dashboard.id === data.selectedDashboard)
+    ? data.selectedDashboard
+    : defaultData.selectedDashboard;
   const version = Number.isFinite(Number(data.version)) ? Number(data.version) : 0;
 
   return {
     version,
     selectedEngine,
+    selectedDashboard,
     sections: Array.isArray(data.sections)
       ? data.sections.map(sanitizeSection).filter(Boolean)
       : []
@@ -1108,8 +1211,23 @@ function sanitizeSection(section) {
     id: normalizeText(section.id) || createId("section"),
     title,
     icon,
+    dashboards: sanitizeDashboardIds(section.dashboards),
     links: Array.isArray(section.links) ? section.links.map(sanitizeLink).filter(Boolean) : []
   };
+}
+
+function sanitizeDashboardIds(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const validIds = new Set(dashboardViews.map((dashboard) => dashboard.id).filter((id) => id !== "all"));
+  return [...new Set(value.map(normalizeText).filter((id) => validIds.has(id)))];
+}
+
+function getNewSectionDashboards() {
+  const dashboard = getSelectedDashboard();
+  return dashboard.id === "all" ? [] : [dashboard.id];
 }
 
 function sanitizeLink(link) {
@@ -1378,6 +1496,9 @@ function createIcon(name) {
     edit: '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 20 4.6-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"></path><path d="m13.5 6.5 4 4"></path></svg>',
     trash: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>',
     close: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg>',
+    terminal: '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m7 10 3 2-3 2"></path><path d="M12 15h5"></path></svg>',
+    graduation: '<svg viewBox="0 0 24 24" focusable="false"><path d="m3 8.5 9-4 9 4-9 4-9-4Z"></path><path d="M7 11v4.5c1.3 1.3 3 2 5 2s3.7-.7 5-2V11"></path><path d="M21 9v6"></path></svg>',
+    gamepad: '<svg viewBox="0 0 24 24" focusable="false"><path d="M7 9h10a5 5 0 0 1 4.5 6.9l-.4.9a2.2 2.2 0 0 1-3.6.7L15 16H9l-2.5 2.5a2.2 2.2 0 0 1-3.6-.7l-.4-.9A5 5 0 0 1 7 9Z"></path><path d="M8 13h3"></path><path d="M9.5 11.5v3"></path><path d="M16.5 12.5h.01"></path><path d="M18.5 14.5h.01"></path></svg>',
     sparkles: '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"></path><path d="M5 15l.9 2.1L8 18l-2.1.9L5 21l-.9-2.1L2 18l2.1-.9L5 15Z"></path><path d="M19 14l.8 1.7 1.7.8-1.7.8L19 19l-.8-1.7-1.7-.8 1.7-.8L19 14Z"></path></svg>',
     code: '<svg viewBox="0 0 24 24" focusable="false"><path d="m8 9-4 3 4 3"></path><path d="m16 9 4 3-4 3"></path><path d="m14 5-4 14"></path></svg>',
     cloud: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 18h11a4 4 0 0 0 .5-8 6 6 0 0 0-11.1-1.9A4.7 4.7 0 0 0 6 18Z"></path></svg>',
