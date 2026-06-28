@@ -1,5 +1,5 @@
 const STORAGE_KEY = "navigateur.newtab.v1";
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
 const DEFAULT_DASHBOARD_ID = "work";
 
 const searchEngines = [
@@ -75,10 +75,97 @@ const dashboardViews = [
   }
 ];
 
+const widgetDefinitions = [
+  {
+    type: "link-list",
+    label: "Link List",
+    icon: "grid",
+    description: "Create a section of shortcuts and favorite links"
+  },
+  {
+    type: "spacer",
+    label: "Spacer",
+    icon: "spacer",
+    description: "Use it to add breathing room between widgets"
+  },
+  {
+    type: "todo",
+    label: "Todo",
+    icon: "check-list",
+    description: "A simple task list to manage your daily priorities"
+  },
+  {
+    type: "quick-note",
+    label: "Quick Note",
+    icon: "note",
+    description: "Capture ideas, code snippets, tasks, or reminders directly on your start page"
+  },
+  {
+    type: "qr-code",
+    label: "QR Code Generator",
+    icon: "qr",
+    description: "Generate QR codes from text or URLs"
+  },
+  {
+    type: "markdown-editor",
+    label: "Markdown Editor",
+    icon: "markdown",
+    description: "Write and preview Markdown with a live editable preview"
+  },
+  {
+    type: "text-diff",
+    label: "Text Diff",
+    icon: "diff",
+    description: "Compare two texts side by side and see additions, deletions, and changes highlighted"
+  },
+  {
+    type: "calendar",
+    label: "Calendar",
+    icon: "calendar",
+    description: "A simple calendar showing the current day, week, or month"
+  },
+  {
+    type: "kanban",
+    label: "Kanban Tasks",
+    icon: "kanban",
+    description: "A kanban board to organize and track your tasks"
+  },
+  {
+    type: "daily-quiz",
+    label: "Daily Quiz",
+    icon: "quiz",
+    description: "A fun daily quiz with trivia questions"
+  },
+  {
+    type: "image-compression",
+    label: "Image Compression",
+    icon: "compress",
+    description: "Compress and convert images (PNG, JPG, WebP) in batches, directly in your browser"
+  },
+  {
+    type: "uptime-monitor",
+    label: "Uptime Monitor",
+    icon: "uptime",
+    description: "Monitor website availability and response times"
+  }
+];
+
+const defaultSectionDashboardIds = {
+  section_ai_services: ["work"],
+  section_developer_resources: ["work"],
+  section_hosting_deployment: ["work"],
+  section_travail: ["university"],
+  section_universite: ["university"],
+  section_creation: ["university"],
+  section_loisirs: ["leisure"],
+  section_achats: ["leisure"]
+};
+
 const defaultData = {
   version: DATA_VERSION,
   selectedEngine: "google",
   selectedDashboard: DEFAULT_DASHBOARD_ID,
+  widgets: createDefaultWidgets(),
   sections: [
     {
       id: "section_ai_services",
@@ -217,7 +304,8 @@ const state = {
   dialog: null,
   drag: null,
   editMode: false,
-  statusTimer: null
+  statusTimer: null,
+  uptimeCheckedWidgets: new Set()
 };
 
 const ui = {
@@ -277,6 +365,8 @@ function bindEvents() {
   document.addEventListener("click", handleDocumentClick);
   document.addEventListener("click", handleEngineOutsideClick);
   document.addEventListener("keydown", handleGlobalKeydown);
+  document.addEventListener("input", handleDocumentInput);
+  document.addEventListener("change", handleDocumentChange);
   document.addEventListener("dragstart", handleDragStart);
   document.addEventListener("dragover", handleDragOver);
   document.addEventListener("dragleave", handleDragLeave);
@@ -330,9 +420,9 @@ function paintStaticIcons() {
   ui.editToggle.innerHTML = createIcon("edit");
   ui.dialogClose.innerHTML = createIcon("close");
 
-  const addSectionButton = document.querySelector("[data-action='add-section']");
-  if (addSectionButton) {
-    addSectionButton.innerHTML = createIcon("plus");
+  const addWidgetButton = document.querySelector("[data-action='add-widget']");
+  if (addWidgetButton) {
+    addWidgetButton.innerHTML = createIcon("plus");
   }
 }
 
@@ -558,6 +648,15 @@ async function handleDocumentClick(event) {
 
   try {
     switch (actionTarget.dataset.action) {
+      case "add-widget":
+        openWidgetSelectorDialog();
+        break;
+      case "create-widget":
+        await createWidgetFromType(actionTarget.dataset.widgetType);
+        break;
+      case "delete-widget":
+        await deleteWidget(actionTarget.dataset.widgetId);
+        break;
       case "add-section":
         openSectionDialog();
         break;
@@ -576,6 +675,69 @@ async function handleDocumentClick(event) {
       case "delete-link":
         await deleteLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId);
         break;
+      case "add-todo":
+        await addTodoItem(actionTarget.dataset.widgetId);
+        break;
+      case "toggle-todo":
+        await toggleTodoItem(actionTarget.dataset.widgetId, actionTarget.dataset.todoId);
+        break;
+      case "delete-todo":
+        await deleteTodoItem(actionTarget.dataset.widgetId, actionTarget.dataset.todoId);
+        break;
+      case "copy-note":
+        await copyWidgetText(actionTarget.dataset.widgetId, "text");
+        break;
+      case "clear-note":
+        await updateWidgetConfig(actionTarget.dataset.widgetId, { text: "", updatedAt: new Date().toISOString() }, { render: true, message: "Note cleared." });
+        break;
+      case "reset-qr":
+        await updateWidgetConfig(actionTarget.dataset.widgetId, { value: "" }, { render: true, message: "QR reset." });
+        break;
+      case "download-qr-preview":
+        downloadPseudoQR(actionTarget.dataset.widgetId);
+        break;
+      case "set-markdown-mode":
+        await updateWidgetConfig(actionTarget.dataset.widgetId, { mode: actionTarget.dataset.mode }, { render: true });
+        break;
+      case "copy-markdown":
+        await copyWidgetText(actionTarget.dataset.widgetId, "markdown");
+        break;
+      case "download-markdown":
+        downloadTextFile("note.md", getWidget(actionTarget.dataset.widgetId)?.config?.markdown || "", "text/markdown");
+        break;
+      case "copy-diff":
+        await copyText(renderDiffText(getWidget(actionTarget.dataset.widgetId)));
+        break;
+      case "reset-diff":
+        await updateWidgetConfig(actionTarget.dataset.widgetId, { original: "", modified: "" }, { render: true, message: "Diff reset." });
+        break;
+      case "calendar-prev":
+        await shiftCalendarMonth(actionTarget.dataset.widgetId, -1);
+        break;
+      case "calendar-next":
+        await shiftCalendarMonth(actionTarget.dataset.widgetId, 1);
+        break;
+      case "calendar-today":
+        await updateWidgetConfig(actionTarget.dataset.widgetId, { month: new Date().toISOString() }, { render: true });
+        break;
+      case "add-kanban-card":
+        await addKanbanCard(actionTarget.dataset.widgetId, actionTarget.dataset.kanbanColumn);
+        break;
+      case "move-kanban-card":
+        await moveKanbanCard(actionTarget.dataset.widgetId, actionTarget.dataset.kanbanColumn, actionTarget.dataset.cardId, actionTarget.dataset.direction);
+        break;
+      case "delete-kanban-card":
+        await deleteKanbanCard(actionTarget.dataset.widgetId, actionTarget.dataset.kanbanColumn, actionTarget.dataset.cardId);
+        break;
+      case "answer-quiz":
+        await answerDailyQuiz(actionTarget.dataset.widgetId, Number(actionTarget.dataset.answerIndex));
+        break;
+      case "download-compressed-image":
+        downloadCompressedImage(actionTarget.dataset.widgetId, actionTarget.dataset.imageId);
+        break;
+      case "refresh-uptime":
+        await checkUptimeWidget(actionTarget.dataset.widgetId, { force: true });
+        break;
       default:
         break;
     }
@@ -585,88 +747,1440 @@ async function handleDocumentClick(event) {
   }
 }
 
+async function handleDocumentInput(event) {
+  const input = event.target.closest("[data-widget-input]");
+  if (!input) {
+    return;
+  }
+
+  const widgetId = input.dataset.widgetId;
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  switch (input.dataset.widgetInput) {
+    case "spacer-height":
+      await updateWidgetConfig(widgetId, { height: Number(input.value) }, { render: false });
+      input.closest(".spacer-widget-panel")?.style.setProperty("min-height", `${input.value}px`);
+      input.closest(".spacer-widget-panel")?.querySelector(".spacer-preview")?.style.setProperty("height", `${input.value}px`);
+      input.closest(".widget-field-inline")?.querySelector(".widget-value")?.replaceChildren(`${input.value}px`);
+      break;
+    case "todo-text":
+      await updateTodoText(widgetId, input.dataset.todoId, input.value);
+      break;
+    case "quick-note-text":
+      await updateWidgetConfig(widgetId, { text: input.value, updatedAt: new Date().toISOString() }, { render: false });
+      break;
+    case "qr-value":
+      await updateWidgetConfig(widgetId, { value: input.value }, { render: true });
+      break;
+    case "markdown-text":
+      await updateWidgetConfig(widgetId, { markdown: input.value }, { render: false });
+      {
+        const preview = input.closest(".markdown-widget")?.querySelector(".markdown-preview-pane");
+        if (preview) {
+          preview.innerHTML = renderMarkdownPreview(input.value);
+        }
+      }
+      break;
+    case "diff-original":
+      await updateWidgetConfig(widgetId, { original: input.value }, { render: false });
+      refreshDiffPreview(widgetId, input);
+      break;
+    case "diff-modified":
+      await updateWidgetConfig(widgetId, { modified: input.value }, { render: false });
+      refreshDiffPreview(widgetId, input);
+      break;
+    case "image-quality":
+      await updateWidgetConfig(widgetId, { quality: Number(input.value) }, { render: true });
+      break;
+    case "kanban-card-title":
+      await updateKanbanCardTitle(widgetId, input.dataset.kanbanColumn, input.dataset.cardId, input.value);
+      break;
+    default:
+      break;
+  }
+}
+
+async function handleDocumentChange(event) {
+  const input = event.target.closest("[data-widget-input]");
+  if (!input) {
+    return;
+  }
+
+  if (input.dataset.widgetInput === "image-files") {
+    await compressSelectedImages(input.dataset.widgetId, input.files);
+    input.value = "";
+  }
+}
+
 function render() {
   ui.body.classList.toggle("is-editing", state.editMode);
   syncDashboardNav();
-  renderSections();
+  renderWidgets();
+  scheduleVisibleUptimeChecks();
 }
 
-function renderSections() {
-  const visibleSections = getVisibleSections();
+function renderWidgets() {
+  const visibleWidgets = getVisibleWidgets();
 
-  if (!visibleSections.length) {
+  if (!visibleWidgets.length) {
     ui.sectionsRoot.innerHTML = `
       <div class="empty-state">
-        <span>Aucune ligne</span>
+        <span>Aucun widget</span>
       </div>
     `;
     return;
   }
 
-  ui.sectionsRoot.innerHTML = visibleSections
-    .map(
-      (section) => `
-        <section
-          class="link-section"
-          data-section-id="${section.id}"
-          draggable="${state.editMode ? "true" : "false"}"
-        >
-          <div class="section-header">
-            <div class="section-title">
-              <span class="section-symbol" aria-hidden="true">${createIcon(section.icon || "grid")}</span>
-              <h2>${escapeHtml(section.title)}</h2>
-            </div>
-            <div class="section-actions">
-              <button
-                class="small-icon-button"
-                type="button"
-                data-action="add-link"
-                data-section-id="${section.id}"
-                aria-label="Ajouter un lien"
-                title="Ajouter un lien"
-              >${createIcon("plus")}</button>
-              <button
-                class="small-icon-button"
-                type="button"
-                data-action="edit-section"
-                data-section-id="${section.id}"
-                aria-label="Modifier la ligne"
-                title="Modifier la ligne"
-              >${createIcon("edit")}</button>
-              <button
-                class="small-icon-button"
-                type="button"
-                data-action="delete-section"
-                data-section-id="${section.id}"
-                aria-label="Supprimer la ligne"
-                title="Supprimer la ligne"
-              >${createIcon("trash")}</button>
-            </div>
-          </div>
-
-          <div class="links-grid" data-section-id="${section.id}">
-            ${
-              section.links.length
-                ? section.links.map((link) => createLinkMarkup(section.id, link)).join("")
-                : `<div class="empty-state"><span>Aucun lien</span></div>`
-            }
-          </div>
-        </section>
-      `
-    )
+  ui.sectionsRoot.innerHTML = visibleWidgets
+    .map((widget) => renderWidget(widget))
     .join("");
 }
 
-function getVisibleSections() {
+function getVisibleWidgets() {
   const dashboard = getSelectedDashboard();
+  const widgets = state.data.widgets.slice().sort((a, b) => a.order - b.order);
   if (dashboard.id === "all") {
-    return state.data.sections;
+    return widgets;
   }
 
-  const sectionIds = new Set(dashboard.sectionIds);
-  return state.data.sections.filter(
-    (section) => sectionIds.has(section.id) || section.dashboards?.includes(dashboard.id)
+  return widgets.filter((widget) => widget.dashboardIds.includes(dashboard.id));
+}
+
+function renderWidget(widget) {
+  const renderer = widgetRegistry[widget.type] || renderUnknownWidget;
+  return renderer(widget);
+}
+
+const widgetRegistry = {
+  "link-list": renderLinkListWidget,
+  spacer: renderSpacerWidget,
+  todo: renderTodoWidget,
+  "quick-note": renderQuickNoteWidget,
+  "qr-code": renderQRCodeWidget,
+  "markdown-editor": renderMarkdownEditorWidget,
+  "text-diff": renderTextDiffWidget,
+  calendar: renderCalendarWidget,
+  kanban: renderKanbanWidget,
+  "daily-quiz": renderDailyQuizWidget,
+  "image-compression": renderImageCompressionWidget,
+  "uptime-monitor": renderUptimeMonitorWidget
+};
+
+function renderLinkListWidget(widget) {
+  const section = getSection(widget.config?.sectionId);
+  if (!section) {
+    return renderUnknownWidget({ ...widget, title: "Link List introuvable" });
+  }
+
+  return `
+    <section
+      class="dashboard-widget link-section"
+      data-widget-id="${widget.id}"
+      data-widget-type="${widget.type}"
+      data-section-id="${section.id}"
+      draggable="${state.editMode ? "true" : "false"}"
+    >
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-symbol" aria-hidden="true">${createIcon(section.icon || "grid")}</span>
+          <h2>${escapeHtml(section.title)}</h2>
+        </div>
+        <div class="section-actions">
+          <button
+            class="small-icon-button"
+            type="button"
+            data-action="add-link"
+            data-section-id="${section.id}"
+            aria-label="Ajouter un lien"
+            title="Ajouter un lien"
+          >${createIcon("plus")}</button>
+          <button
+            class="small-icon-button"
+            type="button"
+            data-action="edit-section"
+            data-section-id="${section.id}"
+            aria-label="Modifier la ligne"
+            title="Modifier la ligne"
+          >${createIcon("edit")}</button>
+          <button
+            class="small-icon-button"
+            type="button"
+            data-action="delete-section"
+            data-section-id="${section.id}"
+            aria-label="Supprimer la ligne"
+            title="Supprimer la ligne"
+          >${createIcon("trash")}</button>
+        </div>
+      </div>
+
+      <div class="links-grid" data-section-id="${section.id}">
+        ${
+          section.links.length
+            ? section.links.map((link) => createLinkMarkup(section.id, link)).join("")
+            : `<div class="empty-state"><span>Aucun lien</span></div>`
+        }
+      </div>
+    </section>
+  `;
+}
+
+function renderWidgetCard(widget, bodyMarkup, options = {}) {
+  const definition = getWidgetDefinition(widget.type) || widgetDefinitions[0];
+  const title = options.title || widget.title || definition.label;
+  const description = options.description || "";
+  const compactClass = options.compact ? " widget-card-compact" : "";
+
+  return `
+    <section
+      class="dashboard-widget widget-card${compactClass}"
+      data-widget-id="${widget.id}"
+      data-widget-type="${widget.type}"
+      draggable="${state.editMode ? "true" : "false"}"
+    >
+      <div class="widget-header">
+        <div class="widget-title">
+          <span class="widget-title-icon" aria-hidden="true">${createIcon(definition.icon)}</span>
+          <h2>${escapeHtml(title)}</h2>
+        </div>
+        <div class="widget-actions">
+          ${
+            state.editMode
+              ? `<button class="small-icon-button" type="button" data-action="delete-widget" data-widget-id="${widget.id}" aria-label="Supprimer le widget" title="Supprimer le widget">${createIcon("trash")}</button>`
+              : ""
+          }
+          ${options.actions || ""}
+        </div>
+      </div>
+      <div class="widget-body">
+        ${bodyMarkup}
+      </div>
+      ${description ? `<p class="widget-description">${escapeHtml(description)}</p>` : ""}
+    </section>
+  `;
+}
+
+function renderUnknownWidget(widget) {
+  return renderWidgetCard(
+    widget,
+    `<div class="widget-panel"><p class="widget-muted">Widget indisponible ou incomplet.</p></div>`,
+    { title: widget.title || "Widget", description: "Renderer missing for this widget type." }
   );
+}
+
+function renderSpacerWidget(widget) {
+  const height = clampNumber(widget.config?.height, 32, 220, 80);
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel spacer-widget-panel" style="min-height: ${height}px">
+        <div class="spacer-preview" style="height: ${height}px"></div>
+        <label class="widget-field-inline">
+          <span>Height</span>
+          <input class="widget-range" type="range" min="32" max="220" value="${height}" data-widget-input="spacer-height" data-widget-id="${widget.id}" />
+          <span class="widget-value">${height}px</span>
+        </label>
+      </div>
+    `,
+    { compact: true }
+  );
+}
+
+function renderTodoWidget(widget) {
+  const items = getTodoItems(widget);
+  const rows = items.length
+    ? items
+        .map(
+          (item) => `
+            <div class="todo-row ${item.done ? "is-done" : ""}">
+              <button class="todo-check" type="button" data-action="toggle-todo" data-widget-id="${widget.id}" data-todo-id="${item.id}" aria-label="Basculer la tache">
+                ${item.done ? createIcon("check") : ""}
+              </button>
+              <input class="todo-text-input" type="text" value="${escapeHtml(item.text)}" data-widget-id="${widget.id}" data-todo-id="${item.id}" data-widget-input="todo-text" />
+              <button class="small-icon-button" type="button" data-action="delete-todo" data-widget-id="${widget.id}" data-todo-id="${item.id}" aria-label="Supprimer la tache" title="Supprimer">
+                ${createIcon("close")}
+              </button>
+            </div>
+          `
+        )
+        .join("")
+    : `<p class="widget-muted">Aucune tache pour le moment.</p>`;
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel todo-widget">
+        <div class="todo-add-row">
+          <input class="widget-input" type="text" placeholder="Add a new todo..." data-widget-id="${widget.id}" data-widget-input="todo-new" />
+          <button class="text-button" type="button" data-action="add-todo" data-widget-id="${widget.id}">Add</button>
+        </div>
+        <div class="todo-list">${rows}</div>
+      </div>
+    `
+  );
+}
+
+function renderQuickNoteWidget(widget) {
+  const text = toStringValue(widget.config?.text);
+  const updatedAt = normalizeText(widget.config?.updatedAt);
+  const meta = updatedAt ? `Last edit ${formatDateTime(updatedAt)}` : "Autosaved locally";
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel quick-note-widget">
+        <textarea class="widget-textarea quick-note-area" data-widget-id="${widget.id}" data-widget-input="quick-note-text" placeholder="Write a quick note...">${escapeHtml(text)}</textarea>
+        <div class="widget-footer-row">
+          <span class="widget-muted">${escapeHtml(meta)}</span>
+          <span class="widget-button-row">
+            <button class="text-button" type="button" data-action="copy-note" data-widget-id="${widget.id}">Copy</button>
+            <button class="text-button" type="button" data-action="clear-note" data-widget-id="${widget.id}">Clear</button>
+          </span>
+        </div>
+      </div>
+    `
+  );
+}
+
+function renderQRCodeWidget(widget) {
+  const value = normalizeText(widget.config?.value) || "https://startpagehq.com";
+  const matrix = createPseudoQRMatrix(value);
+  const cells = matrix
+    .map((row) => row.map((cell) => `<span class="${cell ? "is-on" : ""}"></span>`).join(""))
+    .join("");
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel qr-widget">
+        <div class="widget-toolbar-row">
+          <input class="widget-input" type="text" value="${escapeHtml(value)}" data-widget-id="${widget.id}" data-widget-input="qr-value" placeholder="Text or URL" />
+          <button class="text-button" type="button" data-action="download-qr-preview" data-widget-id="${widget.id}">Download</button>
+          <button class="text-button" type="button" data-action="reset-qr" data-widget-id="${widget.id}">Reset</button>
+        </div>
+        <div class="qr-preview" aria-label="QR preview">${cells}</div>
+      </div>
+    `
+  );
+}
+
+function renderMarkdownEditorWidget(widget) {
+  const mode = normalizeText(widget.config?.mode) || "split";
+  const markdown = toStringValue(widget.config?.markdown) || "# Project README\n\nA modern dashboard application built with **local widgets**.\n\n## Features\n\n- Customizable widgets\n- Multiple dashboards\n- Browser extension support";
+  const preview = renderMarkdownPreview(markdown);
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel markdown-widget" data-mode="${escapeHtml(mode)}">
+        <div class="widget-toolbar-row">
+          ${["edit", "split", "preview"]
+            .map(
+              (item) => `
+                <button class="text-button ${mode === item ? "is-active" : ""}" type="button" data-action="set-markdown-mode" data-widget-id="${widget.id}" data-mode="${item}">
+                  ${escapeHtml(item)}
+                </button>
+              `
+            )
+            .join("")}
+          <button class="text-button" type="button" data-action="copy-markdown" data-widget-id="${widget.id}">Copy</button>
+          <button class="text-button" type="button" data-action="download-markdown" data-widget-id="${widget.id}">Download</button>
+        </div>
+        <div class="markdown-layout">
+          <textarea class="widget-textarea markdown-editor-pane" data-widget-id="${widget.id}" data-widget-input="markdown-text">${escapeHtml(markdown)}</textarea>
+          <div class="markdown-preview-pane">${preview}</div>
+        </div>
+      </div>
+    `
+  );
+}
+
+function renderTextDiffWidget(widget) {
+  const original = toStringValue(widget.config?.original) || "function greet(name) {\n  console.log('Hello, ' + name);\n  return true;\n}";
+  const modified = toStringValue(widget.config?.modified) || "function greet(name) {\n  const message = `Hello, ${name}`;\n  console.log(message);\n  return message;\n}";
+  const diff = renderDiff(original, modified);
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel text-diff-widget">
+        <div class="diff-inputs">
+          <label>
+            <span>Original</span>
+            <textarea class="widget-textarea" data-widget-id="${widget.id}" data-widget-input="diff-original">${escapeHtml(original)}</textarea>
+          </label>
+          <label>
+            <span>Modified</span>
+            <textarea class="widget-textarea" data-widget-id="${widget.id}" data-widget-input="diff-modified">${escapeHtml(modified)}</textarea>
+          </label>
+        </div>
+        <div class="widget-toolbar-row">
+          <button class="text-button" type="button" data-action="copy-diff" data-widget-id="${widget.id}">Copy diff</button>
+          <button class="text-button" type="button" data-action="reset-diff" data-widget-id="${widget.id}">Reset</button>
+        </div>
+        <div class="diff-output">${diff}</div>
+      </div>
+    `
+  );
+}
+
+function renderCalendarWidget(widget) {
+  const current = getCalendarDate(widget);
+  const days = buildCalendarDays(current);
+  const todayKey = toDateKey(new Date());
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel calendar-widget">
+        <div class="calendar-head">
+          <button class="small-icon-button" type="button" data-action="calendar-prev" data-widget-id="${widget.id}" aria-label="Mois precedent">${createIcon("chevron-left")}</button>
+          <strong>${escapeHtml(formatMonthYear(current))}</strong>
+          <button class="small-icon-button" type="button" data-action="calendar-next" data-widget-id="${widget.id}" aria-label="Mois suivant">${createIcon("chevron-right")}</button>
+          <button class="text-button" type="button" data-action="calendar-today" data-widget-id="${widget.id}">Today</button>
+        </div>
+        <div class="calendar-grid">
+          ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => `<span class="calendar-weekday">${day}</span>`).join("")}
+          ${days
+            .map(
+              (day) => `
+                <span class="calendar-day ${day.currentMonth ? "" : "is-muted"} ${day.key === todayKey ? "is-today" : ""}">
+                  ${day.date.getDate()}
+                </span>
+              `
+            )
+            .join("")}
+        </div>
+      </div>
+    `
+  );
+}
+
+function renderKanbanWidget(widget) {
+  const columns = getKanbanColumns(widget);
+  const cardsMarkup = columns
+    .map(
+      (column) => `
+        <div class="kanban-column">
+          <div class="kanban-column-title">
+            <span class="kanban-dot"></span>
+            <strong>${escapeHtml(column.title)}</strong>
+            <span>${column.cards.length}</span>
+          </div>
+          <div class="kanban-card-list">
+            ${
+              column.cards.length
+                ? column.cards
+                    .map(
+                      (card) => `
+                        <article class="kanban-card" data-card-id="${card.id}">
+                          <input class="kanban-card-input" type="text" value="${escapeHtml(card.title)}" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" data-widget-input="kanban-card-title" />
+                          <div class="kanban-card-actions">
+                            <button class="small-icon-button" type="button" data-action="move-kanban-card" data-direction="left" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" aria-label="Deplacer a gauche">${createIcon("chevron-left")}</button>
+                            <button class="small-icon-button" type="button" data-action="move-kanban-card" data-direction="right" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" aria-label="Deplacer a droite">${createIcon("chevron-right")}</button>
+                            <button class="small-icon-button" type="button" data-action="delete-kanban-card" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" aria-label="Supprimer">${createIcon("close")}</button>
+                          </div>
+                        </article>
+                      `
+                    )
+                    .join("")
+                : `<p class="widget-muted">No cards</p>`
+            }
+          </div>
+          <div class="kanban-add-row">
+            <input class="widget-input" type="text" placeholder="Add task" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-widget-input="kanban-new-card" />
+            <button class="text-button" type="button" data-action="add-kanban-card" data-widget-id="${widget.id}" data-kanban-column="${column.id}">Add</button>
+          </div>
+        </div>
+      `
+    )
+    .join("");
+
+  return renderWidgetCard(widget, `<div class="widget-panel kanban-widget">${cardsMarkup}</div>`);
+}
+
+function renderDailyQuizWidget(widget) {
+  const dayKey = toDateKey(new Date());
+  const question = getDailyQuestion(dayKey);
+  const history = widget.config?.history && typeof widget.config.history === "object" ? widget.config.history : {};
+  const answer = history[dayKey];
+  const answered = Number.isInteger(answer);
+
+  const answers = question.answers
+    .map(
+      (text, index) => `
+        <button
+          class="quiz-answer ${answered && index === question.correctAnswerIndex ? "is-correct" : ""} ${answered && index === answer && index !== question.correctAnswerIndex ? "is-wrong" : ""}"
+          type="button"
+          data-action="answer-quiz"
+          data-widget-id="${widget.id}"
+          data-answer-index="${index}"
+          ${answered ? "disabled" : ""}
+        >
+          <span>${String.fromCharCode(65 + index)}</span>
+          ${escapeHtml(text)}
+        </button>
+      `
+    )
+    .join("");
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel quiz-widget">
+        <div class="quiz-category">${escapeHtml(question.category)}</div>
+        <p class="quiz-question">${escapeHtml(question.question)}</p>
+        <div class="quiz-answers">${answers}</div>
+        ${answered ? `<p class="widget-muted">${escapeHtml(question.explanation || "Answer saved for today.")}</p>` : ""}
+      </div>
+    `
+  );
+}
+
+function renderImageCompressionWidget(widget) {
+  const quality = clampNumber(widget.config?.quality, 0.35, 0.95, 0.72);
+  const images = Array.isArray(widget.config?.images) ? widget.config.images : [];
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel image-compression-widget">
+        <label class="image-drop-zone" data-widget-id="${widget.id}">
+          <input type="file" accept="image/png,image/jpeg,image/webp" multiple data-widget-id="${widget.id}" data-widget-input="image-files" />
+          <span>${createIcon("compress")}</span>
+          <strong>Select or drop images</strong>
+          <em>PNG, JPG, WebP only. Compression runs locally in your browser.</em>
+        </label>
+        <label class="widget-field-inline">
+          <span>Quality</span>
+          <input class="widget-range" type="range" min="0.35" max="0.95" step="0.05" value="${quality}" data-widget-id="${widget.id}" data-widget-input="image-quality" />
+          <span class="widget-value">${Math.round(quality * 100)}%</span>
+        </label>
+        <div class="image-result-list">
+          ${
+            images.length
+              ? images
+                  .map(
+                    (image) => `
+                      <article class="image-result-card">
+                        <img src="${escapeHtml(image.dataUrl)}" alt="" />
+                        <strong>${escapeHtml(image.name)}</strong>
+                        <span>${formatBytes(image.originalSize)} -> ${formatBytes(image.compressedSize)}</span>
+                        <em>${formatReduction(image.originalSize, image.compressedSize)}</em>
+                        <button class="text-button" type="button" data-action="download-compressed-image" data-widget-id="${widget.id}" data-image-id="${image.id}">Download</button>
+                      </article>
+                    `
+                  )
+                  .join("")
+              : `<p class="widget-muted">No compressed images yet.</p>`
+          }
+        </div>
+      </div>
+    `
+  );
+}
+
+function renderUptimeMonitorWidget(widget) {
+  const services = getUptimeServices(widget);
+  const rows = services
+    .map((service) => {
+      const latest = service.history?.[service.history.length - 1] || null;
+      const status = latest?.status || "unknown";
+      return `
+        <div class="uptime-row">
+          <span class="uptime-status is-${status}"></span>
+          <strong>${escapeHtml(service.name)}</strong>
+          <div class="uptime-bars">${renderUptimeBars(service.history || [])}</div>
+          <span>${latest?.latency ? `${latest.latency}ms` : "--"}</span>
+          <span>${latest?.code || status}</span>
+        </div>
+      `;
+    })
+    .join("");
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div class="widget-panel uptime-widget">
+        <div class="widget-toolbar-row">
+          <span class="widget-muted">Manual check</span>
+          <button class="text-button" type="button" data-action="refresh-uptime" data-widget-id="${widget.id}">Refresh</button>
+        </div>
+        <div class="uptime-list">${rows}</div>
+      </div>
+    `
+  );
+}
+
+function getWidgetDefinition(type) {
+  return widgetDefinitions.find((definition) => definition.type === type) || null;
+}
+
+function createDefaultWidgets() {
+  const linkWidgets = [
+    { sectionId: "section_ai_services", title: "AI Services" },
+    { sectionId: "section_developer_resources", title: "Developpement" },
+    { sectionId: "section_hosting_deployment", title: "Hosting & Monitoring" },
+    { sectionId: "section_travail", title: "Travail" },
+    { sectionId: "section_universite", title: "Universite" },
+    { sectionId: "section_creation", title: "Creation" },
+    { sectionId: "section_loisirs", title: "Loisirs" },
+    { sectionId: "section_achats", title: "Achats" }
+  ];
+
+  return linkWidgets.map((item, index) => ({
+    id: `widget_link_${item.sectionId}`,
+    type: "link-list",
+    title: item.title,
+    dashboardIds: defaultSectionDashboardIds[item.sectionId] || [],
+    order: index,
+    config: { sectionId: item.sectionId }
+  }));
+}
+
+function createDefaultWidgetConfig(type) {
+  switch (type) {
+    case "link-list":
+      return { sectionId: "" };
+    case "spacer":
+      return { height: 80 };
+    case "todo":
+      return {
+        items: [
+          { id: createId("todo"), text: "Review priorities", done: false },
+          { id: createId("todo"), text: "Ship one useful improvement", done: false }
+        ]
+      };
+    case "quick-note":
+      return { text: "", updatedAt: "" };
+    case "qr-code":
+      return { value: "https://chatgpt.com/" };
+    case "markdown-editor":
+      return {
+        mode: "split",
+        markdown: "# Notes\n\nWrite Markdown on the left and keep the preview beside it."
+      };
+    case "text-diff":
+      return {
+        original: "Before\nLine kept\nOld detail",
+        modified: "Before\nLine kept\nNew detail"
+      };
+    case "calendar":
+      return { month: new Date().toISOString() };
+    case "kanban":
+      return {
+        columns: [
+          {
+            id: "todo",
+            title: "Todo",
+            cards: [{ id: createId("card"), title: "Plan next widget" }]
+          },
+          {
+            id: "progress",
+            title: "In Progress",
+            cards: [{ id: createId("card"), title: "Polish dashboard" }]
+          },
+          { id: "done", title: "Done", cards: [] }
+        ]
+      };
+    case "daily-quiz":
+      return { history: {} };
+    case "image-compression":
+      return { quality: 0.72, images: [] };
+    case "uptime-monitor":
+      return {
+        services: [
+          { id: "service_intranet", name: "MCProd Intranet", url: "https://intranet-agence-mcprod.netlify.app/", history: [] },
+          { id: "service_osmo", name: "Osmo Supply", url: "https://osmo.supply/", history: [] },
+          { id: "service_netlify", name: "Netlify", url: "https://app.netlify.com/", history: [] }
+        ]
+      };
+    default:
+      return {};
+  }
+}
+
+function createWidget(type, title, dashboardIds, config = {}) {
+  const definition = getWidgetDefinition(type) || widgetDefinitions[0];
+  return {
+    id: createId("widget"),
+    type: definition.type,
+    title: normalizeText(title) || definition.label,
+    dashboardIds: sanitizeDashboardIds(dashboardIds),
+    order: getNextWidgetOrder(),
+    config: sanitizeWidgetConfig(definition.type, config)
+  };
+}
+
+function getNextWidgetOrder() {
+  if (!Array.isArray(state.data.widgets) || !state.data.widgets.length) {
+    return 0;
+  }
+
+  return Math.max(...state.data.widgets.map((widget) => Number(widget.order) || 0)) + 1;
+}
+
+function getWidget(widgetId) {
+  return state.data.widgets.find((widget) => widget.id === widgetId) || null;
+}
+
+async function updateWidgetConfig(widgetId, updates, options = {}) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  widget.config = sanitizeWidgetConfig(widget.type, {
+    ...(widget.config || {}),
+    ...(updates || {})
+  });
+
+  if (options.render) {
+    await persist(options.message || "Widget mis a jour.");
+    return;
+  }
+
+  state.data = sanitizeData(state.data);
+  await saveData(state.data);
+  if (options.message) {
+    showStatus(options.message);
+  }
+}
+
+async function deleteWidget(widgetId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  if (!confirm(`Supprimer "${widget.title}" ?`)) {
+    return;
+  }
+
+  state.data.widgets = state.data.widgets.filter((item) => item.id !== widgetId);
+  await persist("Widget supprime.");
+}
+
+function createUniqueSectionTitle(baseTitle) {
+  const base = normalizeText(baseTitle) || "New Links";
+  const existing = new Set(state.data.sections.map((section) => normalizeKey(section.title)));
+  if (!existing.has(normalizeKey(base))) {
+    return base;
+  }
+
+  let index = 2;
+  while (existing.has(normalizeKey(`${base} ${index}`))) {
+    index += 1;
+  }
+
+  return `${base} ${index}`;
+}
+
+function getTodoItems(widget) {
+  return Array.isArray(widget.config?.items) ? widget.config.items : [];
+}
+
+async function addTodoItem(widgetId) {
+  const widget = getWidget(widgetId);
+  const input = findWidgetElement(widgetId)?.querySelector("[data-widget-input='todo-new']");
+  const text = normalizeText(input?.value);
+  if (!widget || !text) {
+    input?.focus();
+    return;
+  }
+
+  const items = getTodoItems(widget).concat({
+    id: createId("todo"),
+    text,
+    done: false
+  });
+  await updateWidgetConfig(widgetId, { items }, { render: true, message: "Tache ajoutee." });
+}
+
+async function toggleTodoItem(widgetId, todoId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const items = getTodoItems(widget).map((item) =>
+    item.id === todoId ? { ...item, done: !item.done } : item
+  );
+  await updateWidgetConfig(widgetId, { items }, { render: true });
+}
+
+async function deleteTodoItem(widgetId, todoId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  await updateWidgetConfig(
+    widgetId,
+    { items: getTodoItems(widget).filter((item) => item.id !== todoId) },
+    { render: true, message: "Tache supprimee." }
+  );
+}
+
+async function updateTodoText(widgetId, todoId, text) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const items = getTodoItems(widget).map((item) =>
+    item.id === todoId ? { ...item, text: toStringValue(text) } : item
+  );
+  await updateWidgetConfig(widgetId, { items }, { render: false });
+}
+
+async function copyWidgetText(widgetId, field) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  await copyText(toStringValue(widget.config?.[field]));
+}
+
+async function copyText(text) {
+  const value = toStringValue(text);
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+  } else {
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.append(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    textarea.remove();
+  }
+  showStatus("Copie.");
+}
+
+function findWidgetElement(widgetId) {
+  return [...document.querySelectorAll(".dashboard-widget")].find((element) => element.dataset.widgetId === widgetId) || null;
+}
+
+function toStringValue(value) {
+  return value == null ? "" : String(value);
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+
+  return Math.min(max, Math.max(min, number));
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("fr-CH", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+// TODO: replace this deterministic visual placeholder with a standards-compliant local QR encoder.
+function createPseudoQRMatrix(value) {
+  const size = 29;
+  const matrix = Array.from({ length: size }, () => Array.from({ length: size }, () => false));
+  const reserved = Array.from({ length: size }, () => Array.from({ length: size }, () => false));
+  const hash = hashString(value);
+
+  addFinderPattern(matrix, reserved, 0, 0);
+  addFinderPattern(matrix, reserved, size - 7, 0);
+  addFinderPattern(matrix, reserved, 0, size - 7);
+
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      if (reserved[y][x]) {
+        continue;
+      }
+      const bit = (hash + x * 17 + y * 31 + x * y * 7) % 11;
+      matrix[y][x] = bit === 0 || bit === 3 || bit === 7;
+    }
+  }
+
+  return matrix;
+}
+
+function addFinderPattern(matrix, reserved, startX, startY) {
+  for (let y = 0; y < 7; y += 1) {
+    for (let x = 0; x < 7; x += 1) {
+      const globalX = startX + x;
+      const globalY = startY + y;
+      const onOuter = x === 0 || y === 0 || x === 6 || y === 6;
+      const onInner = x >= 2 && x <= 4 && y >= 2 && y <= 4;
+      matrix[globalY][globalX] = onOuter || onInner;
+      reserved[globalY][globalX] = true;
+    }
+  }
+}
+
+function hashString(value) {
+  let hash = 2166136261;
+  for (const character of toStringValue(value)) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash);
+}
+
+function downloadPseudoQR(widgetId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const matrix = createPseudoQRMatrix(widget.config?.value || "");
+  const cellSize = 10;
+  const quietZone = 4;
+  const canvas = document.createElement("canvas");
+  const size = (matrix.length + quietZone * 2) * cellSize;
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+  context.fillStyle = "#f4f4f4";
+  context.fillRect(0, 0, size, size);
+  context.fillStyle = "#111111";
+
+  matrix.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (cell) {
+        context.fillRect((x + quietZone) * cellSize, (y + quietZone) * cellSize, cellSize, cellSize);
+      }
+    });
+  });
+
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      return;
+    }
+    downloadBlob(blob, "qr-preview.png");
+  }, "image/png");
+}
+
+function renderMarkdownPreview(markdown) {
+  const lines = toStringValue(markdown).split(/\r?\n/);
+  const blocks = [];
+  let listItems = [];
+  let codeLines = [];
+  let inCode = false;
+
+  const flushList = () => {
+    if (listItems.length) {
+      blocks.push(`<ul>${listItems.map((item) => `<li>${formatMarkdownInline(item)}</li>`).join("")}</ul>`);
+      listItems = [];
+    }
+  };
+
+  const flushCode = () => {
+    if (codeLines.length) {
+      blocks.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      codeLines = [];
+    }
+  };
+
+  lines.forEach((line) => {
+    if (line.trim().startsWith("```")) {
+      if (inCode) {
+        flushCode();
+      } else {
+        flushList();
+      }
+      inCode = !inCode;
+      return;
+    }
+
+    if (inCode) {
+      codeLines.push(line);
+      return;
+    }
+
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushList();
+      const level = heading[1].length;
+      blocks.push(`<h${level}>${formatMarkdownInline(heading[2])}</h${level}>`);
+      return;
+    }
+
+    const list = line.match(/^\s*[-*]\s+(.+)$/);
+    if (list) {
+      listItems.push(list[1]);
+      return;
+    }
+
+    if (!line.trim()) {
+      flushList();
+      return;
+    }
+
+    flushList();
+    blocks.push(`<p>${formatMarkdownInline(line)}</p>`);
+  });
+
+  flushList();
+  flushCode();
+  return blocks.length ? blocks.join("") : `<p class="widget-muted">Preview</p>`;
+}
+
+function formatMarkdownInline(value) {
+  return escapeHtml(value)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+function renderDiff(original, modified) {
+  const parts = calculateLineDiff(toStringValue(original), toStringValue(modified));
+  return parts
+    .map((part) => `<div class="diff-line is-${part.type}"><span>${part.prefix}</span><code>${escapeHtml(part.text || " ")}</code></div>`)
+    .join("");
+}
+
+function renderDiffText(widget) {
+  if (!widget) {
+    return "";
+  }
+
+  return calculateLineDiff(widget.config?.original || "", widget.config?.modified || "")
+    .map((part) => `${part.prefix} ${part.text}`)
+    .join("\n");
+}
+
+function refreshDiffPreview(widgetId, input) {
+  const widget = getWidget(widgetId);
+  const output = input.closest(".text-diff-widget")?.querySelector(".diff-output");
+  if (widget && output) {
+    output.innerHTML = renderDiff(widget.config?.original || "", widget.config?.modified || "");
+  }
+}
+
+function calculateLineDiff(original, modified) {
+  const a = toStringValue(original).split(/\r?\n/);
+  const b = toStringValue(modified).split(/\r?\n/);
+  const table = Array.from({ length: a.length + 1 }, () => Array.from({ length: b.length + 1 }, () => 0));
+
+  for (let i = a.length - 1; i >= 0; i -= 1) {
+    for (let j = b.length - 1; j >= 0; j -= 1) {
+      table[i][j] = a[i] === b[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);
+    }
+  }
+
+  const parts = [];
+  let i = 0;
+  let j = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      parts.push({ type: "same", prefix: " ", text: a[i] });
+      i += 1;
+      j += 1;
+    } else if (table[i + 1][j] >= table[i][j + 1]) {
+      parts.push({ type: "removed", prefix: "-", text: a[i] });
+      i += 1;
+    } else {
+      parts.push({ type: "added", prefix: "+", text: b[j] });
+      j += 1;
+    }
+  }
+
+  while (i < a.length) {
+    parts.push({ type: "removed", prefix: "-", text: a[i] });
+    i += 1;
+  }
+
+  while (j < b.length) {
+    parts.push({ type: "added", prefix: "+", text: b[j] });
+    j += 1;
+  }
+
+  return parts;
+}
+
+function getCalendarDate(widget) {
+  const date = new Date(widget.config?.month || Date.now());
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function buildCalendarDays(date) {
+  const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+  const gridStart = new Date(monthStart);
+  gridStart.setDate(monthStart.getDate() - monthStart.getDay());
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(gridStart);
+    day.setDate(gridStart.getDate() + index);
+    return {
+      date: day,
+      key: toDateKey(day),
+      currentMonth: day.getMonth() === date.getMonth()
+    };
+  });
+}
+
+function toDateKey(date) {
+  const value = new Date(date);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatMonthYear(date) {
+  return new Intl.DateTimeFormat("fr-CH", { month: "long", year: "numeric" }).format(date);
+}
+
+async function shiftCalendarMonth(widgetId, offset) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const date = getCalendarDate(widget);
+  date.setMonth(date.getMonth() + offset);
+  await updateWidgetConfig(widgetId, { month: date.toISOString() }, { render: true });
+}
+
+function getKanbanColumns(widget) {
+  return Array.isArray(widget.config?.columns) && widget.config.columns.length
+    ? widget.config.columns
+    : createDefaultWidgetConfig("kanban").columns;
+}
+
+async function addKanbanCard(widgetId, columnId) {
+  const widget = getWidget(widgetId);
+  const input = findWidgetElement(widgetId)?.querySelector(`[data-widget-input='kanban-new-card'][data-kanban-column='${columnId}']`);
+  const title = normalizeText(input?.value);
+  if (!widget || !title) {
+    input?.focus();
+    return;
+  }
+
+  const columns = getKanbanColumns(widget).map((column) =>
+    column.id === columnId
+      ? { ...column, cards: column.cards.concat({ id: createId("card"), title }) }
+      : column
+  );
+  await updateWidgetConfig(widgetId, { columns }, { render: true, message: "Carte ajoutee." });
+}
+
+async function moveKanbanCard(widgetId, columnId, cardId, direction) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const columns = getKanbanColumns(widget).map((column) => ({ ...column, cards: column.cards.slice() }));
+  const sourceIndex = columns.findIndex((column) => column.id === columnId);
+  const targetIndex = direction === "left" ? sourceIndex - 1 : sourceIndex + 1;
+  if (sourceIndex < 0 || targetIndex < 0 || targetIndex >= columns.length) {
+    return;
+  }
+
+  const cardIndex = columns[sourceIndex].cards.findIndex((card) => card.id === cardId);
+  if (cardIndex < 0) {
+    return;
+  }
+
+  const [card] = columns[sourceIndex].cards.splice(cardIndex, 1);
+  columns[targetIndex].cards.push(card);
+  await updateWidgetConfig(widgetId, { columns }, { render: true, message: "Carte deplacee." });
+}
+
+async function deleteKanbanCard(widgetId, columnId, cardId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const columns = getKanbanColumns(widget).map((column) =>
+    column.id === columnId ? { ...column, cards: column.cards.filter((card) => card.id !== cardId) } : column
+  );
+  await updateWidgetConfig(widgetId, { columns }, { render: true, message: "Carte supprimee." });
+}
+
+async function updateKanbanCardTitle(widgetId, columnId, cardId, title) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const columns = getKanbanColumns(widget).map((column) =>
+    column.id === columnId
+      ? {
+          ...column,
+          cards: column.cards.map((card) => (card.id === cardId ? { ...card, title: toStringValue(title) } : card))
+        }
+      : column
+  );
+  await updateWidgetConfig(widgetId, { columns }, { render: false });
+}
+
+const quizQuestions = [
+  {
+    category: "Technology",
+    question: "Which protocol is commonly used to resolve domain names into IP addresses?",
+    answers: ["DNS", "SMTP", "SSH", "FTP"],
+    correctAnswerIndex: 0,
+    explanation: "DNS maps names like example.com to IP addresses."
+  },
+  {
+    category: "Science",
+    question: "What is the chemical symbol for gold?",
+    answers: ["Ag", "Au", "Gd", "Go"],
+    correctAnswerIndex: 1,
+    explanation: "Gold uses the symbol Au."
+  },
+  {
+    category: "Web",
+    question: "Which HTML element is used for the main heading of a page?",
+    answers: ["main", "title", "h1", "header"],
+    correctAnswerIndex: 2,
+    explanation: "h1 represents the top-level heading in document content."
+  },
+  {
+    category: "Productivity",
+    question: "What does a kanban board primarily visualize?",
+    answers: ["Budgets", "Work stages", "Passwords", "Browser cookies"],
+    correctAnswerIndex: 1,
+    explanation: "Kanban boards show work moving through stages."
+  }
+];
+
+function getDailyQuestion(dayKey) {
+  const index = hashString(dayKey) % quizQuestions.length;
+  return quizQuestions[index];
+}
+
+async function answerDailyQuiz(widgetId, answerIndex) {
+  const widget = getWidget(widgetId);
+  if (!widget || !Number.isInteger(answerIndex)) {
+    return;
+  }
+
+  const dayKey = toDateKey(new Date());
+  const history = widget.config?.history && typeof widget.config.history === "object" ? { ...widget.config.history } : {};
+  history[dayKey] = answerIndex;
+  await updateWidgetConfig(widgetId, { history }, { render: true, message: "Reponse enregistree." });
+}
+
+async function compressSelectedImages(widgetId, fileList) {
+  const widget = getWidget(widgetId);
+  const files = [...(fileList || [])].filter((file) => ["image/png", "image/jpeg", "image/webp"].includes(file.type)).slice(0, 6);
+  if (!widget || !files.length) {
+    return;
+  }
+
+  const quality = clampNumber(widget.config?.quality, 0.35, 0.95, 0.72);
+  const compressed = [];
+  for (const file of files) {
+    const result = await compressImageFile(file, quality);
+    if (result) {
+      compressed.push(result);
+    }
+  }
+
+  const existingImages = Array.isArray(widget.config?.images) ? widget.config.images : [];
+  await updateWidgetConfig(
+    widgetId,
+    { images: compressed.concat(existingImages).slice(0, 8), quality },
+    { render: true, message: "Images compressees." }
+  );
+}
+
+async function compressImageFile(file, quality) {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const maxSize = 1600;
+    const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    context.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close?.();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+    if (!blob) {
+      return null;
+    }
+
+    return {
+      id: createId("image"),
+      name: replaceFileExtension(file.name, "webp"),
+      originalSize: file.size,
+      compressedSize: blob.size,
+      mime: "image/webp",
+      dataUrl: await blobToDataUrl(blob)
+    };
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function replaceFileExtension(name, extension) {
+  const base = normalizeText(name).replace(/\.[^.]+$/, "") || "image";
+  return `${base}.${extension}`;
+}
+
+function downloadCompressedImage(widgetId, imageId) {
+  const widget = getWidget(widgetId);
+  const image = widget?.config?.images?.find((item) => item.id === imageId);
+  if (!image) {
+    return;
+  }
+
+  downloadDataUrl(image.dataUrl, image.name);
+}
+
+function formatBytes(value) {
+  const bytes = Number(value) || 0;
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 102.4) / 10} KB`;
+  }
+  return `${Math.round(bytes / 104857.6) / 10} MB`;
+}
+
+function formatReduction(originalSize, compressedSize) {
+  const original = Number(originalSize) || 0;
+  const compressed = Number(compressedSize) || 0;
+  if (!original || compressed >= original) {
+    return "No reduction";
+  }
+
+  return `${Math.round((1 - compressed / original) * 100)}% smaller`;
+}
+
+function getUptimeServices(widget) {
+  return Array.isArray(widget.config?.services) && widget.config.services.length
+    ? widget.config.services
+    : createDefaultWidgetConfig("uptime-monitor").services;
+}
+
+function renderUptimeBars(history) {
+  const items = Array.isArray(history) ? history.slice(-18) : [];
+  if (!items.length) {
+    return Array.from({ length: 18 }, () => `<span class="uptime-bar is-unknown"></span>`).join("");
+  }
+
+  return items
+    .map((item) => `<span class="uptime-bar is-${escapeHtml(item.status || "unknown")}"></span>`)
+    .join("");
+}
+
+function scheduleVisibleUptimeChecks() {
+  getVisibleWidgets()
+    .filter((widget) => widget.type === "uptime-monitor" && !state.uptimeCheckedWidgets.has(widget.id))
+    .forEach((widget) => {
+      state.uptimeCheckedWidgets.add(widget.id);
+      window.setTimeout(() => {
+        checkUptimeWidget(widget.id).catch((error) => console.error(error));
+      }, 200);
+    });
+}
+
+async function checkUptimeWidget(widgetId, options = {}) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  if (options.force) {
+    state.uptimeCheckedWidgets.add(widgetId);
+  }
+
+  const services = [];
+  for (const service of getUptimeServices(widget)) {
+    services.push(await checkUptimeService(service));
+  }
+
+  await updateWidgetConfig(widgetId, { services }, { render: true, message: options.force ? "Uptime actualise." : undefined });
+}
+
+async function checkUptimeService(service) {
+  const startedAt = performance.now();
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 6500);
+  let entry;
+
+  try {
+    const response = await fetch(service.url, {
+      method: "GET",
+      mode: "no-cors",
+      cache: "no-store",
+      signal: controller.signal
+    });
+    entry = {
+      status: response.ok || response.type === "opaque" ? "up" : "down",
+      code: response.type === "opaque" ? "reachable" : String(response.status || "unknown"),
+      latency: Math.round(performance.now() - startedAt),
+      checkedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    entry = {
+      status: "down",
+      code: error.name === "AbortError" ? "timeout" : "error",
+      latency: Math.round(performance.now() - startedAt),
+      checkedAt: new Date().toISOString()
+    };
+  } finally {
+    window.clearTimeout(timeout);
+  }
+
+  return {
+    ...service,
+    history: (Array.isArray(service.history) ? service.history : []).concat(entry).slice(-18)
+  };
+}
+
+function downloadTextFile(filename, content, mimeType) {
+  const blob = new Blob([toStringValue(content)], { type: mimeType });
+  downloadBlob(blob, filename);
+}
+
+function downloadDataUrl(dataUrl, filename) {
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  downloadDataUrl(url, filename);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function getSelectedDashboard() {
@@ -724,7 +2238,56 @@ function createLinkMarkup(sectionId, link) {
   `;
 }
 
+function openWidgetSelectorDialog() {
+  state.dialog = { type: "widget-selector" };
+  ui.dialogTitle.textContent = "Ajouter un widget";
+  ui.dialogSubmit.style.display = "none";
+  ui.dialogCancel.textContent = "Fermer";
+  ui.dialogFields.innerHTML = `
+    <div class="widget-type-grid">
+      ${widgetDefinitions
+        .map(
+          (definition) => `
+            <button class="widget-type-option" type="button" data-action="create-widget" data-widget-type="${definition.type}">
+              <span aria-hidden="true">${createIcon(definition.icon)}</span>
+              <strong>${escapeHtml(definition.label)}</strong>
+            </button>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+  openDialog({ focusSelector: ".widget-type-option" });
+}
+
+async function createWidgetFromType(type) {
+  const definition = getWidgetDefinition(type);
+  if (!definition) {
+    showStatus("Type de widget indisponible.");
+    return;
+  }
+
+  if (type === "link-list") {
+    const title = createUniqueSectionTitle("New Links");
+    const section = {
+      id: createId("section"),
+      title,
+      icon: "grid",
+      dashboards: getNewWidgetDashboardIds(),
+      links: []
+    };
+    state.data.sections.push(section);
+    state.data.widgets.push(createWidget("link-list", title, section.dashboards, { sectionId: section.id }));
+  } else {
+    state.data.widgets.push(createWidget(type, definition.label, getNewWidgetDashboardIds(), createDefaultWidgetConfig(type)));
+  }
+
+  closeDialog();
+  await persist("Widget ajoute.");
+}
+
 function openSectionDialog(section = null) {
+  resetDialogActions();
   state.dialog = {
     type: "section",
     sectionId: section?.id || null
@@ -756,6 +2319,7 @@ function openSectionDialog(section = null) {
 }
 
 function openLinkDialog(link = null, sectionId = null) {
+  resetDialogActions();
   if (!state.data.sections.length) {
     showStatus("Cree une ligne avant d'ajouter un lien.");
     return;
@@ -798,7 +2362,7 @@ function openLinkDialog(link = null, sectionId = null) {
   openDialog();
 }
 
-function openDialog() {
+function openDialog(options = {}) {
   ui.formError.textContent = "";
   if (ui.editorDialog.open) {
     ui.editorDialog.close();
@@ -806,7 +2370,7 @@ function openDialog() {
 
   ui.editorDialog.showModal();
 
-  const firstField = ui.dialogFields.querySelector("input, select");
+  const firstField = ui.dialogFields.querySelector(options.focusSelector || "input, select");
   if (firstField) {
     firstField.focus();
     if (firstField instanceof HTMLInputElement) {
@@ -819,10 +2383,16 @@ function closeDialog() {
   state.dialog = null;
   ui.formError.textContent = "";
   ui.editorForm.reset();
+  resetDialogActions();
 
   if (ui.editorDialog.open) {
     ui.editorDialog.close();
   }
+}
+
+function resetDialogActions() {
+  ui.dialogSubmit.style.display = "";
+  ui.dialogCancel.textContent = "Annuler";
 }
 
 function handleDialogBackdropClick(event) {
@@ -868,13 +2438,15 @@ async function saveSection(formData, sectionId) {
     section.icon = icon;
     await persist("Ligne mise a jour.");
   } else {
-    state.data.sections.push({
+    const section = {
       id: createId("section"),
       title,
       icon,
-      dashboards: getNewSectionDashboards(),
+      dashboards: getNewWidgetDashboardIds(),
       links: []
-    });
+    };
+    state.data.sections.push(section);
+    state.data.widgets.push(createWidget("link-list", title, section.dashboards, { sectionId: section.id }));
     await persist("Ligne creee.");
   }
 
@@ -938,6 +2510,9 @@ async function deleteSection(sectionId) {
   }
 
   state.data.sections = state.data.sections.filter((item) => item.id !== sectionId);
+  state.data.widgets = state.data.widgets.filter(
+    (item) => !(item.type === "link-list" && item.config?.sectionId === sectionId)
+  );
   await persist("Ligne supprimee.");
 }
 
@@ -975,15 +2550,15 @@ function handleDragStart(event) {
     return;
   }
 
-  const section = event.target.closest(".link-section");
-  if (section && !event.target.closest(".section-actions")) {
+  const widget = event.target.closest(".dashboard-widget");
+  if (widget && !event.target.closest("button, input, textarea, select, a, .section-actions, .widget-actions")) {
     state.drag = {
-      type: "section",
-      sectionId: section.dataset.sectionId
+      type: "widget",
+      widgetId: widget.dataset.widgetId
     };
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
-    section.classList.add("dragging");
+    widget.classList.add("dragging");
     return;
   }
 
@@ -991,6 +2566,13 @@ function handleDragStart(event) {
 }
 
 function handleDragOver(event) {
+  const imageDropZone = event.target.closest(".image-drop-zone");
+  if (imageDropZone && event.dataTransfer?.types?.includes("Files")) {
+    event.preventDefault();
+    imageDropZone.classList.add("is-file-over");
+    return;
+  }
+
   if (!state.drag) {
     return;
   }
@@ -1013,17 +2595,19 @@ function handleDragOver(event) {
     }
   }
 
-  if (state.drag.type === "section") {
-    const section = event.target.closest(".link-section");
-    if (section && section.dataset.sectionId !== state.drag.sectionId) {
+  if (state.drag.type === "widget") {
+    const widget = event.target.closest(".dashboard-widget");
+    if (widget && widget.dataset.widgetId !== state.drag.widgetId) {
       event.preventDefault();
       clearDropClasses();
-      section.classList.add("is-drop-target");
+      widget.classList.add("is-drop-target");
     }
   }
 }
 
 function handleDragLeave(event) {
+  event.target.closest(".image-drop-zone")?.classList.remove("is-file-over");
+
   const nextTarget = event.relatedTarget;
   if (nextTarget instanceof Node && event.currentTarget?.contains?.(nextTarget)) {
     return;
@@ -1031,6 +2615,14 @@ function handleDragLeave(event) {
 }
 
 async function handleDrop(event) {
+  const imageDropZone = event.target.closest(".image-drop-zone");
+  if (imageDropZone && event.dataTransfer?.files?.length) {
+    event.preventDefault();
+    imageDropZone.classList.remove("is-file-over");
+    await compressSelectedImages(imageDropZone.dataset.widgetId, event.dataTransfer.files);
+    return;
+  }
+
   if (!state.drag) {
     return;
   }
@@ -1059,10 +2651,10 @@ async function handleDrop(event) {
     }
   }
 
-  if (state.drag.type === "section") {
-    const targetSection = event.target.closest(".link-section");
-    if (targetSection) {
-      await moveSection(state.drag.sectionId, targetSection.dataset.sectionId);
+  if (state.drag.type === "widget") {
+    const targetWidget = event.target.closest(".dashboard-widget");
+    if (targetWidget) {
+      await moveWidget(state.drag.widgetId, targetWidget.dataset.widgetId);
     }
   }
 }
@@ -1101,23 +2693,28 @@ async function moveLink(sourceSectionId, linkId, targetSectionId, targetLinkId, 
   await persist("Lien deplace.", { keepDrag: false });
 }
 
-async function moveSection(sourceSectionId, targetSectionId) {
-  if (sourceSectionId === targetSectionId) {
+async function moveWidget(sourceWidgetId, targetWidgetId) {
+  if (sourceWidgetId === targetWidgetId) {
     clearDragState();
     return;
   }
 
-  const sourceIndex = state.data.sections.findIndex((item) => item.id === sourceSectionId);
-  const targetIndex = state.data.sections.findIndex((item) => item.id === targetSectionId);
+  const orderedWidgets = state.data.widgets.slice().sort((a, b) => a.order - b.order);
+  const sourceIndex = orderedWidgets.findIndex((item) => item.id === sourceWidgetId);
+  const targetIndex = orderedWidgets.findIndex((item) => item.id === targetWidgetId);
 
   if (sourceIndex < 0 || targetIndex < 0) {
     clearDragState();
     return;
   }
 
-  const [section] = state.data.sections.splice(sourceIndex, 1);
-  state.data.sections.splice(targetIndex, 0, section);
-  await persist("Ligne deplacee.", { keepDrag: false });
+  const [widget] = orderedWidgets.splice(sourceIndex, 1);
+  orderedWidgets.splice(targetIndex, 0, widget);
+  orderedWidgets.forEach((item, index) => {
+    item.order = index;
+  });
+  state.data.widgets = orderedWidgets;
+  await persist("Widget deplace.", { keepDrag: false });
 }
 
 function clearDragState() {
@@ -1189,6 +2786,9 @@ function sanitizeData(input) {
     version,
     selectedEngine,
     selectedDashboard,
+    widgets: Array.isArray(data.widgets)
+      ? data.widgets.map(sanitizeWidget).filter(Boolean)
+      : [],
     sections: Array.isArray(data.sections)
       ? data.sections.map(sanitizeSection).filter(Boolean)
       : []
@@ -1206,14 +2806,192 @@ function sanitizeSection(section) {
   }
 
   const icon = sectionIconOptions.some((option) => option.id === section.icon) ? section.icon : "grid";
+  const id = normalizeText(section.id) || createId("section");
+  const dashboards = sanitizeDashboardIds(section.dashboards);
 
   return {
-    id: normalizeText(section.id) || createId("section"),
+    id,
     title,
     icon,
-    dashboards: sanitizeDashboardIds(section.dashboards),
+    dashboards: dashboards.length ? dashboards : defaultSectionDashboardIds[id] || [],
     links: Array.isArray(section.links) ? section.links.map(sanitizeLink).filter(Boolean) : []
   };
+}
+
+function sanitizeWidget(widget, index = 0) {
+  if (!widget || typeof widget !== "object") {
+    return null;
+  }
+
+  const definition = getWidgetDefinition(normalizeText(widget.type));
+  if (!definition) {
+    return null;
+  }
+
+  const id = normalizeText(widget.id) || createId("widget");
+  const order = Number.isFinite(Number(widget.order)) ? Number(widget.order) : index;
+  const dashboardIds = sanitizeDashboardIds(widget.dashboardIds);
+
+  return {
+    id,
+    type: definition.type,
+    title: normalizeText(widget.title) || definition.label,
+    dashboardIds,
+    order,
+    config: sanitizeWidgetConfig(definition.type, widget.config || {})
+  };
+}
+
+function sanitizeWidgetConfig(type, config) {
+  const source = config && typeof config === "object" ? config : {};
+
+  switch (type) {
+    case "link-list":
+      return { sectionId: normalizeText(source.sectionId) };
+    case "spacer":
+      return { height: clampNumber(source.height, 32, 220, 80) };
+    case "todo":
+      return {
+        items: Array.isArray(source.items)
+          ? source.items
+              .map((item) => ({
+                id: normalizeText(item?.id) || createId("todo"),
+                text: toStringValue(item?.text),
+                done: Boolean(item?.done)
+              }))
+              .filter((item) => normalizeText(item.text))
+          : []
+      };
+    case "quick-note":
+      return {
+        text: toStringValue(source.text),
+        updatedAt: normalizeText(source.updatedAt)
+      };
+    case "qr-code":
+      return { value: toStringValue(source.value) };
+    case "markdown-editor":
+      return {
+        mode: ["edit", "split", "preview"].includes(source.mode) ? source.mode : "split",
+        markdown: toStringValue(source.markdown)
+      };
+    case "text-diff":
+      return {
+        original: toStringValue(source.original),
+        modified: toStringValue(source.modified)
+      };
+    case "calendar":
+      return { month: sanitizeDateString(source.month) || new Date().toISOString() };
+    case "kanban":
+      return { columns: sanitizeKanbanColumns(source.columns) };
+    case "daily-quiz":
+      return { history: sanitizeQuizHistory(source.history) };
+    case "image-compression":
+      return {
+        quality: clampNumber(source.quality, 0.35, 0.95, 0.72),
+        images: sanitizeCompressedImages(source.images)
+      };
+    case "uptime-monitor":
+      return { services: sanitizeUptimeServices(source.services) };
+    default:
+      return {};
+  }
+}
+
+function sanitizeDateString(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+}
+
+function sanitizeKanbanColumns(columns) {
+  const fallback = [
+    { id: "todo", title: "Todo", cards: [] },
+    { id: "progress", title: "In Progress", cards: [] },
+    { id: "done", title: "Done", cards: [] }
+  ];
+  const sourceColumns = Array.isArray(columns) && columns.length ? columns : fallback;
+
+  return sourceColumns.map((column, index) => ({
+    id: normalizeText(column?.id) || fallback[index]?.id || createId("column"),
+    title: normalizeText(column?.title) || fallback[index]?.title || "Column",
+    cards: Array.isArray(column?.cards)
+      ? column.cards
+          .map((card) => ({
+            id: normalizeText(card?.id) || createId("card"),
+            title: toStringValue(card?.title)
+          }))
+          .filter((card) => normalizeText(card.title))
+      : []
+  }));
+}
+
+function sanitizeQuizHistory(history) {
+  if (!history || typeof history !== "object" || Array.isArray(history)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(history)
+      .filter(([key, value]) => /^\d{4}-\d{2}-\d{2}$/.test(key) && Number.isInteger(Number(value)))
+      .map(([key, value]) => [key, Number(value)])
+  );
+}
+
+function sanitizeCompressedImages(images) {
+  if (!Array.isArray(images)) {
+    return [];
+  }
+
+  return images
+    .map((image) => ({
+      id: normalizeText(image?.id) || createId("image"),
+      name: normalizeText(image?.name) || "image.webp",
+      originalSize: Math.max(0, Number(image?.originalSize) || 0),
+      compressedSize: Math.max(0, Number(image?.compressedSize) || 0),
+      mime: normalizeText(image?.mime) || "image/webp",
+      dataUrl: toStringValue(image?.dataUrl)
+    }))
+    .filter((image) => image.dataUrl.startsWith("data:image/"))
+    .slice(0, 8);
+}
+
+function sanitizeUptimeServices(services) {
+  const fallback = [
+    { id: "service_intranet", name: "MCProd Intranet", url: "https://intranet-agence-mcprod.netlify.app/", history: [] },
+    { id: "service_osmo", name: "Osmo Supply", url: "https://osmo.supply/", history: [] },
+    { id: "service_netlify", name: "Netlify", url: "https://app.netlify.com/", history: [] }
+  ];
+  const sourceServices = Array.isArray(services) && services.length ? services : fallback;
+
+  return sourceServices
+    .map((service, index) => {
+      const url = normalizeText(service?.url);
+      try {
+        return {
+          id: normalizeText(service?.id) || fallback[index]?.id || createId("service"),
+          name: normalizeText(service?.name) || formatHost(url),
+          url: normalizeUrl(url),
+          history: sanitizeUptimeHistory(service?.history)
+        };
+      } catch (error) {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
+function sanitizeUptimeHistory(history) {
+  if (!Array.isArray(history)) {
+    return [];
+  }
+
+  return history
+    .map((entry) => ({
+      status: ["up", "down", "unknown"].includes(entry?.status) ? entry.status : "unknown",
+      code: normalizeText(entry?.code) || "unknown",
+      latency: Math.max(0, Number(entry?.latency) || 0),
+      checkedAt: sanitizeDateString(entry?.checkedAt) || new Date().toISOString()
+    }))
+    .slice(-18);
 }
 
 function sanitizeDashboardIds(value) {
@@ -1225,7 +3003,7 @@ function sanitizeDashboardIds(value) {
   return [...new Set(value.map(normalizeText).filter((id) => validIds.has(id)))];
 }
 
-function getNewSectionDashboards() {
+function getNewWidgetDashboardIds() {
   const dashboard = getSelectedDashboard();
   return dashboard.id === "all" ? [] : [dashboard.id];
 }
@@ -1255,47 +3033,110 @@ function sanitizeLink(link) {
 }
 
 function migrateData(data) {
-  if (Number(data.version) >= DATA_VERSION) {
-    return data;
-  }
-
   const migrated = cloneData(data);
   const removedTitles = new Set(removedSeedLinks.map(normalizeKey));
   const removedUrls = new Set(removedSeedHosts.map(normalizeUrlKey));
+  const shouldApplySeedMigration = Number(data.version) < DATA_VERSION;
 
   migrated.version = DATA_VERSION;
-  migrated.sections = migrated.sections
-    .filter((section) => !removedTitles.has(normalizeKey(section.title)))
-    .map((section) => ({
-      ...section,
-      title: getMigratedSectionTitle(section),
-      links: section.links.filter((link) => !shouldRemoveSeedLink(link, removedTitles, removedUrls))
-    }));
+  migrated.sections = Array.isArray(migrated.sections) ? migrated.sections : [];
+  migrated.widgets = Array.isArray(migrated.widgets) ? migrated.widgets : [];
 
-  defaultData.sections.forEach((seedSection) => {
-    let targetSection = findMatchingSection(migrated, seedSection);
+  if (shouldApplySeedMigration) {
+    migrated.sections = migrated.sections
+      .filter((section) => !removedTitles.has(normalizeKey(section.title)))
+      .map((section) => ({
+        ...section,
+        title: getMigratedSectionTitle(section),
+        links: section.links.filter((link) => !shouldRemoveSeedLink(link, removedTitles, removedUrls))
+      }));
 
-    if (!targetSection) {
-      targetSection = {
-        id: seedSection.id,
-        title: seedSection.title,
-        icon: seedSection.icon,
-        links: []
-      };
-      migrated.sections.push(targetSection);
-    } else if (targetSection.id === seedSection.id) {
-      targetSection.title = seedSection.title;
-      targetSection.icon = seedSection.icon;
-    }
+    defaultData.sections.forEach((seedSection) => {
+      let targetSection = findMatchingSection(migrated, seedSection);
 
-    seedSection.links.forEach((seedLink) => {
-      if (!hasLinkWithUrl(migrated, seedLink.url)) {
-        targetSection.links.push(createSeedLink(seedLink.title, seedLink.url));
+      if (!targetSection) {
+        targetSection = {
+          id: seedSection.id,
+          title: seedSection.title,
+          icon: seedSection.icon,
+          dashboards: defaultSectionDashboardIds[seedSection.id] || [],
+          links: []
+        };
+        migrated.sections.push(targetSection);
+      } else if (targetSection.id === seedSection.id) {
+        targetSection.title = seedSection.title;
+        targetSection.icon = seedSection.icon;
+        targetSection.dashboards = targetSection.dashboards?.length
+          ? targetSection.dashboards
+          : defaultSectionDashboardIds[seedSection.id] || [];
       }
+
+      seedSection.links.forEach((seedLink) => {
+        if (!hasLinkWithUrl(migrated, seedLink.url)) {
+          targetSection.links.push(createSeedLink(seedLink.title, seedLink.url));
+        }
+      });
     });
-  });
+  }
+
+  migrated.sections = migrated.sections.map((section) => ({
+    ...section,
+    dashboards: section.dashboards?.length ? section.dashboards : defaultSectionDashboardIds[section.id] || []
+  }));
+  migrated.widgets = reconcileWidgetsWithSections(migrated.widgets, migrated.sections);
 
   return sanitizeData(migrated);
+}
+
+function reconcileWidgetsWithSections(widgets, sections) {
+  const sectionIds = new Set(sections.map((section) => section.id));
+  const seenWidgetIds = new Set();
+  const seenLinkSections = new Set();
+  const reconciled = [];
+
+  widgets
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .forEach((widget) => {
+      if (seenWidgetIds.has(widget.id)) {
+        return;
+      }
+
+      if (widget.type === "link-list") {
+        const sectionId = widget.config?.sectionId;
+        if (!sectionIds.has(sectionId) || seenLinkSections.has(sectionId)) {
+          return;
+        }
+        seenLinkSections.add(sectionId);
+      }
+
+      seenWidgetIds.add(widget.id);
+      reconciled.push(widget);
+    });
+
+  sections.forEach((section) => {
+    if (!seenLinkSections.has(section.id)) {
+      reconciled.push(createLinkListWidgetFromSection(section, reconciled.length));
+      seenLinkSections.add(section.id);
+    }
+  });
+
+  reconciled.forEach((widget, index) => {
+    widget.order = index;
+  });
+
+  return reconciled;
+}
+
+function createLinkListWidgetFromSection(section, order) {
+  return {
+    id: `widget_link_${section.id}`,
+    type: "link-list",
+    title: section.title,
+    dashboardIds: section.dashboards?.length ? section.dashboards : defaultSectionDashboardIds[section.id] || [],
+    order,
+    config: { sectionId: section.id }
+  };
 }
 
 function getMigratedSectionTitle(section) {
@@ -1503,7 +3344,21 @@ function createIcon(name) {
     code: '<svg viewBox="0 0 24 24" focusable="false"><path d="m8 9-4 3 4 3"></path><path d="m16 9 4 3-4 3"></path><path d="m14 5-4 14"></path></svg>',
     cloud: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 18h11a4 4 0 0 0 .5-8 6 6 0 0 0-11.1-1.9A4.7 4.7 0 0 0 6 18Z"></path></svg>',
     grid: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><rect x="14" y="14" width="6" height="6"></rect></svg>',
-    folder: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7.5h7l2 2H21v8.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"></path><path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1.5"></path></svg>'
+    folder: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7.5h7l2 2H21v8.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"></path><path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1.5"></path></svg>',
+    spacer: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 8h16"></path><path d="M4 16h16"></path><path d="M12 8v8"></path><path d="m9 11 3-3 3 3"></path><path d="m9 13 3 3 3-3"></path></svg>',
+    "check-list": '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 7 2 2 4-4"></path><path d="M12 8h8"></path><path d="m4 17 2 2 4-4"></path><path d="M12 18h8"></path></svg>',
+    note: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 3h9l3 3v15H6V3Z"></path><path d="M14 3v4h4"></path><path d="M9 12h6"></path><path d="M9 16h5"></path></svg>',
+    qr: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><path d="M14 14h2v2h-2z"></path><path d="M18 14h2v6h-4v-2"></path></svg>',
+    markdown: '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M7 15V9l3 4 3-4v6"></path><path d="M16 11v4"></path><path d="m14 13 2 2 2-2"></path></svg>',
+    diff: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 7h8"></path><path d="M6 17h8"></path><path d="M18 5v6"></path><path d="M15 8h6"></path><path d="M15 17h6"></path></svg>',
+    calendar: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M4 10h16"></path></svg>',
+    kanban: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="5" height="16" rx="1"></rect><rect x="10" y="4" width="5" height="10" rx="1"></rect><rect x="16" y="4" width="4" height="13" rx="1"></rect></svg>',
+    quiz: '<svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 9a2.5 2.5 0 1 1 4.3 1.7c-.9.8-1.8 1.3-1.8 2.8"></path><path d="M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>',
+    compress: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 9V4h5"></path><path d="m4 4 6 6"></path><path d="M20 15v5h-5"></path><path d="m20 20-6-6"></path><path d="M15 4h5v5"></path><path d="m20 4-6 6"></path><path d="M9 20H4v-5"></path><path d="m4 20 6-6"></path></svg>',
+    uptime: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h4l2-5 4 10 2-5h6"></path></svg>',
+    check: '<svg viewBox="0 0 24 24" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>',
+    "chevron-left": '<svg viewBox="0 0 24 24" focusable="false"><path d="m15 18-6-6 6-6"></path></svg>',
+    "chevron-right": '<svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"></path></svg>'
   };
 
   return icons[name] || icons.grid;
