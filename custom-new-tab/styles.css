@@ -217,7 +217,7 @@ svg {
   gap: 18px;
   width: calc(100vw - var(--page-gutter-total));
   margin-left: calc(50% - 50vw + var(--page-gutter));
-  padding: 14px 0 20px;
+  padding: 14px 0 20px max(0px, calc((100vw - 980px) / 2));
   background: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.96) 72%, rgba(0, 0, 0, 0) 100%);
 }
 
