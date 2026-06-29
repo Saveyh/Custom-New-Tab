@@ -8,36 +8,32 @@ const searchEngines = [
     label: "Google",
     iconDomain: "google.com",
     placeholder: "Search Google...",
-    buildUrl: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`
+    buildUrl: (query) =>
+      `https://www.google.com/search?q=${encodeURIComponent(query)}`,
   },
   {
     id: "youtube",
     label: "YouTube",
     iconDomain: "youtube.com",
     placeholder: "Search YouTube...",
-    buildUrl: (query) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
+    buildUrl: (query) =>
+      `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
   },
   {
     id: "github",
     label: "GitHub",
     iconDomain: "github.com",
     placeholder: "Search GitHub...",
-    buildUrl: (query) => `https://github.com/search?q=${encodeURIComponent(query)}`
+    buildUrl: (query) =>
+      `https://github.com/search?q=${encodeURIComponent(query)}`,
   },
   {
     id: "chatgpt",
     label: "ChatGPT",
     iconDomain: "chatgpt.com",
     placeholder: "Message ChatGPT...",
-    buildUrl: (query) => `https://chatgpt.com/?q=${encodeURIComponent(query)}`
+    buildUrl: (query) => `https://chatgpt.com/?q=${encodeURIComponent(query)}`,
   },
-  {
-    id: "stackoverflow",
-    label: "Stack Overflow",
-    iconDomain: "stackoverflow.com",
-    placeholder: "Search Stack Overflow...",
-    buildUrl: (query) => `https://stackoverflow.com/search?q=${encodeURIComponent(query)}`
-  }
 ];
 
 const sectionIconOptions = [
@@ -45,7 +41,7 @@ const sectionIconOptions = [
   { id: "code", label: "Code" },
   { id: "cloud", label: "Cloud" },
   { id: "grid", label: "Grid" },
-  { id: "folder", label: "Folder" }
+  { id: "folder", label: "Folder" },
 ];
 
 const defaultDashboards = [
@@ -53,27 +49,27 @@ const defaultDashboards = [
     id: "work",
     label: "Travail",
     icon: "terminal",
-    order: 0
+    order: 0,
   },
   {
     id: "university",
     label: "Universite",
     icon: "graduation",
-    order: 1
+    order: 1,
   },
   {
     id: "leisure",
     label: "Loisirs",
     icon: "gamepad",
-    order: 2
-  }
+    order: 2,
+  },
 ];
 
 const fixedDashboardView = {
   id: "all",
   label: "Tout",
   icon: "grid",
-  order: Number.MAX_SAFE_INTEGER
+  order: Number.MAX_SAFE_INTEGER,
 };
 
 const dashboardIconOptions = [
@@ -84,7 +80,7 @@ const dashboardIconOptions = [
   { id: "code", label: "Code" },
   { id: "cloud", label: "Cloud" },
   { id: "folder", label: "Folder" },
-  { id: "grid", label: "Grid" }
+  { id: "grid", label: "Grid" },
 ];
 
 const widgetDefinitions = [
@@ -92,86 +88,90 @@ const widgetDefinitions = [
     type: "search",
     label: "Search",
     icon: "search",
-    description: "Smart search bar with selectable destination engine"
+    description: "Smart search bar with selectable destination engine",
   },
   {
     type: "link-list",
     label: "Link List",
     icon: "grid",
-    description: "Create a section of shortcuts and favorite links"
+    description: "Create a section of shortcuts and favorite links",
   },
   {
     type: "spacer",
     label: "Spacer",
     icon: "spacer",
-    description: "Use it to add breathing room between widgets"
+    description: "Use it to add breathing room between widgets",
   },
   {
     type: "todo",
     label: "Todo",
     icon: "check-list",
-    description: "A simple task list to manage your daily priorities"
+    description: "A simple task list to manage your daily priorities",
   },
   {
     type: "quick-note",
     label: "Quick Note",
     icon: "note",
-    description: "Capture ideas, code snippets, tasks, or reminders directly on your start page"
+    description:
+      "Capture ideas, code snippets, tasks, or reminders directly on your start page",
   },
   {
     type: "qr-code",
     label: "QR Code Generator",
     icon: "qr",
-    description: "Generate QR codes from text or URLs"
+    description: "Generate QR codes from text or URLs",
   },
   {
     type: "markdown-editor",
     label: "Markdown Editor",
     icon: "markdown",
-    description: "Write and preview Markdown with a live editable preview"
+    description: "Write and preview Markdown with a live editable preview",
   },
   {
     type: "text-diff",
     label: "Text Diff",
     icon: "diff",
-    description: "Compare two texts side by side and see additions, deletions, and changes highlighted"
+    description:
+      "Compare two texts side by side and see additions, deletions, and changes highlighted",
   },
   {
     type: "calendar",
     label: "Calendar",
     icon: "calendar",
-    description: "A simple calendar showing the current day, week, or month"
+    description: "A simple calendar showing the current day, week, or month",
   },
   {
     type: "kanban",
     label: "Kanban Tasks",
     icon: "kanban",
-    description: "A kanban board to organize and track your tasks"
+    description: "A kanban board to organize and track your tasks",
   },
   {
     type: "daily-quiz",
     label: "Daily Quiz",
     icon: "quiz",
-    description: "A fun daily quiz with trivia questions"
+    description: "A fun daily quiz with trivia questions",
   },
   {
     type: "image-compression",
     label: "Image Compression",
     icon: "compress",
-    description: "Compress and convert images (PNG, JPG, WebP) in batches, directly in your browser"
+    description:
+      "Compress and convert images (PNG, JPG, WebP) in batches, directly in your browser",
   },
   {
     type: "uptime-monitor",
     label: "Uptime Monitor",
     icon: "uptime",
-    description: "Monitor website availability and response times"
+    description: "Monitor website availability and response times",
   },
   {
     type: "browser-session",
     label: "Browser Sessions",
     icon: "windows",
-    description: "Save a set of open windows and tabs, then restore them in one click"
-  }
+    description:
+      "Save a set of open windows and tabs, then restore them in one click",
+  },
 ];
 
 const defaultSectionDashboardIds = {
@@ -182,7 +182,7 @@ const defaultSectionDashboardIds = {
   section_universite: ["university"],
   section_creation: ["university"],
   section_loisirs: ["leisure"],
-  section_achats: ["leisure"]
+  section_achats: ["leisure"],
 };
 
 const defaultData = {
@@ -202,8 +202,8 @@ const defaultData = {
         createSeedLink("Gemini", "https://gemini.google.com/"),
         createSeedLink("NotebookLM", "https://notebooklm.google.com/"),
         createSeedLink("Mistral", "https://chat.mistral.ai/"),
-        createSeedLink("Cloud AI", "https://cloud.ai/")
-      ]
+        createSeedLink("Cloud AI", "https://cloud.ai/"),
+      ],
     },
     {
       id: "section_developer_resources",
@@ -211,8 +211,8 @@ const defaultData = {
       icon: "code",
       links: [
         createSeedLink("GitHub", "https://github.com/"),
-        createSeedLink("Supabase", "https://supabase.com/")
-      ]
+        createSeedLink("Supabase", "https://supabase.com/"),
+      ],
     },
     {
       id: "section_hosting_deployment",
@@ -222,8 +222,8 @@ const defaultData = {
         createSeedLink("Vercel", "https://vercel.com/dashboard"),
         createSeedLink("Netlify", "https://app.netlify.com/"),
         createSeedLink("UptimeRobot", "https://dashboard.uptimerobot.com/"),
-        createSeedLink("Infomaniak Manager", "https://manager.infomaniak.com/")
-      ]
+        createSeedLink("Infomaniak Manager", "https://manager.infomaniak.com/"),
+      ],
     },
     {
       id: "section_travail",
@@ -232,8 +232,11 @@ const defaultData = {
       links: [
         createSeedLink("Microsoft 365", "https://m365.cloud.microsoft/"),
         createSeedLink("Osmo Supply", "https://osmo.supply/"),
-        createSeedLink("Intranet MCProd", "https://intranet-agence-mcprod.netlify.app/")
-      ]
+        createSeedLink(
+          "Intranet MCProd",
+          "https://intranet-agence-mcprod.netlify.app/",
+        ),
+      ],
     },
     {
       id: "section_universite",
@@ -241,8 +244,8 @@ const defaultData = {
       icon: "folder",
       links: [
         createSeedLink("Academia UniNE", "https://academia.unine.ch/"),
-        createSeedLink("Moodle UniNE", "https://moodle.unine.ch/")
-      ]
+        createSeedLink("Moodle UniNE", "https://moodle.unine.ch/"),
+      ],
     },
     {
       id: "section_creation",
@@ -250,8 +253,8 @@ const defaultData = {
       icon: "grid",
       links: [
         createSeedLink("Canva", "https://canva.com/"),
-        createSeedLink("Pinterest", "https://fr.pinterest.com/")
-      ]
+        createSeedLink("Pinterest", "https://fr.pinterest.com/"),
+      ],
     },
     {
       id: "section_loisirs",
@@ -260,18 +263,16 @@ const defaultData = {
       links: [
         createSeedLink("YouTube", "https://www.youtube.com/"),
         createSeedLink("Twitch", "https://www.twitch.tv/"),
-        createSeedLink("MyTennis", "https://mytennis.ch/")
-      ]
+        createSeedLink("MyTennis", "https://mytennis.ch/"),
+      ],
     },
     {
       id: "section_achats",
       title: "Achats",
       icon: "folder",
-      links: [
-        createSeedLink("Galaxus", "https://www.galaxus.ch/")
-      ]
-    }
-  ]
+      links: [createSeedLink("Galaxus", "https://www.galaxus.ch/")],
+    },
+  ],
 };
 
 const removedSeedLinks = [
@@ -298,7 +299,7 @@ const removedSeedLinks = [
   "Stack Overflow",
   "Test",
   "Test QA",
-  "Webflow Dashboard"
+  "Webflow Dashboard",
 ];
 
 const removedSeedHosts = [
@@ -321,7 +322,7 @@ const removedSeedHosts = [
   "stackoverflow.com",
   "webflow.com",
   "www.npmjs.com",
-  "www.perplexity.ai"
+  "www.perplexity.ai",
 ];
 
 const state = {
@@ -331,12 +332,13 @@ const state = {
   editMode: false,
   statusTimer: null,
   uptimeCheckedWidgets: new Set(),
-  searchMenuWidgetId: null
+  searchMenuWidgetId: null,
 };
 
 const ui = {
   body: document.body,
   dashboardNav: document.getElementById("dashboardNav"),
+  dashboardNavActions: document.getElementById("dashboardNavActions"),
   editToggle: document.getElementById("editToggle"),
   sectionsRoot: document.getElementById("sectionsRoot"),
   statusMessage: document.getElementById("statusMessage"),
@@ -347,7 +349,7 @@ const ui = {
   dialogSubmit: document.getElementById("dialogSubmit"),
   dialogClose: document.getElementById("dialogClose"),
   dialogCancel: document.getElementById("dialogCancel"),
-  formError: document.getElementById("formError")
+  formError: document.getElementById("formError"),
 };
 
 document.addEventListener("DOMContentLoaded", init);
@@ -362,7 +364,9 @@ async function init() {
   } catch (error) {
     console.error(error);
     state.data = cloneData(defaultData);
-    showStatus("Stockage local indisponible. Les donnees par defaut sont chargees.");
+    showStatus(
+      "Stockage local indisponible. Les donnees par defaut sont chargees.",
+    );
   }
 
   syncDashboardNav();
@@ -391,27 +395,36 @@ function bindEvents() {
   document.addEventListener(
     "error",
     (event) => {
-      if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='favicon']")) {
+      if (
+        event.target instanceof HTMLImageElement &&
+        event.target.matches("[data-role='favicon']")
+      ) {
         const icon = event.target.closest(".link-icon");
         if (icon) {
           icon.dataset.hasError = "true";
         }
       }
 
-      if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='engine-icon']")) {
+      if (
+        event.target instanceof HTMLImageElement &&
+        event.target.matches("[data-role='engine-icon']")
+      ) {
         const icon = event.target.closest(".engine-logo");
         if (icon) {
           icon.dataset.hasError = "true";
         }
       }
     },
-    true
+    true,
   );
 
   document.addEventListener(
     "load",
     (event) => {
-      if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='favicon']")) {
+      if (
+        event.target instanceof HTMLImageElement &&
+        event.target.matches("[data-role='favicon']")
+      ) {
         const icon = event.target.closest(".link-icon");
         if (icon) {
           icon.dataset.hasImage = "true";
@@ -419,7 +432,10 @@ function bindEvents() {
         }
       }
 
-      if (event.target instanceof HTMLImageElement && event.target.matches("[data-role='engine-icon']")) {
+      if (
+        event.target instanceof HTMLImageElement &&
+        event.target.matches("[data-role='engine-icon']")
+      ) {
         const icon = event.target.closest(".engine-logo");
         if (icon) {
           icon.dataset.hasImage = "true";
@@ -427,7 +443,7 @@ function bindEvents() {
         }
       }
     },
-    true
+    true,
   );
 }
 
@@ -443,6 +459,13 @@ function paintStaticIcons() {
 
 function renderDashboardNav() {
   const dashboards = getDashboardViews();
+  const addDashboardMarkup = `
+    <button class="dashboard-add-button" type="button" data-action="add-dashboard" aria-label="Ajouter un dashboard" title="Ajouter un dashboard">
+      ${createIcon("plus")}
+      <span>Nouveau</span>
+    </button>
+  `;
+
   ui.dashboardNav.innerHTML = dashboards
     .map(
       (dashboard) => `
@@ -471,26 +494,22 @@ function renderDashboardNav() {
               : ""
           }
         </div>
-      `
+      `,
     )
     .join("");
 
-  if (state.editMode) {
-    ui.dashboardNav.insertAdjacentHTML(
-      "beforeend",
-      `
-        <button class="dashboard-add-button" type="button" data-action="add-dashboard" aria-label="Ajouter un dashboard" title="Ajouter un dashboard">
-          ${createIcon("plus")}
-          <span>Nouveau</span>
-        </button>
-      `
-    );
+  if (ui.dashboardNavActions) {
+    ui.dashboardNavActions.innerHTML = state.editMode ? addDashboardMarkup : "";
+  } else if (state.editMode) {
+    ui.dashboardNav.insertAdjacentHTML("beforeend", addDashboardMarkup);
   }
 }
 
 function createSearchEngineMenuMarkup(widgetId, selectedEngineId) {
   return searchEngines
-    .map((engine) => createEngineOptionMarkup(engine, selectedEngineId, widgetId))
+    .map((engine) =>
+      createEngineOptionMarkup(engine, selectedEngineId, widgetId),
+    )
     .join("");
 }
 
@@ -554,7 +573,9 @@ async function handleDashboardNavClick(event) {
     return;
   }
 
-  const dashboard = getDashboardViews().find((item) => item.id === tab.dataset.dashboardId);
+  const dashboard = getDashboardViews().find(
+    (item) => item.id === tab.dataset.dashboardId,
+  );
   if (!dashboard || dashboard.id === state.data.selectedDashboard) {
     return;
   }
@@ -591,7 +612,9 @@ async function selectSearchEngine(widgetId, engineId) {
 }
 
 function getSelectedEngine(engineId = state.data.selectedEngine) {
-  return searchEngines.find((engine) => engine.id === engineId) || searchEngines[0];
+  return (
+    searchEngines.find((engine) => engine.id === engineId) || searchEngines[0]
+  );
 }
 
 function closeSearchMenus() {
@@ -604,7 +627,10 @@ function closeSearchMenus() {
 function toggleEditMode() {
   state.editMode = !state.editMode;
   ui.body.classList.toggle("is-editing", state.editMode);
-  ui.editToggle.setAttribute("aria-label", state.editMode ? "Quitter l'edition" : "Activer l'edition");
+  ui.editToggle.setAttribute(
+    "aria-label",
+    state.editMode ? "Quitter l'edition" : "Activer l'edition",
+  );
   render();
 }
 
@@ -629,7 +655,11 @@ async function handleDocumentClick(event) {
         openDashboardDialog();
         break;
       case "edit-dashboard":
-        openDashboardDialog(getMutableDashboards().find((dashboard) => dashboard.id === actionTarget.dataset.dashboardId) || null);
+        openDashboardDialog(
+          getMutableDashboards().find(
+            (dashboard) => dashboard.id === actionTarget.dataset.dashboardId,
+          ) || null,
+        );
         break;
       case "delete-dashboard":
         await deleteDashboard(actionTarget.dataset.dashboardId);
@@ -642,11 +672,16 @@ async function handleDocumentClick(event) {
         break;
       case "toggle-search-engine-menu":
         state.searchMenuWidgetId =
-          state.searchMenuWidgetId === actionTarget.dataset.widgetId ? null : actionTarget.dataset.widgetId;
+          state.searchMenuWidgetId === actionTarget.dataset.widgetId
+            ? null
+            : actionTarget.dataset.widgetId;
         render();
         break;
       case "select-search-engine":
-        await selectSearchEngine(actionTarget.dataset.widgetId, actionTarget.dataset.engineId);
+        await selectSearchEngine(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.engineId,
+        );
         break;
       case "delete-widget":
         await deleteWidget(actionTarget.dataset.widgetId);
@@ -664,46 +699,80 @@ async function handleDocumentClick(event) {
         openLinkDialog(null, actionTarget.dataset.sectionId);
         break;
       case "edit-link":
-        openLinkDialog(getLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId), actionTarget.dataset.sectionId);
+        openLinkDialog(
+          getLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId),
+          actionTarget.dataset.sectionId,
+        );
         break;
       case "delete-link":
-        await deleteLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId);
+        await deleteLink(
+          actionTarget.dataset.sectionId,
+          actionTarget.dataset.linkId,
+        );
         break;
       case "add-todo":
         await addTodoItem(actionTarget.dataset.widgetId);
         break;
       case "toggle-todo":
-        await toggleTodoItem(actionTarget.dataset.widgetId, actionTarget.dataset.todoId);
+        await toggleTodoItem(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.todoId,
+        );
         break;
       case "delete-todo":
-        await deleteTodoItem(actionTarget.dataset.widgetId, actionTarget.dataset.todoId);
+        await deleteTodoItem(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.todoId,
+        );
         break;
       case "copy-note":
         await copyWidgetText(actionTarget.dataset.widgetId, "text");
         break;
       case "clear-note":
-        await updateWidgetConfig(actionTarget.dataset.widgetId, { text: "", updatedAt: new Date().toISOString() }, { render: true, message: "Note cleared." });
+        await updateWidgetConfig(
+          actionTarget.dataset.widgetId,
+          { text: "", updatedAt: new Date().toISOString() },
+          { render: true, message: "Note cleared." },
+        );
         break;
       case "reset-qr":
-        await updateWidgetConfig(actionTarget.dataset.widgetId, { value: "" }, { render: true, message: "QR reset." });
+        await updateWidgetConfig(
+          actionTarget.dataset.widgetId,
+          { value: "" },
+          { render: true, message: "QR reset." },
+        );
         break;
       case "download-qr-preview":
         downloadPseudoQR(actionTarget.dataset.widgetId);
         break;
       case "set-markdown-mode":
-        await updateWidgetConfig(actionTarget.dataset.widgetId, { mode: actionTarget.dataset.mode }, { render: true });
+        await updateWidgetConfig(
+          actionTarget.dataset.widgetId,
+          { mode: actionTarget.dataset.mode },
+          { render: true },
+        );
         break;
       case "copy-markdown":
         await copyWidgetText(actionTarget.dataset.widgetId, "markdown");
         break;
       case "download-markdown":
-        downloadTextFile("note.md", getWidget(actionTarget.dataset.widgetId)?.config?.markdown || "", "text/markdown");
+        downloadTextFile(
+          "note.md",
+          getWidget(actionTarget.dataset.widgetId)?.config?.markdown || "",
+          "text/markdown",
+        );
         break;
       case "copy-diff":
-        await copyText(renderDiffText(getWidget(actionTarget.dataset.widgetId)));
+        await copyText(
+          renderDiffText(getWidget(actionTarget.dataset.widgetId)),
+        );
         break;
       case "reset-diff":
-        await updateWidgetConfig(actionTarget.dataset.widgetId, { original: "", modified: "" }, { render: true, message: "Diff reset." });
+        await updateWidgetConfig(
+          actionTarget.dataset.widgetId,
+          { original: "", modified: "" },
+          { render: true, message: "Diff reset." },
+        );
         break;
       case "calendar-prev":
         await shiftCalendarMonth(actionTarget.dataset.widgetId, -1);
@@ -712,37 +781,77 @@ async function handleDocumentClick(event) {
         await shiftCalendarMonth(actionTarget.dataset.widgetId, 1);
         break;
       case "calendar-today":
-        await updateWidgetConfig(actionTarget.dataset.widgetId, { month: new Date().toISOString() }, { render: true });
+        await updateWidgetConfig(
+          actionTarget.dataset.widgetId,
+          { month: new Date().toISOString() },
+          { render: true },
+        );
         break;
       case "add-kanban-card":
-        await addKanbanCard(actionTarget.dataset.widgetId, actionTarget.dataset.kanbanColumn);
+        await addKanbanCard(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.kanbanColumn,
+        );
         break;
       case "move-kanban-card":
-        await moveKanbanCard(actionTarget.dataset.widgetId, actionTarget.dataset.kanbanColumn, actionTarget.dataset.cardId, actionTarget.dataset.direction);
+        await moveKanbanCard(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.kanbanColumn,
+          actionTarget.dataset.cardId,
+          actionTarget.dataset.direction,
+        );
         break;
       case "delete-kanban-card":
-        await deleteKanbanCard(actionTarget.dataset.widgetId, actionTarget.dataset.kanbanColumn, actionTarget.dataset.cardId);
+        await deleteKanbanCard(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.kanbanColumn,
+          actionTarget.dataset.cardId,
+        );
         break;
       case "answer-quiz":
-        await answerDailyQuiz(actionTarget.dataset.widgetId, Number(actionTarget.dataset.answerIndex));
+        await answerDailyQuiz(
+          actionTarget.dataset.widgetId,
+          Number(actionTarget.dataset.answerIndex),
+        );
         break;
       case "download-compressed-image":
-        downloadCompressedImage(actionTarget.dataset.widgetId, actionTarget.dataset.imageId);
+        downloadCompressedImage(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.imageId,
+        );
         break;
       case "refresh-uptime":
         await checkUptimeWidget(actionTarget.dataset.widgetId, { force: true });
         break;
+      case "delete-uptime-service":
+        await deleteUptimeService(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.serviceId,
+        );
+        break;
       case "save-browser-session":
-        await saveBrowserSession(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId || null);
+        await saveBrowserSession(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.sessionId || null,
+        );
         break;
       case "open-browser-session":
-        await openBrowserSession(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId);
+        await openBrowserSession(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.sessionId,
+        );
         break;
       case "copy-browser-session-links":
-        await copyBrowserSessionLinks(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId);
+        await copyBrowserSessionLinks(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.sessionId,
+        );
         break;
       case "delete-browser-session":
-        await deleteBrowserSession(actionTarget.dataset.widgetId, actionTarget.dataset.sessionId);
+        await deleteBrowserSession(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.sessionId,
+        );
         break;
       default:
         break;
@@ -758,6 +867,16 @@ function handleDocumentSubmit(event) {
     handleSearchSubmit(event).catch((error) => {
       console.error(error);
       showStatus("Recherche impossible.");
+    });
+    return;
+  }
+
+  const uptimeForm = event.target.closest("[data-uptime-add-form]");
+  if (uptimeForm) {
+    event.preventDefault();
+    addUptimeService(uptimeForm.dataset.widgetId, uptimeForm).catch((error) => {
+      console.error(error);
+      showStatus("Site impossible a ajouter.");
     });
   }
 }
@@ -776,42 +895,85 @@ async function handleDocumentInput(event) {
 
   switch (input.dataset.widgetInput) {
     case "spacer-height":
-      await updateWidgetConfig(widgetId, { height: Number(input.value) }, { render: false });
-      input.closest(".spacer-widget-panel")?.style.setProperty("min-height", `${input.value}px`);
-      input.closest(".spacer-widget-panel")?.querySelector(".spacer-preview")?.style.setProperty("height", `${input.value}px`);
-      input.closest(".widget-field-inline")?.querySelector(".widget-value")?.replaceChildren(`${input.value}px`);
+      await updateWidgetConfig(
+        widgetId,
+        { height: Number(input.value) },
+        { render: false },
+      );
+      input
+        .closest(".spacer-widget-panel")
+        ?.style.setProperty("min-height", `${input.value}px`);
+      input
+        .closest(".spacer-widget-panel")
+        ?.querySelector(".spacer-preview")
+        ?.style.setProperty("height", `${input.value}px`);
+      input
+        .closest(".widget-field-inline")
+        ?.querySelector(".widget-value")
+        ?.replaceChildren(`${input.value}px`);
       break;
     case "todo-text":
       await updateTodoText(widgetId, input.dataset.todoId, input.value);
       break;
     case "quick-note-text":
-      await updateWidgetConfig(widgetId, { text: input.value, updatedAt: new Date().toISOString() }, { render: false });
+      await updateWidgetConfig(
+        widgetId,
+        { text: input.value, updatedAt: new Date().toISOString() },
+        { render: false },
+      );
       break;
     case "qr-value":
-      await updateWidgetConfig(widgetId, { value: input.value }, { render: true });
+      await updateWidgetConfig(
+        widgetId,
+        { value: input.value },
+        { render: true },
+      );
       break;
     case "markdown-text":
-      await updateWidgetConfig(widgetId, { markdown: input.value }, { render: false });
+      await updateWidgetConfig(
+        widgetId,
+        { markdown: input.value },
+        { render: false },
+      );
       {
-        const preview = input.closest(".markdown-widget")?.querySelector(".markdown-preview-pane");
+        const preview = input
+          .closest(".markdown-widget")
+          ?.querySelector(".markdown-preview-pane");
         if (preview) {
           preview.innerHTML = renderMarkdownPreview(input.value);
         }
       }
       break;
     case "diff-original":
-      await updateWidgetConfig(widgetId, { original: input.value }, { render: false });
+      await updateWidgetConfig(
+        widgetId,
+        { original: input.value },
+        { render: false },
+      );
       refreshDiffPreview(widgetId, input);
       break;
     case "diff-modified":
-      await updateWidgetConfig(widgetId, { modified: input.value }, { render: false });
+      await updateWidgetConfig(
+        widgetId,
+        { modified: input.value },
+        { render: false },
+      );
       refreshDiffPreview(widgetId, input);
       break;
     case "image-quality":
-      await updateWidgetConfig(widgetId, { quality: Number(input.value) }, { render: true });
+      await updateWidgetConfig(
+        widgetId,
+        { quality: Number(input.value) },
+        { render: true },
+      );
       break;
     case "kanban-card-title":
-      await updateKanbanCardTitle(widgetId, input.dataset.kanbanColumn, input.dataset.cardId, input.value);
+      await updateKanbanCardTitle(
+        widgetId,
+        input.dataset.kanbanColumn,
+        input.dataset.cardId,
+        input.value,
+      );
       break;
     default:
       break;
@@ -884,7 +1046,7 @@ const widgetRegistry = {
   "daily-quiz": renderDailyQuizWidget,
   "image-compression": renderImageCompressionWidget,
   "uptime-monitor": renderUptimeMonitorWidget,
-  "browser-session": renderBrowserSessionWidget
+  "browser-session": renderBrowserSessionWidget,
 };
 
 function renderSearchWidget(widget) {
@@ -996,7 +1158,9 @@ function renderLinkListWidget(widget) {
       <div class="links-grid" data-section-id="${section.id}">
         ${
           section.links.length
-            ? section.links.map((link) => createLinkMarkup(section.id, link)).join("")
+            ? section.links
+                .map((link) => createLinkMarkup(section.id, link))
+                .join("")
             : `<div class="empty-state"><span>Aucun lien</span></div>`
         }
       </div>
@@ -1043,7 +1207,10 @@ function renderUnknownWidget(widget) {
   return renderWidgetCard(
     widget,
     `<div class="widget-panel"><p class="widget-muted">Widget indisponible ou incomplet.</p></div>`,
-    { title: widget.title || "Widget", description: "Renderer missing for this widget type." }
+    {
+      title: widget.title || "Widget",
+      description: "Renderer missing for this widget type.",
+    },
   );
 }
 
@@ -1072,7 +1239,7 @@ function renderSpacerWidget(widget) {
         </label>
       </div>
     `,
-    { compact: true }
+    { compact: true },
   );
 }
 
@@ -1091,7 +1258,7 @@ function renderTodoWidget(widget) {
                 ${createIcon("close")}
               </button>
             </div>
-          `
+          `,
         )
         .join("")
     : `<p class="widget-muted">Aucune tache pour le moment.</p>`;
@@ -1106,14 +1273,16 @@ function renderTodoWidget(widget) {
         </div>
         <div class="todo-list">${rows}</div>
       </div>
-    `
+    `,
   );
 }
 
 function renderQuickNoteWidget(widget) {
   const text = toStringValue(widget.config?.text);
   const updatedAt = normalizeText(widget.config?.updatedAt);
-  const meta = updatedAt ? `Last edit ${formatDateTime(updatedAt)}` : "Autosaved locally";
+  const meta = updatedAt
+    ? `Last edit ${formatDateTime(updatedAt)}`
+    : "Autosaved locally";
 
   return renderWidgetCard(
     widget,
@@ -1128,15 +1297,20 @@ function renderQuickNoteWidget(widget) {
           </span>
         </div>
       </div>
-    `
+    `,
   );
 }
 
 function renderQRCodeWidget(widget) {
-  const value = normalizeText(widget.config?.value) || "https://startpagehq.com";
+  const value =
+    normalizeText(widget.config?.value) || "https://startpagehq.com";
   const matrix = createPseudoQRMatrix(value);
   const cells = matrix
-    .map((row) => row.map((cell) => `<span class="${cell ? "is-on" : ""}"></span>`).join(""))
+    .map((row) =>
+      row
+        .map((cell) => `<span class="${cell ? "is-on" : ""}"></span>`)
+        .join(""),
+    )
     .join("");
 
   return renderWidgetCard(
@@ -1150,13 +1324,15 @@ function renderQRCodeWidget(widget) {
         </div>
         <div class="qr-preview" aria-label="QR preview">${cells}</div>
       </div>
-    `
+    `,
   );
 }
 
 function renderMarkdownEditorWidget(widget) {
   const mode = normalizeText(widget.config?.mode) || "split";
-  const markdown = toStringValue(widget.config?.markdown) || "# Project README\n\nA modern dashboard application built with **local widgets**.\n\n## Features\n\n- Customizable widgets\n- Multiple dashboards\n- Browser extension support";
+  const markdown =
+    toStringValue(widget.config?.markdown) ||
+    "# Project README\n\nA modern dashboard application built with **local widgets**.\n\n## Features\n\n- Customizable widgets\n- Multiple dashboards\n- Browser extension support";
   const preview = renderMarkdownPreview(markdown);
 
   return renderWidgetCard(
@@ -1170,7 +1346,7 @@ function renderMarkdownEditorWidget(widget) {
                 <button class="text-button ${mode === item ? "is-active" : ""}" type="button" data-action="set-markdown-mode" data-widget-id="${widget.id}" data-mode="${item}">
                   ${escapeHtml(item)}
                 </button>
-              `
+              `,
             )
             .join("")}
           <button class="text-button" type="button" data-action="copy-markdown" data-widget-id="${widget.id}">Copy</button>
@@ -1181,13 +1357,17 @@ function renderMarkdownEditorWidget(widget) {
           <div class="markdown-preview-pane">${preview}</div>
         </div>
       </div>
-    `
+    `,
   );
 }
 
 function renderTextDiffWidget(widget) {
-  const original = toStringValue(widget.config?.original) || "function greet(name) {\n  console.log('Hello, ' + name);\n  return true;\n}";
-  const modified = toStringValue(widget.config?.modified) || "function greet(name) {\n  const message = `Hello, ${name}`;\n  console.log(message);\n  return message;\n}";
+  const original =
+    toStringValue(widget.config?.original) ||
+    "function greet(name) {\n  console.log('Hello, ' + name);\n  return true;\n}";
+  const modified =
+    toStringValue(widget.config?.modified) ||
+    "function greet(name) {\n  const message = `Hello, ${name}`;\n  console.log(message);\n  return message;\n}";
   const diff = renderDiff(original, modified);
 
   return renderWidgetCard(
@@ -1210,7 +1390,7 @@ function renderTextDiffWidget(widget) {
         </div>
         <div class="diff-output">${diff}</div>
       </div>
-    `
+    `,
   );
 }
 
@@ -1237,12 +1417,12 @@ function renderCalendarWidget(widget) {
                 <span class="calendar-day ${day.currentMonth ? "" : "is-muted"} ${day.key === todayKey ? "is-today" : ""}">
                   ${day.date.getDate()}
                 </span>
-              `
+              `,
             )
             .join("")}
         </div>
       </div>
-    `
+    `,
   );
 }
 
@@ -1271,7 +1451,7 @@ function renderKanbanWidget(widget) {
                             <button class="small-icon-button" type="button" data-action="delete-kanban-card" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" aria-label="Supprimer">${createIcon("close")}</button>
                           </div>
                         </article>
-                      `
+                      `,
                     )
                     .join("")
                 : `<p class="widget-muted">No cards</p>`
@@ -1282,17 +1462,23 @@ function renderKanbanWidget(widget) {
             <button class="text-button" type="button" data-action="add-kanban-card" data-widget-id="${widget.id}" data-kanban-column="${column.id}">Add</button>
           </div>
         </div>
-      `
+      `,
     )
     .join("");
 
-  return renderWidgetCard(widget, `<div class="widget-panel kanban-widget">${cardsMarkup}</div>`);
+  return renderWidgetCard(
+    widget,
+    `<div class="widget-panel kanban-widget">${cardsMarkup}</div>`,
+  );
 }
 
 function renderDailyQuizWidget(widget) {
   const dayKey = toDateKey(new Date());
   const question = getDailyQuestion(dayKey);
-  const history = widget.config?.history && typeof widget.config.history === "object" ? widget.config.history : {};
+  const history =
+    widget.config?.history && typeof widget.config.history === "object"
+      ? widget.config.history
+      : {};
   const answer = history[dayKey];
   const answered = Number.isInteger(answer);
 
@@ -1310,7 +1496,7 @@ function renderDailyQuizWidget(widget) {
           <span>${String.fromCharCode(65 + index)}</span>
           ${escapeHtml(text)}
         </button>
-      `
+      `,
     )
     .join("");
 
@@ -1323,13 +1509,15 @@ function renderDailyQuizWidget(widget) {
         <div class="quiz-answers">${answers}</div>
         ${answered ? `<p class="widget-muted">${escapeHtml(question.explanation || "Answer saved for today.")}</p>` : ""}
       </div>
-    `
+    `,
   );
 }
 
 function renderImageCompressionWidget(widget) {
   const quality = clampNumber(widget.config?.quality, 0.35, 0.95, 0.72);
-  const images = Array.isArray(widget.config?.images) ? widget.config.images : [];
+  const images = Array.isArray(widget.config?.images)
+    ? widget.config.images
+    : [];
 
   return renderWidgetCard(
     widget,
@@ -1359,34 +1547,50 @@ function renderImageCompressionWidget(widget) {
                         <em>${formatReduction(image.originalSize, image.compressedSize)}</em>
                         <button class="text-button" type="button" data-action="download-compressed-image" data-widget-id="${widget.id}" data-image-id="${image.id}">Download</button>
                       </article>
-                    `
+                    `,
                   )
                   .join("")
               : `<p class="widget-muted">No compressed images yet.</p>`
           }
         </div>
       </div>
-    `
+    `,
   );
 }
 
 function renderUptimeMonitorWidget(widget) {
   const services = getUptimeServices(widget);
-  const rows = services
-    .map((service) => {
-      const latest = service.history?.[service.history.length - 1] || null;
-      const status = latest?.status || "unknown";
-      return `
-        <div class="uptime-row">
-          <span class="uptime-status is-${status}"></span>
-          <strong>${escapeHtml(service.name)}</strong>
-          <div class="uptime-bars">${renderUptimeBars(service.history || [])}</div>
-          <span>${latest?.latency ? `${latest.latency}ms` : "--"}</span>
-          <span>${latest?.code || status}</span>
-        </div>
-      `;
-    })
-    .join("");
+  const rows = services.length
+    ? services
+        .map((service) => {
+          const latest = service.history?.[service.history.length - 1] || null;
+          const status = latest?.status || "unknown";
+          return `
+            <div class="uptime-row ${state.editMode ? "uptime-row-editable" : ""}">
+              <span class="uptime-status is-${status}"></span>
+              <strong title="${escapeHtml(service.url)}">${escapeHtml(service.name)}</strong>
+              <div class="uptime-bars">${renderUptimeBars(service.history || [])}</div>
+              <span class="uptime-latency">${latest?.latency ? `${latest.latency}ms` : "--"}</span>
+              <span class="uptime-code">${latest?.code || status}</span>
+              ${
+                state.editMode
+                  ? `<button class="small-icon-button" type="button" data-action="delete-uptime-service" data-widget-id="${widget.id}" data-service-id="${service.id}" aria-label="Supprimer ${escapeHtml(service.name)}" title="Supprimer">${createIcon("trash")}</button>`
+                  : ""
+              }
+            </div>
+          `;
+        })
+        .join("")
+    : `<p class="widget-muted">Aucun site surveille.</p>`;
+  const editControls = state.editMode
+    ? `
+      <form class="uptime-add-row" data-uptime-add-form data-widget-id="${widget.id}">
+        <input class="widget-input" type="text" name="name" placeholder="Nom" autocomplete="off" data-uptime-service-name />
+        <input class="widget-input" type="text" name="url" placeholder="https://exemple.com" autocomplete="off" data-uptime-service-url />
+        <button class="text-button" type="submit">Ajouter</button>
+      </form>
+    `
+    : "";
 
   return renderWidgetCard(
     widget,
@@ -1396,9 +1600,10 @@ function renderUptimeMonitorWidget(widget) {
           <span class="widget-muted">Manual check</span>
           <button class="text-button" type="button" data-action="refresh-uptime" data-widget-id="${widget.id}">Refresh</button>
         </div>
+        ${editControls}
         <div class="uptime-list">${rows}</div>
       </div>
-    `
+    `,
   );
 }
 
@@ -1425,7 +1630,7 @@ function renderBrowserSessionWidget(widget) {
                       <span class="browser-session-link-pill" title="${escapeHtml(tab.url)}">
                         ${escapeHtml(tab.title || formatHost(tab.url))}
                       </span>
-                    `
+                    `,
                   )
                   .join("")}
                 ${
@@ -1449,7 +1654,7 @@ function renderBrowserSessionWidget(widget) {
                 </button>
               </div>
             </article>
-          `
+          `,
         )
         .join("")
     : `<p class="widget-muted">Aucune session enregistree. Capture ton contexte de travail avant de fermer l'ordinateur.</p>`;
@@ -1468,12 +1673,14 @@ function renderBrowserSessionWidget(widget) {
         </div>
         <div class="browser-session-list">${body}</div>
       </div>
-    `
+    `,
   );
 }
 
 function getWidgetDefinition(type) {
-  return widgetDefinitions.find((definition) => definition.type === type) || null;
+  return (
+    widgetDefinitions.find((definition) => definition.type === type) || null
+  );
 }
 
 function createDefaultWidgets() {
@@ -1483,7 +1690,7 @@ function createDefaultWidgets() {
     title: "Search",
     dashboardIds: defaultDashboards.map((dashboard) => dashboard.id),
     order: 0,
-    config: { engineId: "google" }
+    config: { engineId: "google" },
   };
   const linkWidgets = [
     { sectionId: "section_ai_services", title: "AI Services" },
@@ -1493,7 +1700,7 @@ function createDefaultWidgets() {
     { sectionId: "section_universite", title: "Universite" },
     { sectionId: "section_creation", title: "Creation" },
     { sectionId: "section_loisirs", title: "Loisirs" },
-    { sectionId: "section_achats", title: "Achats" }
+    { sectionId: "section_achats", title: "Achats" },
   ];
 
   return [
@@ -1504,8 +1711,8 @@ function createDefaultWidgets() {
       title: item.title,
       dashboardIds: defaultSectionDashboardIds[item.sectionId] || [],
       order: index + 1,
-      config: { sectionId: item.sectionId }
-    }))
+      config: { sectionId: item.sectionId },
+    })),
   ];
 }
 
@@ -1521,8 +1728,12 @@ function createDefaultWidgetConfig(type) {
       return {
         items: [
           { id: createId("todo"), text: "Review priorities", done: false },
-          { id: createId("todo"), text: "Ship one useful improvement", done: false }
-        ]
+          {
+            id: createId("todo"),
+            text: "Ship one useful improvement",
+            done: false,
+          },
+        ],
       };
     case "quick-note":
       return { text: "", updatedAt: "" };
@@ -1531,12 +1742,13 @@ function createDefaultWidgetConfig(type) {
     case "markdown-editor":
       return {
         mode: "split",
-        markdown: "# Notes\n\nWrite Markdown on the left and keep the preview beside it."
+        markdown:
+          "# Notes\n\nWrite Markdown on the left and keep the preview beside it.",
       };
     case "text-diff":
       return {
         original: "Before\nLine kept\nOld detail",
-        modified: "Before\nLine kept\nNew detail"
+        modified: "Before\nLine kept\nNew detail",
       };
     case "calendar":
       return { month: new Date().toISOString() };
@@ -1546,15 +1758,15 @@ function createDefaultWidgetConfig(type) {
           {
             id: "todo",
             title: "Todo",
-            cards: [{ id: createId("card"), title: "Plan next widget" }]
+            cards: [{ id: createId("card"), title: "Plan next widget" }],
           },
           {
             id: "progress",
             title: "In Progress",
-            cards: [{ id: createId("card"), title: "Polish dashboard" }]
+            cards: [{ id: createId("card"), title: "Polish dashboard" }],
           },
-          { id: "done", title: "Done", cards: [] }
-        ]
+          { id: "done", title: "Done", cards: [] },
+        ],
       };
     case "daily-quiz":
       return { history: {} };
@@ -1563,10 +1775,25 @@ function createDefaultWidgetConfig(type) {
     case "uptime-monitor":
       return {
         services: [
-          { id: "service_intranet", name: "MCProd Intranet", url: "https://intranet-agence-mcprod.netlify.app/", history: [] },
-          { id: "service_osmo", name: "Osmo Supply", url: "https://osmo.supply/", history: [] },
-          { id: "service_netlify", name: "Netlify", url: "https://app.netlify.com/", history: [] }
-        ]
+          {
+            id: "service_intranet",
+            name: "MCProd Intranet",
+            url: "https://intranet-agence-mcprod.netlify.app/",
+            history: [],
+          },
+          {
+            id: "service_osmo",
+            name: "Osmo Supply",
+            url: "https://osmo.supply/",
+            history: [],
+          },
+          {
+            id: "service_netlify",
+            name: "Netlify",
+            url: "https://app.netlify.com/",
+            history: [],
+          },
+        ],
       };
     case "browser-session":
       return { sessions: [] };
@@ -1583,14 +1810,15 @@ function createWidget(type, title, dashboardIds, config = {}) {
     title: normalizeText(title) || definition.label,
     dashboardIds: sanitizeDashboardIds(dashboardIds),
     order: getNextWidgetOrder(),
-    config: sanitizeWidgetConfig(definition.type, config)
+    config: sanitizeWidgetConfig(definition.type, config),
   };
 }
 
 function getStoredDashboards(sourceData = state.data) {
-  const source = Array.isArray(sourceData?.dashboards) && sourceData.dashboards.length
-    ? sourceData.dashboards
-    : defaultDashboards;
+  const source =
+    Array.isArray(sourceData?.dashboards) && sourceData.dashboards.length
+      ? sourceData.dashboards
+      : defaultDashboards;
 
   return source
     .map((dashboard, index) => sanitizeDashboard(dashboard, index))
@@ -1600,7 +1828,9 @@ function getStoredDashboards(sourceData = state.data) {
 
 function getMutableDashboards() {
   if (!Array.isArray(state.data.dashboards)) {
-    state.data.dashboards = getStoredDashboards().map((dashboard) => ({ ...dashboard }));
+    state.data.dashboards = getStoredDashboards().map((dashboard) => ({
+      ...dashboard,
+    }));
   }
 
   return state.data.dashboards;
@@ -1612,15 +1842,21 @@ function getDashboardViews(sourceData = state.data) {
 
 function getNextDashboardOrder() {
   const dashboards = getMutableDashboards();
-  return dashboards.length ? Math.max(...dashboards.map((dashboard) => Number(dashboard.order) || 0)) + 1 : 0;
+  return dashboards.length
+    ? Math.max(...dashboards.map((dashboard) => Number(dashboard.order) || 0)) +
+        1
+    : 0;
 }
 
 function createDashboardId(label) {
-  const base = normalizeText(label)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "dashboard";
-  const existingIds = new Set(getMutableDashboards().map((dashboard) => dashboard.id));
+  const base =
+    normalizeText(label)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "dashboard";
+  const existingIds = new Set(
+    getMutableDashboards().map((dashboard) => dashboard.id),
+  );
   if (!existingIds.has(base)) {
     return base;
   }
@@ -1638,7 +1874,10 @@ function getNextWidgetOrder() {
     return 0;
   }
 
-  return Math.max(...state.data.widgets.map((widget) => Number(widget.order) || 0)) + 1;
+  return (
+    Math.max(...state.data.widgets.map((widget) => Number(widget.order) || 0)) +
+    1
+  );
 }
 
 function getWidget(widgetId) {
@@ -1653,7 +1892,7 @@ async function updateWidgetConfig(widgetId, updates, options = {}) {
 
   widget.config = sanitizeWidgetConfig(widget.type, {
     ...(widget.config || {}),
-    ...(updates || {})
+    ...(updates || {}),
   });
 
   if (options.render) {
@@ -1678,12 +1917,16 @@ async function deleteWidget(widgetId) {
     return;
   }
 
-  state.data.widgets = state.data.widgets.filter((item) => item.id !== widgetId);
+  state.data.widgets = state.data.widgets.filter(
+    (item) => item.id !== widgetId,
+  );
   await persist("Widget supprime.");
 }
 
 async function deleteDashboard(dashboardId) {
-  const dashboard = getMutableDashboards().find((item) => item.id === dashboardId);
+  const dashboard = getMutableDashboards().find(
+    (item) => item.id === dashboardId,
+  );
   if (!dashboard) {
     return;
   }
@@ -1692,18 +1935,24 @@ async function deleteDashboard(dashboardId) {
     return;
   }
 
-  state.data.dashboards = getMutableDashboards().filter((item) => item.id !== dashboardId);
+  state.data.dashboards = getMutableDashboards().filter(
+    (item) => item.id !== dashboardId,
+  );
   state.data.sections = state.data.sections.map((section) => ({
     ...section,
-    dashboards: (section.dashboards || []).filter((id) => id !== dashboardId)
+    dashboards: (section.dashboards || []).filter((id) => id !== dashboardId),
   }));
   state.data.widgets = state.data.widgets.map((widget) => ({
     ...widget,
-    dashboardIds: (widget.dashboardIds || []).filter((id) => id !== dashboardId)
+    dashboardIds: (widget.dashboardIds || []).filter(
+      (id) => id !== dashboardId,
+    ),
   }));
 
   if (state.data.selectedDashboard === dashboardId) {
-    state.data.selectedDashboard = getStoredDashboards({ dashboards: state.data.dashboards })[0]?.id || fixedDashboardView.id;
+    state.data.selectedDashboard =
+      getStoredDashboards({ dashboards: state.data.dashboards })[0]?.id ||
+      fixedDashboardView.id;
   }
 
   await persist("Dashboard supprime.");
@@ -1711,7 +1960,9 @@ async function deleteDashboard(dashboardId) {
 
 function createUniqueSectionTitle(baseTitle) {
   const base = normalizeText(baseTitle) || "New Links";
-  const existing = new Set(state.data.sections.map((section) => normalizeKey(section.title)));
+  const existing = new Set(
+    state.data.sections.map((section) => normalizeKey(section.title)),
+  );
   if (!existing.has(normalizeKey(base))) {
     return base;
   }
@@ -1730,7 +1981,9 @@ function getTodoItems(widget) {
 
 async function addTodoItem(widgetId) {
   const widget = getWidget(widgetId);
-  const input = findWidgetElement(widgetId)?.querySelector("[data-widget-input='todo-new']");
+  const input = findWidgetElement(widgetId)?.querySelector(
+    "[data-widget-input='todo-new']",
+  );
   const text = normalizeText(input?.value);
   if (!widget || !text) {
     input?.focus();
@@ -1740,9 +1993,13 @@ async function addTodoItem(widgetId) {
   const items = getTodoItems(widget).concat({
     id: createId("todo"),
     text,
-    done: false
+    done: false,
   });
-  await updateWidgetConfig(widgetId, { items }, { render: true, message: "Tache ajoutee." });
+  await updateWidgetConfig(
+    widgetId,
+    { items },
+    { render: true, message: "Tache ajoutee." },
+  );
 }
 
 async function toggleTodoItem(widgetId, todoId) {
@@ -1752,7 +2009,7 @@ async function toggleTodoItem(widgetId, todoId) {
   }
 
   const items = getTodoItems(widget).map((item) =>
-    item.id === todoId ? { ...item, done: !item.done } : item
+    item.id === todoId ? { ...item, done: !item.done } : item,
   );
   await updateWidgetConfig(widgetId, { items }, { render: true });
 }
@@ -1766,7 +2023,7 @@ async function deleteTodoItem(widgetId, todoId) {
   await updateWidgetConfig(
     widgetId,
     { items: getTodoItems(widget).filter((item) => item.id !== todoId) },
-    { render: true, message: "Tache supprimee." }
+    { render: true, message: "Tache supprimee." },
   );
 }
 
@@ -1777,7 +2034,7 @@ async function updateTodoText(widgetId, todoId, text) {
   }
 
   const items = getTodoItems(widget).map((item) =>
-    item.id === todoId ? { ...item, text: toStringValue(text) } : item
+    item.id === todoId ? { ...item, text: toStringValue(text) } : item,
   );
   await updateWidgetConfig(widgetId, { items }, { render: false });
 }
@@ -1810,7 +2067,11 @@ async function copyText(text) {
 }
 
 function findWidgetElement(widgetId) {
-  return [...document.querySelectorAll(".dashboard-widget")].find((element) => element.dataset.widgetId === widgetId) || null;
+  return (
+    [...document.querySelectorAll(".dashboard-widget")].find(
+      (element) => element.dataset.widgetId === widgetId,
+    ) || null
+  );
 }
 
 function toStringValue(value) {
@@ -1836,15 +2097,19 @@ function formatDateTime(value) {
     day: "2-digit",
     month: "2-digit",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   }).format(date);
 }
 
 // TODO: replace this deterministic visual placeholder with a standards-compliant local QR encoder.
 function createPseudoQRMatrix(value) {
   const size = 29;
-  const matrix = Array.from({ length: size }, () => Array.from({ length: size }, () => false));
-  const reserved = Array.from({ length: size }, () => Array.from({ length: size }, () => false));
+  const matrix = Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => false),
+  );
+  const reserved = Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => false),
+  );
   const hash = hashString(value);
 
   addFinderPattern(matrix, reserved, 0, 0);
@@ -1907,7 +2172,12 @@ function downloadPseudoQR(widgetId) {
   matrix.forEach((row, y) => {
     row.forEach((cell, x) => {
       if (cell) {
-        context.fillRect((x + quietZone) * cellSize, (y + quietZone) * cellSize, cellSize, cellSize);
+        context.fillRect(
+          (x + quietZone) * cellSize,
+          (y + quietZone) * cellSize,
+          cellSize,
+          cellSize,
+        );
       }
     });
   });
@@ -1929,14 +2199,18 @@ function renderMarkdownPreview(markdown) {
 
   const flushList = () => {
     if (listItems.length) {
-      blocks.push(`<ul>${listItems.map((item) => `<li>${formatMarkdownInline(item)}</li>`).join("")}</ul>`);
+      blocks.push(
+        `<ul>${listItems.map((item) => `<li>${formatMarkdownInline(item)}</li>`).join("")}</ul>`,
+      );
       listItems = [];
     }
   };
 
   const flushCode = () => {
     if (codeLines.length) {
-      blocks.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      blocks.push(
+        `<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`,
+      );
       codeLines = [];
     }
   };
@@ -1982,7 +2256,9 @@ function renderMarkdownPreview(markdown) {
 
   flushList();
   flushCode();
-  return blocks.length ? blocks.join("") : `<p class="widget-muted">Preview</p>`;
+  return blocks.length
+    ? blocks.join("")
+    : `<p class="widget-muted">Preview</p>`;
 }
 
 function formatMarkdownInline(value) {
@@ -1993,9 +2269,15 @@ function formatMarkdownInline(value) {
 }
 
 function renderDiff(original, modified) {
-  const parts = calculateLineDiff(toStringValue(original), toStringValue(modified));
+  const parts = calculateLineDiff(
+    toStringValue(original),
+    toStringValue(modified),
+  );
   return parts
-    .map((part) => `<div class="diff-line is-${part.type}"><span>${part.prefix}</span><code>${escapeHtml(part.text || " ")}</code></div>`)
+    .map(
+      (part) =>
+        `<div class="diff-line is-${part.type}"><span>${part.prefix}</span><code>${escapeHtml(part.text || " ")}</code></div>`,
+    )
     .join("");
 }
 
@@ -2004,27 +2286,40 @@ function renderDiffText(widget) {
     return "";
   }
 
-  return calculateLineDiff(widget.config?.original || "", widget.config?.modified || "")
+  return calculateLineDiff(
+    widget.config?.original || "",
+    widget.config?.modified || "",
+  )
     .map((part) => `${part.prefix} ${part.text}`)
     .join("\n");
 }
 
 function refreshDiffPreview(widgetId, input) {
   const widget = getWidget(widgetId);
-  const output = input.closest(".text-diff-widget")?.querySelector(".diff-output");
+  const output = input
+    .closest(".text-diff-widget")
+    ?.querySelector(".diff-output");
   if (widget && output) {
-    output.innerHTML = renderDiff(widget.config?.original || "", widget.config?.modified || "");
+    output.innerHTML = renderDiff(
+      widget.config?.original || "",
+      widget.config?.modified || "",
+    );
   }
 }
 
 function calculateLineDiff(original, modified) {
   const a = toStringValue(original).split(/\r?\n/);
   const b = toStringValue(modified).split(/\r?\n/);
-  const table = Array.from({ length: a.length + 1 }, () => Array.from({ length: b.length + 1 }, () => 0));
+  const table = Array.from({ length: a.length + 1 }, () =>
+    Array.from({ length: b.length + 1 }, () => 0),
+  );
 
   for (let i = a.length - 1; i >= 0; i -= 1) {
     for (let j = b.length - 1; j >= 0; j -= 1) {
-      table[i][j] = a[i] === b[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);
+      table[i][j] =
+        a[i] === b[j]
+          ? table[i + 1][j + 1] + 1
+          : Math.max(table[i + 1][j], table[i][j + 1]);
     }
   }
 
@@ -2074,7 +2369,7 @@ function buildCalendarDays(date) {
     return {
       date: day,
       key: toDateKey(day),
-      currentMonth: day.getMonth() === date.getMonth()
+      currentMonth: day.getMonth() === date.getMonth(),
     };
   });
 }
@@ -2088,7 +2383,10 @@ function toDateKey(date) {
 }
 
 function formatMonthYear(date) {
-  return new Intl.DateTimeFormat("fr-CH", { month: "long", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat("fr-CH", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }
 
 async function shiftCalendarMonth(widgetId, offset) {
@@ -2099,7 +2397,11 @@ async function shiftCalendarMonth(widgetId, offset) {
 
   const date = getCalendarDate(widget);
   date.setMonth(date.getMonth() + offset);
-  await updateWidgetConfig(widgetId, { month: date.toISOString() }, { render: true });
+  await updateWidgetConfig(
+    widgetId,
+    { month: date.toISOString() },
+    { render: true },
+  );
 }
 
 function getKanbanColumns(widget) {
@@ -2110,7 +2412,9 @@ function getKanbanColumns(widget) {
 
 async function addKanbanCard(widgetId, columnId) {
   const widget = getWidget(widgetId);
-  const input = findWidgetElement(widgetId)?.querySelector(`[data-widget-input='kanban-new-card'][data-kanban-column='${columnId}']`);
+  const input = findWidgetElement(widgetId)?.querySelector(
+    `[data-widget-input='kanban-new-card'][data-kanban-column='${columnId}']`,
+  );
   const title = normalizeText(input?.value);
   if (!widget || !title) {
     input?.focus();
@@ -2119,10 +2423,17 @@ async function addKanbanCard(widgetId, columnId) {
 
   const columns = getKanbanColumns(widget).map((column) =>
     column.id === columnId
-      ? { ...column, cards: column.cards.concat({ id: createId("card"), title }) }
-      : column
+      ? {
+          ...column,
+          cards: column.cards.concat({ id: createId("card"), title }),
+        }
+      : column,
   );
-  await updateWidgetConfig(widgetId, { columns }, { render: true, message: "Carte ajoutee." });
+  await updateWidgetConfig(
+    widgetId,
+    { columns },
+    { render: true, message: "Carte ajoutee." },
+  );
 }
 
 async function moveKanbanCard(widgetId, columnId, cardId, direction) {
@@ -2131,21 +2442,30 @@ async function moveKanbanCard(widgetId, columnId, cardId, direction) {
     return;
   }
 
-  const columns = getKanbanColumns(widget).map((column) => ({ ...column, cards: column.cards.slice() }));
+  const columns = getKanbanColumns(widget).map((column) => ({
+    ...column,
+    cards: column.cards.slice(),
+  }));
   const sourceIndex = columns.findIndex((column) => column.id === columnId);
   const targetIndex = direction === "left" ? sourceIndex - 1 : sourceIndex + 1;
   if (sourceIndex < 0 || targetIndex < 0 || targetIndex >= columns.length) {
     return;
   }
 
-  const cardIndex = columns[sourceIndex].cards.findIndex((card) => card.id === cardId);
+  const cardIndex = columns[sourceIndex].cards.findIndex(
+    (card) => card.id === cardId,
+  );
   if (cardIndex < 0) {
     return;
   }
 
   const [card] = columns[sourceIndex].cards.splice(cardIndex, 1);
   columns[targetIndex].cards.push(card);
-  await updateWidgetConfig(widgetId, { columns }, { render: true, message: "Carte deplacee." });
+  await updateWidgetConfig(
+    widgetId,
+    { columns },
+    { render: true, message: "Carte deplacee." },
+  );
 }
 
 async function deleteKanbanCard(widgetId, columnId, cardId) {
@@ -2155,9 +2475,15 @@ async function deleteKanbanCard(widgetId, columnId, cardId) {
   }
 
   const columns = getKanbanColumns(widget).map((column) =>
-    column.id === columnId ? { ...column, cards: column.cards.filter((card) => card.id !== cardId) } : column
+    column.id === columnId
+      ? { ...column, cards: column.cards.filter((card) => card.id !== cardId) }
+      : column,
   );
-  await updateWidgetConfig(widgetId, { columns }, { render: true, message: "Carte supprimee." });
+  await updateWidgetConfig(
+    widgetId,
+    { columns },
+    { render: true, message: "Carte supprimee." },
+  );
 }
 
 async function updateKanbanCardTitle(widgetId, columnId, cardId, title) {
@@ -2170,9 +2496,13 @@ async function updateKanbanCardTitle(widgetId, columnId, cardId, title) {
     column.id === columnId
       ? {
           ...column,
-          cards: column.cards.map((card) => (card.id === cardId ? { ...card, title: toStringValue(title) } : card))
+          cards: column.cards.map((card) =>
+            card.id === cardId
+              ? { ...card, title: toStringValue(title) }
+              : card,
+          ),
         }
-      : column
+      : column,
   );
   await updateWidgetConfig(widgetId, { columns }, { render: false });
 }
@@ -2180,32 +2510,33 @@ async function updateKanbanCardTitle(widgetId, columnId, cardId, title) {
 const quizQuestions = [
   {
     category: "Technology",
-    question: "Which protocol is commonly used to resolve domain names into IP addresses?",
+    question:
+      "Which protocol is commonly used to resolve domain names into IP addresses?",
     answers: ["DNS", "SMTP", "SSH", "FTP"],
     correctAnswerIndex: 0,
-    explanation: "DNS maps names like example.com to IP addresses."
+    explanation: "DNS maps names like example.com to IP addresses.",
   },
   {
     category: "Science",
     question: "What is the chemical symbol for gold?",
     answers: ["Ag", "Au", "Gd", "Go"],
     correctAnswerIndex: 1,
-    explanation: "Gold uses the symbol Au."
+    explanation: "Gold uses the symbol Au.",
   },
   {
     category: "Web",
     question: "Which HTML element is used for the main heading of a page?",
     answers: ["main", "title", "h1", "header"],
     correctAnswerIndex: 2,
-    explanation: "h1 represents the top-level heading in document content."
+    explanation: "h1 represents the top-level heading in document content.",
   },
   {
     category: "Productivity",
     question: "What does a kanban board primarily visualize?",
     answers: ["Budgets", "Work stages", "Passwords", "Browser cookies"],
     correctAnswerIndex: 1,
-    explanation: "Kanban boards show work moving through stages."
-  }
+    explanation: "Kanban boards show work moving through stages.",
+  },
 ];
 
 function getDailyQuestion(dayKey) {
@@ -2220,14 +2551,25 @@ async function answerDailyQuiz(widgetId, answerIndex) {
   }
 
   const dayKey = toDateKey(new Date());
-  const history = widget.config?.history && typeof widget.config.history === "object" ? { ...widget.config.history } : {};
+  const history =
+    widget.config?.history && typeof widget.config.history === "object"
+      ? { ...widget.config.history }
+      : {};
   history[dayKey] = answerIndex;
-  await updateWidgetConfig(widgetId, { history }, { render: true, message: "Reponse enregistree." });
+  await updateWidgetConfig(
+    widgetId,
+    { history },
+    { render: true, message: "Reponse enregistree." },
+  );
 }
 
 async function compressSelectedImages(widgetId, fileList) {
   const widget = getWidget(widgetId);
-  const files = [...(fileList || [])].filter((file) => ["image/png", "image/jpeg", "image/webp"].includes(file.type)).slice(0, 6);
+  const files = [...(fileList || [])]
+    .filter((file) =>
+      ["image/png", "image/jpeg", "image/webp"].includes(file.type),
+    )
+    .slice(0, 6);
   if (!widget || !files.length) {
     return;
   }
@@ -2241,11 +2583,13 @@ async function compressSelectedImages(widgetId, fileList) {
     }
   }
 
-  const existingImages = Array.isArray(widget.config?.images) ? widget.config.images : [];
+  const existingImages = Array.isArray(widget.config?.images)
+    ? widget.config.images
+    : [];
   await updateWidgetConfig(
     widgetId,
     { images: compressed.concat(existingImages).slice(0, 8), quality },
-    { render: true, message: "Images compressees." }
+    { render: true, message: "Images compressees." },
   );
 }
 
@@ -2262,7 +2606,9 @@ async function compressImageFile(file, quality) {
     const context = canvas.getContext("2d");
     context.drawImage(bitmap, 0, 0, width, height);
     bitmap.close?.();
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/webp", quality),
+    );
     if (!blob) {
       return null;
     }
@@ -2273,7 +2619,7 @@ async function compressImageFile(file, quality) {
       originalSize: file.size,
       compressedSize: blob.size,
       mime: "image/webp",
-      dataUrl: await blobToDataUrl(blob)
+      dataUrl: await blobToDataUrl(blob),
     };
   } catch (error) {
     console.error(error);
@@ -2327,7 +2673,7 @@ function formatReduction(originalSize, compressedSize) {
 }
 
 function getUptimeServices(widget) {
-  return Array.isArray(widget.config?.services) && widget.config.services.length
+  return Array.isArray(widget.config?.services)
     ? widget.config.services
     : createDefaultWidgetConfig("uptime-monitor").services;
 }
@@ -2338,12 +2684,18 @@ function getBrowserSessions(widget) {
 
 function countBrowserSessionTabs(session) {
   return Array.isArray(session?.windows)
-    ? session.windows.reduce((total, windowItem) => total + (Array.isArray(windowItem.tabs) ? windowItem.tabs.length : 0), 0)
+    ? session.windows.reduce(
+        (total, windowItem) =>
+          total + (Array.isArray(windowItem.tabs) ? windowItem.tabs.length : 0),
+        0,
+      )
     : 0;
 }
 
 function formatBrowserSessionStats(session) {
-  const windowCount = Array.isArray(session?.windows) ? session.windows.length : 0;
+  const windowCount = Array.isArray(session?.windows)
+    ? session.windows.length
+    : 0;
   const tabCount = countBrowserSessionTabs(session);
   const windowLabel = windowCount > 1 ? "fenetres" : "fenetre";
   const tabLabel = tabCount > 1 ? "onglets" : "onglet";
@@ -2353,17 +2705,27 @@ function formatBrowserSessionStats(session) {
 function renderUptimeBars(history) {
   const items = Array.isArray(history) ? history.slice(-18) : [];
   if (!items.length) {
-    return Array.from({ length: 18 }, () => `<span class="uptime-bar is-unknown"></span>`).join("");
+    return Array.from(
+      { length: 18 },
+      () => `<span class="uptime-bar is-unknown"></span>`,
+    ).join("");
   }
 
   return items
-    .map((item) => `<span class="uptime-bar is-${escapeHtml(item.status || "unknown")}"></span>`)
+    .map(
+      (item) =>
+        `<span class="uptime-bar is-${escapeHtml(item.status || "unknown")}"></span>`,
+    )
     .join("");
 }
 
 function scheduleVisibleUptimeChecks() {
   getVisibleWidgets()
-    .filter((widget) => widget.type === "uptime-monitor" && !state.uptimeCheckedWidgets.has(widget.id))
+    .filter(
+      (widget) =>
+        widget.type === "uptime-monitor" &&
+        !state.uptimeCheckedWidgets.has(widget.id),
+    )
     .forEach((widget) => {
       state.uptimeCheckedWidgets.add(widget.id);
       window.setTimeout(() => {
@@ -2382,12 +2744,88 @@ async function checkUptimeWidget(widgetId, options = {}) {
     state.uptimeCheckedWidgets.add(widgetId);
   }
 
-  const services = [];
+  const checkedServices = [];
   for (const service of getUptimeServices(widget)) {
-    services.push(await checkUptimeService(service));
+    checkedServices.push(await checkUptimeService(service));
   }
 
-  await updateWidgetConfig(widgetId, { services }, { render: true, message: options.force ? "Uptime actualise." : undefined });
+  const latestWidget = getWidget(widgetId);
+  if (!latestWidget) {
+    return;
+  }
+
+  const checkedById = new Map(
+    checkedServices.map((service) => [service.id, service]),
+  );
+  const services = getUptimeServices(latestWidget).map((service) => {
+    const checkedService = checkedById.get(service.id);
+    return checkedService && checkedService.url === service.url
+      ? { ...service, history: checkedService.history }
+      : service;
+  });
+
+  await updateWidgetConfig(
+    widgetId,
+    { services },
+    { render: true, message: options.force ? "Uptime actualise." : undefined },
+  );
+}
+
+async function addUptimeService(widgetId, form) {
+  const widget = getWidget(widgetId);
+  const nameInput = form?.querySelector("[data-uptime-service-name]");
+  const urlInput = form?.querySelector("[data-uptime-service-url]");
+  const rawUrl = normalizeText(urlInput?.value);
+  if (!widget || !rawUrl) {
+    urlInput?.focus();
+    return;
+  }
+
+  let url;
+  try {
+    url = normalizeUrl(rawUrl);
+  } catch (error) {
+    showStatus("URL invalide.");
+    urlInput?.focus();
+    return;
+  }
+
+  const services = getUptimeServices(widget);
+  const urlKey = normalizeUrlKey(url);
+  if (services.some((service) => normalizeUrlKey(service.url) === urlKey)) {
+    showStatus("Ce site est deja surveille.");
+    urlInput?.focus();
+    return;
+  }
+
+  const service = {
+    id: createId("service"),
+    name: normalizeText(nameInput?.value) || formatHost(url),
+    url,
+    history: [],
+  };
+
+  await updateWidgetConfig(
+    widgetId,
+    { services: services.concat(service) },
+    { render: true, message: "Site ajoute." },
+  );
+}
+
+async function deleteUptimeService(widgetId, serviceId) {
+  const widget = getWidget(widgetId);
+  if (!widget || !serviceId) {
+    return;
+  }
+
+  const services = getUptimeServices(widget).filter(
+    (service) => service.id !== serviceId,
+  );
+  await updateWidgetConfig(
+    widgetId,
+    { services },
+    { render: true, message: "Site retire." },
+  );
 }
 
 async function saveBrowserSession(widgetId, sessionId = null) {
@@ -2399,23 +2837,33 @@ async function saveBrowserSession(widgetId, sessionId = null) {
   ensureBrowserSessionApi();
   const snapshot = await captureCurrentBrowserSession();
   const sessions = getBrowserSessions(widget).slice();
-  const existingSession = sessionId ? sessions.find((item) => item.id === sessionId) : null;
+  const existingSession = sessionId
+    ? sessions.find((item) => item.id === sessionId)
+    : null;
   const session = {
     id: existingSession?.id || createId("session"),
-    name: existingSession?.name || buildBrowserSessionName(snapshot, sessions.length),
+    name:
+      existingSession?.name ||
+      buildBrowserSessionName(snapshot, sessions.length),
     savedAt: new Date().toISOString(),
-    windows: snapshot.windows
+    windows: snapshot.windows,
   };
 
   const nextSessions = existingSession
     ? sessions.map((item) => (item.id === session.id ? session : item))
     : [session, ...sessions].slice(0, 12);
 
-  await updateWidgetConfig(widgetId, { sessions: nextSessions }, { render: true, message: "Session enregistree." });
+  await updateWidgetConfig(
+    widgetId,
+    { sessions: nextSessions },
+    { render: true, message: "Session enregistree." },
+  );
 }
 
 async function openBrowserSession(widgetId, sessionId) {
-  const session = getBrowserSessions(getWidget(widgetId)).find((item) => item.id === sessionId);
+  const session = getBrowserSessions(getWidget(widgetId)).find(
+    (item) => item.id === sessionId,
+  );
   if (!session) {
     return;
   }
@@ -2435,7 +2883,9 @@ async function openBrowserSession(widgetId, sessionId) {
       ...(Number.isFinite(windowItem.left) ? { left: windowItem.left } : {}),
       ...(Number.isFinite(windowItem.top) ? { top: windowItem.top } : {}),
       ...(Number.isFinite(windowItem.width) ? { width: windowItem.width } : {}),
-      ...(Number.isFinite(windowItem.height) ? { height: windowItem.height } : {})
+      ...(Number.isFinite(windowItem.height)
+        ? { height: windowItem.height }
+        : {}),
     });
   }
 
@@ -2443,14 +2893,18 @@ async function openBrowserSession(widgetId, sessionId) {
 }
 
 async function copyBrowserSessionLinks(widgetId, sessionId) {
-  const session = getBrowserSessions(getWidget(widgetId)).find((item) => item.id === sessionId);
+  const session = getBrowserSessions(getWidget(widgetId)).find(
+    (item) => item.id === sessionId,
+  );
   if (!session) {
     return;
   }
 
   const content = session.windows
     .map((windowItem, index) => {
-      const lines = windowItem.tabs.map((tab) => `${tab.title || formatHost(tab.url)}\n${tab.url}`);
+      const lines = windowItem.tabs.map(
+        (tab) => `${tab.title || formatHost(tab.url)}\n${tab.url}`,
+      );
       return [`Fenetre ${index + 1}`, ...lines].join("\n");
     })
     .join("\n\n");
@@ -2464,7 +2918,9 @@ async function deleteBrowserSession(widgetId, sessionId) {
     return;
   }
 
-  const session = getBrowserSessions(widget).find((item) => item.id === sessionId);
+  const session = getBrowserSessions(widget).find(
+    (item) => item.id === sessionId,
+  );
   if (!session) {
     return;
   }
@@ -2475,8 +2931,12 @@ async function deleteBrowserSession(widgetId, sessionId) {
 
   await updateWidgetConfig(
     widgetId,
-    { sessions: getBrowserSessions(widget).filter((item) => item.id !== sessionId) },
-    { render: true, message: "Session supprimee." }
+    {
+      sessions: getBrowserSessions(widget).filter(
+        (item) => item.id !== sessionId,
+      ),
+    },
+    { render: true, message: "Session supprimee." },
   );
 }
 
@@ -2497,7 +2957,7 @@ function buildBrowserSessionName(snapshot, existingCount = 0) {
 async function captureCurrentBrowserSession() {
   const windows = await chrome.windows.getAll({
     populate: true,
-    windowTypes: ["normal"]
+    windowTypes: ["normal"],
   });
   const currentTabUrl = location.href;
   const normalizedWindows = windows
@@ -2510,8 +2970,8 @@ async function captureCurrentBrowserSession() {
         .filter((tab) => isRestorableBrowserTab(tab, currentTabUrl))
         .map((tab) => ({
           url: tab.url,
-          title: normalizeText(tab.title) || formatHost(tab.url)
-        }))
+          title: normalizeText(tab.title) || formatHost(tab.url),
+        })),
     }))
     .filter((windowItem) => windowItem.tabs.length);
 
@@ -2536,7 +2996,11 @@ function isRestorableBrowserTab(tab, currentTabUrl) {
 }
 
 function ensureBrowserSessionApi() {
-  if (typeof chrome === "undefined" || !chrome.windows?.getAll || !chrome.windows?.create) {
+  if (
+    typeof chrome === "undefined" ||
+    !chrome.windows?.getAll ||
+    !chrome.windows?.create
+  ) {
     throw new Error("Chrome windows API unavailable.");
   }
 }
@@ -2552,20 +3016,23 @@ async function checkUptimeService(service) {
       method: "GET",
       mode: "no-cors",
       cache: "no-store",
-      signal: controller.signal
+      signal: controller.signal,
     });
     entry = {
       status: response.ok || response.type === "opaque" ? "up" : "down",
-      code: response.type === "opaque" ? "reachable" : String(response.status || "unknown"),
+      code:
+        response.type === "opaque"
+          ? "reachable"
+          : String(response.status || "unknown"),
       latency: Math.round(performance.now() - startedAt),
-      checkedAt: new Date().toISOString()
+      checkedAt: new Date().toISOString(),
     };
   } catch (error) {
     entry = {
       status: "down",
       code: error.name === "AbortError" ? "timeout" : "error",
       latency: Math.round(performance.now() - startedAt),
-      checkedAt: new Date().toISOString()
+      checkedAt: new Date().toISOString(),
     };
   } finally {
     window.clearTimeout(timeout);
@@ -2573,7 +3040,9 @@ async function checkUptimeService(service) {
 
   return {
     ...service,
-    history: (Array.isArray(service.history) ? service.history : []).concat(entry).slice(-18)
+    history: (Array.isArray(service.history) ? service.history : [])
+      .concat(entry)
+      .slice(-18),
   };
 }
 
@@ -2599,17 +3068,23 @@ function downloadBlob(blob, filename) {
 }
 
 function getSelectedDashboard() {
-  return getDashboardViews().find((dashboard) => dashboard.id === state.data.selectedDashboard) || getDashboardViews()[0];
+  return (
+    getDashboardViews().find(
+      (dashboard) => dashboard.id === state.data.selectedDashboard,
+    ) || getDashboardViews()[0]
+  );
 }
 
 function syncDashboardNav() {
   const dashboard = getSelectedDashboard();
   state.data.selectedDashboard = dashboard.id;
-  ui.dashboardNav.querySelectorAll(".dashboard-tab[data-dashboard-id]").forEach((tab) => {
-    const isSelected = tab.dataset.dashboardId === dashboard.id;
-    tab.classList.toggle("is-active", isSelected);
-    tab.setAttribute("aria-pressed", String(isSelected));
-  });
+  ui.dashboardNav
+    .querySelectorAll(".dashboard-tab[data-dashboard-id]")
+    .forEach((tab) => {
+      const isSelected = tab.dataset.dashboardId === dashboard.id;
+      tab.classList.toggle("is-active", isSelected);
+      tab.setAttribute("aria-pressed", String(isSelected));
+    });
 }
 
 function createLinkMarkup(sectionId, link) {
@@ -2667,7 +3142,7 @@ function openWidgetSelectorDialog() {
               <span aria-hidden="true">${createIcon(definition.icon)}</span>
               <strong>${escapeHtml(definition.label)}</strong>
             </button>
-          `
+          `,
         )
         .join("")}
     </div>
@@ -2689,12 +3164,23 @@ async function createWidgetFromType(type) {
       title,
       icon: "grid",
       dashboards: getNewWidgetDashboardIds(),
-      links: []
+      links: [],
     };
     state.data.sections.push(section);
-    state.data.widgets.push(createWidget("link-list", title, section.dashboards, { sectionId: section.id }));
+    state.data.widgets.push(
+      createWidget("link-list", title, section.dashboards, {
+        sectionId: section.id,
+      }),
+    );
   } else {
-    state.data.widgets.push(createWidget(type, definition.label, getNewWidgetDashboardIds(), createDefaultWidgetConfig(type)));
+    state.data.widgets.push(
+      createWidget(
+        type,
+        definition.label,
+        getNewWidgetDashboardIds(),
+        createDefaultWidgetConfig(type),
+      ),
+    );
   }
 
   closeDialog();
@@ -2705,7 +3191,7 @@ function openSectionDialog(section = null) {
   resetDialogActions();
   state.dialog = {
     type: "section",
-    sectionId: section?.id || null
+    sectionId: section?.id || null,
   };
 
   ui.dialogTitle.textContent = section ? "Modifier la ligne" : "Nouvelle ligne";
@@ -2724,7 +3210,7 @@ function openSectionDialog(section = null) {
               <option value="${option.id}" ${option.id === (section?.icon || "grid") ? "selected" : ""}>
                 ${escapeHtml(option.label)}
               </option>
-            `
+            `,
           )
           .join("")}
       </select>
@@ -2737,10 +3223,12 @@ function openDashboardDialog(dashboard = null) {
   resetDialogActions();
   state.dialog = {
     type: "dashboard",
-    dashboardId: dashboard?.id || null
+    dashboardId: dashboard?.id || null,
   };
 
-  ui.dialogTitle.textContent = dashboard ? "Modifier le dashboard" : "Nouveau dashboard";
+  ui.dialogTitle.textContent = dashboard
+    ? "Modifier le dashboard"
+    : "Nouveau dashboard";
   ui.dialogSubmit.textContent = dashboard ? "Mettre a jour" : "Creer";
   ui.dialogFields.innerHTML = `
     <div class="field">
@@ -2756,7 +3244,7 @@ function openDashboardDialog(dashboard = null) {
               <option value="${option.id}" ${option.id === (dashboard?.icon || "grid") ? "selected" : ""}>
                 ${escapeHtml(option.label)}
               </option>
-            `
+            `,
           )
           .join("")}
       </select>
@@ -2772,12 +3260,13 @@ function openLinkDialog(link = null, sectionId = null) {
     return;
   }
 
-  const targetSectionId = sectionId || findSectionIdByLinkId(link?.id) || state.data.sections[0].id;
+  const targetSectionId =
+    sectionId || findSectionIdByLinkId(link?.id) || state.data.sections[0].id;
 
   state.dialog = {
     type: "link",
     sectionId: targetSectionId,
-    linkId: link?.id || null
+    linkId: link?.id || null,
   };
 
   ui.dialogTitle.textContent = link ? "Modifier le lien" : "Nouveau lien";
@@ -2800,7 +3289,7 @@ function openLinkDialog(link = null, sectionId = null) {
               <option value="${section.id}" ${section.id === targetSectionId ? "selected" : ""}>
                 ${escapeHtml(section.title)}
               </option>
-            `
+            `,
           )
           .join("")}
       </select>
@@ -2817,7 +3306,9 @@ function openDialog(options = {}) {
 
   ui.editorDialog.showModal();
 
-  const firstField = ui.dialogFields.querySelector(options.focusSelector || "input, select");
+  const firstField = ui.dialogFields.querySelector(
+    options.focusSelector || "input, select",
+  );
   if (firstField) {
     firstField.focus();
     if (firstField instanceof HTMLInputElement) {
@@ -2871,18 +3362,23 @@ async function handleDialogSubmit(event) {
       await saveLink(formData, state.dialog.sectionId, state.dialog.linkId);
     }
   } catch (error) {
-    ui.formError.textContent = error instanceof Error ? error.message : "Formulaire invalide.";
+    ui.formError.textContent =
+      error instanceof Error ? error.message : "Formulaire invalide.";
   }
 }
 
 async function saveDashboard(formData, dashboardId) {
   const label = requireText(formData.get("label"), "Le nom est obligatoire.");
-  const icon = dashboardIconOptions.some((option) => option.id === formData.get("icon"))
+  const icon = dashboardIconOptions.some(
+    (option) => option.id === formData.get("icon"),
+  )
     ? normalizeText(formData.get("icon"))
     : "grid";
 
   if (dashboardId) {
-    const dashboard = getMutableDashboards().find((item) => item.id === dashboardId);
+    const dashboard = getMutableDashboards().find(
+      (item) => item.id === dashboardId,
+    );
     if (!dashboard) {
       throw new Error("Dashboard introuvable.");
     }
@@ -2895,7 +3391,7 @@ async function saveDashboard(formData, dashboardId) {
       id: createDashboardId(label),
       label,
       icon,
-      order: getNextDashboardOrder()
+      order: getNextDashboardOrder(),
     });
     await persist("Dashboard cree.");
   }
@@ -2922,10 +3418,14 @@ async function saveSection(formData, sectionId) {
       title,
       icon,
       dashboards: getNewWidgetDashboardIds(),
-      links: []
+      links: [],
     };
     state.data.sections.push(section);
-    state.data.widgets.push(createWidget("link-list", title, section.dashboards, { sectionId: section.id }));
+    state.data.widgets.push(
+      createWidget("link-list", title, section.dashboards, {
+        sectionId: section.id,
+      }),
+    );
     await persist("Ligne creee.");
   }
 
@@ -2934,8 +3434,13 @@ async function saveSection(formData, sectionId) {
 
 async function saveLink(formData, originalSectionId, linkId) {
   const title = requireText(formData.get("title"), "Le nom est obligatoire.");
-  const url = normalizeUrl(requireText(formData.get("url"), "L'URL est obligatoire."));
-  const targetSectionId = requireText(formData.get("sectionId"), "Choisis une ligne.");
+  const url = normalizeUrl(
+    requireText(formData.get("url"), "L'URL est obligatoire."),
+  );
+  const targetSectionId = requireText(
+    formData.get("sectionId"),
+    "Choisis une ligne.",
+  );
   const targetSection = getSection(targetSectionId);
 
   if (!targetSection) {
@@ -2944,8 +3449,10 @@ async function saveLink(formData, originalSectionId, linkId) {
 
   if (linkId) {
     const sourceSection = getSection(originalSectionId);
-    const sourceIndex = sourceSection?.links.findIndex((item) => item.id === linkId) ?? -1;
-    const existingLink = sourceIndex >= 0 ? sourceSection.links[sourceIndex] : null;
+    const sourceIndex =
+      sourceSection?.links.findIndex((item) => item.id === linkId) ?? -1;
+    const existingLink =
+      sourceIndex >= 0 ? sourceSection.links[sourceIndex] : null;
     if (!sourceSection || !existingLink) {
       throw new Error("Lien introuvable.");
     }
@@ -2954,7 +3461,7 @@ async function saveLink(formData, originalSectionId, linkId) {
       ...existingLink,
       title,
       url,
-      icon: getFaviconUrl(url)
+      icon: getFaviconUrl(url),
     };
 
     if (sourceSection.id === targetSection.id) {
@@ -2970,7 +3477,7 @@ async function saveLink(formData, originalSectionId, linkId) {
       id: createId("link"),
       title,
       url,
-      icon: getFaviconUrl(url)
+      icon: getFaviconUrl(url),
     });
     await persist("Lien ajoute.");
   }
@@ -2988,9 +3495,12 @@ async function deleteSection(sectionId) {
     return;
   }
 
-  state.data.sections = state.data.sections.filter((item) => item.id !== sectionId);
+  state.data.sections = state.data.sections.filter(
+    (item) => item.id !== sectionId,
+  );
   state.data.widgets = state.data.widgets.filter(
-    (item) => !(item.type === "link-list" && item.config?.sectionId === sectionId)
+    (item) =>
+      !(item.type === "link-list" && item.config?.sectionId === sectionId),
   );
   await persist("Ligne supprimee.");
 }
@@ -3020,7 +3530,7 @@ function handleDragStart(event) {
   if (dashboardItem && !event.target.closest(".dashboard-tab-actions")) {
     state.drag = {
       type: "dashboard",
-      dashboardId: dashboardItem.dataset.dashboardDragId
+      dashboardId: dashboardItem.dataset.dashboardDragId,
     };
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
@@ -3033,7 +3543,7 @@ function handleDragStart(event) {
     state.drag = {
       type: "link",
       sectionId: linkCard.dataset.sectionId,
-      linkId: linkCard.dataset.linkId
+      linkId: linkCard.dataset.linkId,
     };
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
@@ -3042,10 +3552,15 @@ function handleDragStart(event) {
   }
 
   const widget = event.target.closest(".dashboard-widget");
-  if (widget && !event.target.closest("button, input, textarea, select, a, .section-actions, .widget-actions")) {
+  if (
+    widget &&
+    !event.target.closest(
+      "button, input, textarea, select, a, .section-actions, .widget-actions",
+    )
+  ) {
     state.drag = {
       type: "widget",
-      widgetId: widget.dataset.widgetId
+      widgetId: widget.dataset.widgetId,
     };
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
@@ -3097,7 +3612,10 @@ function handleDragOver(event) {
 
   if (state.drag.type === "dashboard") {
     const dashboardItem = event.target.closest(".dashboard-tab-draggable");
-    if (dashboardItem && dashboardItem.dataset.dashboardDragId !== state.drag.dashboardId) {
+    if (
+      dashboardItem &&
+      dashboardItem.dataset.dashboardDragId !== state.drag.dashboardId
+    ) {
       event.preventDefault();
       clearDropClasses();
       dashboardItem.classList.add("is-drop-target");
@@ -3109,7 +3627,10 @@ function handleDragLeave(event) {
   event.target.closest(".image-drop-zone")?.classList.remove("is-file-over");
 
   const nextTarget = event.relatedTarget;
-  if (nextTarget instanceof Node && event.currentTarget?.contains?.(nextTarget)) {
+  if (
+    nextTarget instanceof Node &&
+    event.currentTarget?.contains?.(nextTarget)
+  ) {
     return;
   }
 }
@@ -3119,7 +3640,10 @@ async function handleDrop(event) {
   if (imageDropZone && event.dataTransfer?.files?.length) {
     event.preventDefault();
     imageDropZone.classList.remove("is-file-over");
-    await compressSelectedImages(imageDropZone.dataset.widgetId, event.dataTransfer.files);
+    await compressSelectedImages(
+      imageDropZone.dataset.widgetId,
+      event.dataTransfer.files,
+    );
     return;
   }
 
@@ -3140,13 +3664,19 @@ async function handleDrop(event) {
         state.drag.linkId,
         targetCard.dataset.sectionId,
         targetCard.dataset.linkId,
-        after
+        after,
       );
       return;
     }
 
     if (targetGrid) {
-      await moveLink(state.drag.sectionId, state.drag.linkId, targetGrid.dataset.sectionId, null, true);
+      await moveLink(
+        state.drag.sectionId,
+        state.drag.linkId,
+        targetGrid.dataset.sectionId,
+        null,
+        true,
+      );
       return;
     }
   }
@@ -3161,12 +3691,21 @@ async function handleDrop(event) {
   if (state.drag.type === "dashboard") {
     const targetDashboard = event.target.closest(".dashboard-tab-draggable");
     if (targetDashboard) {
-      await moveDashboard(state.drag.dashboardId, targetDashboard.dataset.dashboardDragId);
+      await moveDashboard(
+        state.drag.dashboardId,
+        targetDashboard.dataset.dashboardDragId,
+      );
     }
   }
 }
 
-async function moveLink(sourceSectionId, linkId, targetSectionId, targetLinkId, placeAfter) {
+async function moveLink(
+  sourceSectionId,
+  linkId,
+  targetSectionId,
+  targetLinkId,
+  placeAfter,
+) {
   if (linkId === targetLinkId) {
     clearDragState();
     return;
@@ -3179,14 +3718,18 @@ async function moveLink(sourceSectionId, linkId, targetSectionId, targetLinkId, 
     return;
   }
 
-  const sourceIndex = sourceSection.links.findIndex((item) => item.id === linkId);
+  const sourceIndex = sourceSection.links.findIndex(
+    (item) => item.id === linkId,
+  );
   if (sourceIndex < 0) {
     clearDragState();
     return;
   }
 
   const [link] = sourceSection.links.splice(sourceIndex, 1);
-  let targetIndex = targetLinkId ? targetSection.links.findIndex((item) => item.id === targetLinkId) : targetSection.links.length;
+  let targetIndex = targetLinkId
+    ? targetSection.links.findIndex((item) => item.id === targetLinkId)
+    : targetSection.links.length;
 
   if (targetIndex < 0) {
     targetIndex = targetSection.links.length;
@@ -3206,9 +3749,15 @@ async function moveWidget(sourceWidgetId, targetWidgetId) {
     return;
   }
 
-  const orderedWidgets = state.data.widgets.slice().sort((a, b) => a.order - b.order);
-  const sourceIndex = orderedWidgets.findIndex((item) => item.id === sourceWidgetId);
-  const targetIndex = orderedWidgets.findIndex((item) => item.id === targetWidgetId);
+  const orderedWidgets = state.data.widgets
+    .slice()
+    .sort((a, b) => a.order - b.order);
+  const sourceIndex = orderedWidgets.findIndex(
+    (item) => item.id === sourceWidgetId,
+  );
+  const targetIndex = orderedWidgets.findIndex(
+    (item) => item.id === targetWidgetId,
+  );
 
   if (sourceIndex < 0 || targetIndex < 0) {
     clearDragState();
@@ -3230,9 +3779,15 @@ async function moveDashboard(sourceDashboardId, targetDashboardId) {
     return;
   }
 
-  const dashboards = getMutableDashboards().slice().sort((a, b) => a.order - b.order);
-  const sourceIndex = dashboards.findIndex((item) => item.id === sourceDashboardId);
-  const targetIndex = dashboards.findIndex((item) => item.id === targetDashboardId);
+  const dashboards = getMutableDashboards()
+    .slice()
+    .sort((a, b) => a.order - b.order);
+  const sourceIndex = dashboards.findIndex(
+    (item) => item.id === sourceDashboardId,
+  );
+  const targetIndex = dashboards.findIndex(
+    (item) => item.id === targetDashboardId,
+  );
 
   if (sourceIndex < 0 || targetIndex < 0) {
     clearDragState();
@@ -3251,13 +3806,21 @@ async function moveDashboard(sourceDashboardId, targetDashboardId) {
 function clearDragState() {
   state.drag = null;
   clearDropClasses();
-  document.querySelectorAll(".dragging").forEach((item) => item.classList.remove("dragging"));
+  document
+    .querySelectorAll(".dragging")
+    .forEach((item) => item.classList.remove("dragging"));
 }
 
 function clearDropClasses() {
   document
     .querySelectorAll(".is-drop-target, .is-drop-before, .is-drop-after")
-    .forEach((item) => item.classList.remove("is-drop-target", "is-drop-before", "is-drop-after"));
+    .forEach((item) =>
+      item.classList.remove(
+        "is-drop-target",
+        "is-drop-before",
+        "is-drop-after",
+      ),
+    );
 }
 
 function isAfterHalf(event, element) {
@@ -3305,17 +3868,26 @@ async function saveData(data) {
 
 function sanitizeData(input) {
   const data = input && typeof input === "object" ? input : {};
-  const dashboards = Array.isArray(data.dashboards) && data.dashboards.length
-    ? data.dashboards.map(sanitizeDashboard).filter(Boolean)
-    : defaultDashboards.map((dashboard) => ({ ...dashboard }));
-  const allowedDashboardIds = new Set(dashboards.map((dashboard) => dashboard.id));
-  const selectedEngine = searchEngines.some((engine) => engine.id === data.selectedEngine)
+  const dashboards =
+    Array.isArray(data.dashboards) && data.dashboards.length
+      ? data.dashboards.map(sanitizeDashboard).filter(Boolean)
+      : defaultDashboards.map((dashboard) => ({ ...dashboard }));
+  const allowedDashboardIds = new Set(
+    dashboards.map((dashboard) => dashboard.id),
+  );
+  const selectedEngine = searchEngines.some(
+    (engine) => engine.id === data.selectedEngine,
+  )
     ? data.selectedEngine
     : defaultData.selectedEngine;
-  const selectedDashboard = data.selectedDashboard === fixedDashboardView.id || allowedDashboardIds.has(data.selectedDashboard)
-    ? data.selectedDashboard
-    : dashboards[0]?.id || fixedDashboardView.id;
-  const version = Number.isFinite(Number(data.version)) ? Number(data.version) : 0;
+  const selectedDashboard =
+    data.selectedDashboard === fixedDashboardView.id ||
+    allowedDashboardIds.has(data.selectedDashboard)
+      ? data.selectedDashboard
+      : dashboards[0]?.id || fixedDashboardView.id;
+  const version = Number.isFinite(Number(data.version))
+    ? Number(data.version)
+    : 0;
 
   return {
     version,
@@ -3323,11 +3895,17 @@ function sanitizeData(input) {
     selectedDashboard,
     dashboards,
     widgets: Array.isArray(data.widgets)
-      ? data.widgets.map((widget, index) => sanitizeWidget(widget, index, allowedDashboardIds)).filter(Boolean)
+      ? data.widgets
+          .map((widget, index) =>
+            sanitizeWidget(widget, index, allowedDashboardIds),
+          )
+          .filter(Boolean)
       : [],
     sections: Array.isArray(data.sections)
-      ? data.sections.map((section) => sanitizeSection(section, allowedDashboardIds)).filter(Boolean)
-      : []
+      ? data.sections
+          .map((section) => sanitizeSection(section, allowedDashboardIds))
+          .filter(Boolean)
+      : [],
   };
 }
 
@@ -3344,12 +3922,21 @@ function sanitizeDashboard(dashboard, index = 0) {
   return {
     id: normalizeText(dashboard.id) || createId("dashboard"),
     label,
-    icon: dashboardIconOptions.some((option) => option.id === dashboard.icon) ? dashboard.icon : "grid",
-    order: Number.isFinite(Number(dashboard.order)) ? Number(dashboard.order) : index
+    icon: dashboardIconOptions.some((option) => option.id === dashboard.icon)
+      ? dashboard.icon
+      : "grid",
+    order: Number.isFinite(Number(dashboard.order))
+      ? Number(dashboard.order)
+      : index,
   };
 }
 
-function sanitizeSection(section, allowedDashboardIds = new Set(getStoredDashboards().map((dashboard) => dashboard.id))) {
+function sanitizeSection(
+  section,
+  allowedDashboardIds = new Set(
+    getStoredDashboards().map((dashboard) => dashboard.id),
+  ),
+) {
   if (!section || typeof section !== "object") {
     return null;
   }
@@ -3359,20 +3946,35 @@ function sanitizeSection(section, allowedDashboardIds = new Set(getStoredDashboa
     return null;
   }
 
-  const icon = sectionIconOptions.some((option) => option.id === section.icon) ? section.icon : "grid";
+  const icon = sectionIconOptions.some((option) => option.id === section.icon)
+    ? section.icon
+    : "grid";
   const id = normalizeText(section.id) || createId("section");
-  const dashboards = sanitizeDashboardIds(section.dashboards, allowedDashboardIds);
+  const dashboards = sanitizeDashboardIds(
+    section.dashboards,
+    allowedDashboardIds,
+  );
 
   return {
     id,
     title,
     icon,
-    dashboards: dashboards.length ? dashboards : defaultSectionDashboardIds[id] || [],
-    links: Array.isArray(section.links) ? section.links.map(sanitizeLink).filter(Boolean) : []
+    dashboards: dashboards.length
+      ? dashboards
+      : defaultSectionDashboardIds[id] || [],
+    links: Array.isArray(section.links)
+      ? section.links.map(sanitizeLink).filter(Boolean)
+      : [],
   };
 }
 
-function sanitizeWidget(widget, index = 0, allowedDashboardIds = new Set(getStoredDashboards().map((dashboard) => dashboard.id))) {
+function sanitizeWidget(
+  widget,
+  index = 0,
+  allowedDashboardIds = new Set(
+    getStoredDashboards().map((dashboard) => dashboard.id),
+  ),
+) {
   if (!widget || typeof widget !== "object") {
     return null;
   }
@@ -3383,8 +3985,13 @@ function sanitizeWidget(widget, index = 0, allowedDashboardIds = new Set(getStor
   }
 
   const id = normalizeText(widget.id) || createId("widget");
-  const order = Number.isFinite(Number(widget.order)) ? Number(widget.order) : index;
-  const dashboardIds = sanitizeDashboardIds(widget.dashboardIds, allowedDashboardIds);
+  const order = Number.isFinite(Number(widget.order))
+    ? Number(widget.order)
+    : index;
+  const dashboardIds = sanitizeDashboardIds(
+    widget.dashboardIds,
+    allowedDashboardIds,
+  );
 
   return {
     id,
@@ -3392,7 +3999,7 @@ function sanitizeWidget(widget, index = 0, allowedDashboardIds = new Set(getStor
     title: normalizeText(widget.title) || definition.label,
     dashboardIds,
     order,
-    config: sanitizeWidgetConfig(definition.type, widget.config || {})
+    config: sanitizeWidgetConfig(definition.type, widget.config || {}),
   };
 }
 
@@ -3402,7 +4009,7 @@ function sanitizeWidgetConfig(type, config) {
   switch (type) {
     case "search":
       return {
-        engineId: getSelectedEngine(normalizeText(source.engineId)).id
+        engineId: getSelectedEngine(normalizeText(source.engineId)).id,
       };
     case "link-list":
       return { sectionId: normalizeText(source.sectionId) };
@@ -3415,30 +4022,34 @@ function sanitizeWidgetConfig(type, config) {
               .map((item) => ({
                 id: normalizeText(item?.id) || createId("todo"),
                 text: toStringValue(item?.text),
-                done: Boolean(item?.done)
+                done: Boolean(item?.done),
               }))
               .filter((item) => normalizeText(item.text))
-          : []
+          : [],
       };
     case "quick-note":
       return {
         text: toStringValue(source.text),
-        updatedAt: normalizeText(source.updatedAt)
+        updatedAt: normalizeText(source.updatedAt),
       };
     case "qr-code":
       return { value: toStringValue(source.value) };
     case "markdown-editor":
       return {
-        mode: ["edit", "split", "preview"].includes(source.mode) ? source.mode : "split",
-        markdown: toStringValue(source.markdown)
+        mode: ["edit", "split", "preview"].includes(source.mode)
+          ? source.mode
+          : "split",
+        markdown: toStringValue(source.markdown),
       };
     case "text-diff":
       return {
         original: toStringValue(source.original),
-        modified: toStringValue(source.modified)
+        modified: toStringValue(source.modified),
       };
     case "calendar":
-      return { month: sanitizeDateString(source.month) || new Date().toISOString() };
+      return {
+        month: sanitizeDateString(source.month) || new Date().toISOString(),
+      };
     case "kanban":
       return { columns: sanitizeKanbanColumns(source.columns) };
     case "daily-quiz":
@@ -3446,7 +4057,7 @@ function sanitizeWidgetConfig(type, config) {
     case "image-compression":
       return {
         quality: clampNumber(source.quality, 0.35, 0.95, 0.72),
-        images: sanitizeCompressedImages(source.images)
+        images: sanitizeCompressedImages(source.images),
       };
     case "uptime-monitor":
       return { services: sanitizeUptimeServices(source.services) };
@@ -3466,9 +4077,10 @@ function sanitizeKanbanColumns(columns) {
   const fallback = [
     { id: "todo", title: "Todo", cards: [] },
     { id: "progress", title: "In Progress", cards: [] },
-    { id: "done", title: "Done", cards: [] }
+    { id: "done", title: "Done", cards: [] },
   ];
-  const sourceColumns = Array.isArray(columns) && columns.length ? columns : fallback;
+  const sourceColumns =
+    Array.isArray(columns) && columns.length ? columns : fallback;
 
   return sourceColumns.map((column, index) => ({
     id: normalizeText(column?.id) || fallback[index]?.id || createId("column"),
@@ -3477,10 +4089,10 @@ function sanitizeKanbanColumns(columns) {
       ? column.cards
           .map((card) => ({
             id: normalizeText(card?.id) || createId("card"),
-            title: toStringValue(card?.title)
+            title: toStringValue(card?.title),
           }))
           .filter((card) => normalizeText(card.title))
-      : []
+      : [],
   }));
 }
 
@@ -3491,8 +4103,11 @@ function sanitizeQuizHistory(history) {
 
   return Object.fromEntries(
     Object.entries(history)
-      .filter(([key, value]) => /^\d{4}-\d{2}-\d{2}$/.test(key) && Number.isInteger(Number(value)))
-      .map(([key, value]) => [key, Number(value)])
+      .filter(
+        ([key, value]) =>
+          /^\d{4}-\d{2}-\d{2}$/.test(key) && Number.isInteger(Number(value)),
+      )
+      .map(([key, value]) => [key, Number(value)]),
   );
 }
 
@@ -3508,7 +4123,7 @@ function sanitizeCompressedImages(images) {
       originalSize: Math.max(0, Number(image?.originalSize) || 0),
       compressedSize: Math.max(0, Number(image?.compressedSize) || 0),
       mime: normalizeText(image?.mime) || "image/webp",
-      dataUrl: toStringValue(image?.dataUrl)
+      dataUrl: toStringValue(image?.dataUrl),
     }))
     .filter((image) => image.dataUrl.startsWith("data:image/"))
     .slice(0, 8);
@@ -3516,21 +4131,39 @@ function sanitizeCompressedImages(images) {
 
 function sanitizeUptimeServices(services) {
   const fallback = [
-    { id: "service_intranet", name: "MCProd Intranet", url: "https://intranet-agence-mcprod.netlify.app/", history: [] },
-    { id: "service_osmo", name: "Osmo Supply", url: "https://osmo.supply/", history: [] },
-    { id: "service_netlify", name: "Netlify", url: "https://app.netlify.com/", history: [] }
+    {
+      id: "service_intranet",
+      name: "MCProd Intranet",
+      url: "https://intranet-agence-mcprod.netlify.app/",
+      history: [],
+    },
+    {
+      id: "service_osmo",
+      name: "Osmo Supply",
+      url: "https://osmo.supply/",
+      history: [],
+    },
+    {
+      id: "service_netlify",
+      name: "Netlify",
+      url: "https://app.netlify.com/",
+      history: [],
+    },
   ];
-  const sourceServices = Array.isArray(services) && services.length ? services : fallback;
+  const sourceServices = Array.isArray(services) ? services : fallback;
 
   return sourceServices
     .map((service, index) => {
       const url = normalizeText(service?.url);
       try {
         return {
-          id: normalizeText(service?.id) || fallback[index]?.id || createId("service"),
+          id:
+            normalizeText(service?.id) ||
+            fallback[index]?.id ||
+            createId("service"),
           name: normalizeText(service?.name) || formatHost(url),
           url: normalizeUrl(url),
-          history: sanitizeUptimeHistory(service?.history)
+          history: sanitizeUptimeHistory(service?.history),
         };
       } catch (error) {
         return null;
@@ -3546,10 +4179,13 @@ function sanitizeUptimeHistory(history) {
 
   return history
     .map((entry) => ({
-      status: ["up", "down", "unknown"].includes(entry?.status) ? entry.status : "unknown",
+      status: ["up", "down", "unknown"].includes(entry?.status)
+        ? entry.status
+        : "unknown",
       code: normalizeText(entry?.code) || "unknown",
       latency: Math.max(0, Number(entry?.latency) || 0),
-      checkedAt: sanitizeDateString(entry?.checkedAt) || new Date().toISOString()
+      checkedAt:
+        sanitizeDateString(entry?.checkedAt) || new Date().toISOString(),
     }))
     .slice(-18);
 }
@@ -3584,7 +4220,7 @@ function sanitizeBrowserSession(session, index = 0) {
     id: normalizeText(session.id) || createId("session"),
     name: normalizeText(session.name) || `Session ${index + 1}`,
     savedAt: sanitizeDateString(session.savedAt) || new Date().toISOString(),
-    windows
+    windows,
   };
 }
 
@@ -3596,7 +4232,7 @@ function sanitizeBrowserSessionWindow(windowItem) {
             const url = normalizeUrl(tab?.url);
             return {
               url,
-              title: normalizeText(tab?.title) || formatHost(url)
+              title: normalizeText(tab?.title) || formatHost(url),
             };
           } catch (error) {
             return null;
@@ -3606,20 +4242,37 @@ function sanitizeBrowserSessionWindow(windowItem) {
     : [];
 
   return {
-    left: Number.isFinite(Number(windowItem?.left)) ? Number(windowItem.left) : null,
-    top: Number.isFinite(Number(windowItem?.top)) ? Number(windowItem.top) : null,
-    width: Number.isFinite(Number(windowItem?.width)) ? Number(windowItem.width) : null,
-    height: Number.isFinite(Number(windowItem?.height)) ? Number(windowItem.height) : null,
-    tabs
+    left: Number.isFinite(Number(windowItem?.left))
+      ? Number(windowItem.left)
+      : null,
+    top: Number.isFinite(Number(windowItem?.top))
+      ? Number(windowItem.top)
+      : null,
+    width: Number.isFinite(Number(windowItem?.width))
+      ? Number(windowItem.width)
+      : null,
+    height: Number.isFinite(Number(windowItem?.height))
+      ? Number(windowItem.height)
+      : null,
+    tabs,
   };
 }
 
-function sanitizeDashboardIds(value, allowedDashboardIds = new Set(getStoredDashboards().map((dashboard) => dashboard.id))) {
+function sanitizeDashboardIds(
+  value,
+  allowedDashboardIds = new Set(
+    getStoredDashboards().map((dashboard) => dashboard.id),
+  ),
+) {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  return [...new Set(value.map(normalizeText).filter((id) => allowedDashboardIds.has(id)))];
+  return [
+    ...new Set(
+      value.map(normalizeText).filter((id) => allowedDashboardIds.has(id)),
+    ),
+  ];
 }
 
 function getNewWidgetDashboardIds() {
@@ -3644,7 +4297,7 @@ function sanitizeLink(link) {
       id: normalizeText(link.id) || createId("link"),
       title,
       url,
-      icon: normalizeText(link.icon) || getFaviconUrl(url)
+      icon: normalizeText(link.icon) || getFaviconUrl(url),
     };
   } catch (error) {
     return null;
@@ -3658,9 +4311,10 @@ function migrateData(data) {
   const shouldApplySeedMigration = Number(data.version) < DATA_VERSION;
 
   migrated.version = DATA_VERSION;
-  migrated.dashboards = Array.isArray(migrated.dashboards) && migrated.dashboards.length
-    ? migrated.dashboards
-    : defaultDashboards.map((dashboard) => ({ ...dashboard }));
+  migrated.dashboards =
+    Array.isArray(migrated.dashboards) && migrated.dashboards.length
+      ? migrated.dashboards
+      : defaultDashboards.map((dashboard) => ({ ...dashboard }));
   migrated.sections = Array.isArray(migrated.sections) ? migrated.sections : [];
   migrated.widgets = Array.isArray(migrated.widgets) ? migrated.widgets : [];
 
@@ -3670,7 +4324,9 @@ function migrateData(data) {
       .map((section) => ({
         ...section,
         title: getMigratedSectionTitle(section),
-        links: section.links.filter((link) => !shouldRemoveSeedLink(link, removedTitles, removedUrls))
+        links: section.links.filter(
+          (link) => !shouldRemoveSeedLink(link, removedTitles, removedUrls),
+        ),
       }));
 
     defaultData.sections.forEach((seedSection) => {
@@ -3682,7 +4338,7 @@ function migrateData(data) {
           title: seedSection.title,
           icon: seedSection.icon,
           dashboards: defaultSectionDashboardIds[seedSection.id] || [],
-          links: []
+          links: [],
         };
         migrated.sections.push(targetSection);
       } else if (targetSection.id === seedSection.id) {
@@ -3695,7 +4351,9 @@ function migrateData(data) {
 
       seedSection.links.forEach((seedLink) => {
         if (!hasLinkWithUrl(migrated, seedLink.url)) {
-          targetSection.links.push(createSeedLink(seedLink.title, seedLink.url));
+          targetSection.links.push(
+            createSeedLink(seedLink.title, seedLink.url),
+          );
         }
       });
     });
@@ -3703,13 +4361,23 @@ function migrateData(data) {
 
   migrated.sections = migrated.sections.map((section) => ({
     ...section,
-    dashboards: section.dashboards?.length ? section.dashboards : defaultSectionDashboardIds[section.id] || []
+    dashboards: section.dashboards?.length
+      ? section.dashboards
+      : defaultSectionDashboardIds[section.id] || [],
   }));
-  migrated.widgets = reconcileWidgetsWithSections(migrated.widgets, migrated.sections);
-  migrated.widgets = reconcileSystemWidgets(migrated.widgets, migrated.dashboards);
+  migrated.widgets = reconcileWidgetsWithSections(
+    migrated.widgets,
+    migrated.sections,
+  );
+  migrated.widgets = reconcileSystemWidgets(
+    migrated.widgets,
+    migrated.dashboards,
+  );
   migrated.selectedDashboard =
     migrated.selectedDashboard === fixedDashboardView.id ||
-    migrated.dashboards.some((dashboard) => dashboard.id === migrated.selectedDashboard)
+    migrated.dashboards.some(
+      (dashboard) => dashboard.id === migrated.selectedDashboard,
+    )
       ? migrated.selectedDashboard
       : migrated.dashboards[0]?.id || DEFAULT_DASHBOARD_ID;
 
@@ -3744,7 +4412,9 @@ function reconcileWidgetsWithSections(widgets, sections) {
 
   sections.forEach((section) => {
     if (!seenLinkSections.has(section.id)) {
-      reconciled.push(createLinkListWidgetFromSection(section, reconciled.length));
+      reconciled.push(
+        createLinkListWidgetFromSection(section, reconciled.length),
+      );
       seenLinkSections.add(section.id);
     }
   });
@@ -3761,9 +4431,11 @@ function createLinkListWidgetFromSection(section, order) {
     id: `widget_link_${section.id}`,
     type: "link-list",
     title: section.title,
-    dashboardIds: section.dashboards?.length ? section.dashboards : defaultSectionDashboardIds[section.id] || [],
+    dashboardIds: section.dashboards?.length
+      ? section.dashboards
+      : defaultSectionDashboardIds[section.id] || [],
     order,
-    config: { sectionId: section.id }
+    config: { sectionId: section.id },
   };
 }
 
@@ -3779,7 +4451,7 @@ function reconcileSystemWidgets(widgets, dashboards) {
       title: "Search",
       dashboardIds,
       order: 0,
-      config: { engineId: "google" }
+      config: { engineId: "google" },
     });
   } else if (!searchWidget.dashboardIds?.length) {
     searchWidget.dashboardIds = dashboardIds;
@@ -3795,7 +4467,7 @@ function reconcileSystemWidgets(widgets, dashboards) {
 function getMigratedSectionTitle(section) {
   const sectionTitles = {
     section_developer_resources: "Developpement",
-    section_hosting_deployment: "Hosting & Monitoring"
+    section_hosting_deployment: "Hosting & Monitoring",
   };
 
   return sectionTitles[section.id] || section.title;
@@ -3804,7 +4476,10 @@ function getMigratedSectionTitle(section) {
 function findMatchingSection(data, seedSection) {
   return (
     data.sections.find((section) => section.id === seedSection.id) ||
-    data.sections.find((section) => normalizeKey(section.title) === normalizeKey(seedSection.title)) ||
+    data.sections.find(
+      (section) =>
+        normalizeKey(section.title) === normalizeKey(seedSection.title),
+    ) ||
     null
   );
 }
@@ -3812,12 +4487,15 @@ function findMatchingSection(data, seedSection) {
 function hasLinkWithUrl(data, url) {
   const candidate = normalizeUrlKey(url);
   return data.sections.some((section) =>
-    section.links.some((link) => normalizeUrlKey(link.url) === candidate)
+    section.links.some((link) => normalizeUrlKey(link.url) === candidate),
   );
 }
 
 function shouldRemoveSeedLink(link, removedTitles, removedUrls) {
-  return removedTitles.has(normalizeKey(link.title)) || removedUrls.has(normalizeUrlKey(link.url));
+  return (
+    removedTitles.has(normalizeKey(link.title)) ||
+    removedUrls.has(normalizeUrlKey(link.url))
+  );
 }
 
 function normalizeKey(value) {
@@ -3875,11 +4553,15 @@ function hasChromeStorage() {
 }
 
 function getSection(sectionId) {
-  return state.data.sections.find((section) => section.id === sectionId) || null;
+  return (
+    state.data.sections.find((section) => section.id === sectionId) || null
+  );
 }
 
 function getLink(sectionId, linkId) {
-  return getSection(sectionId)?.links.find((link) => link.id === linkId) || null;
+  return (
+    getSection(sectionId)?.links.find((link) => link.id === linkId) || null
+  );
 }
 
 function findSectionIdByLinkId(linkId) {
@@ -3887,7 +4569,11 @@ function findSectionIdByLinkId(linkId) {
     return null;
   }
 
-  return state.data.sections.find((section) => section.links.some((link) => link.id === linkId))?.id || null;
+  return (
+    state.data.sections.find((section) =>
+      section.links.some((link) => link.id === linkId),
+    )?.id || null
+  );
 }
 
 function createSeedLink(title, url) {
@@ -3895,7 +4581,7 @@ function createSeedLink(title, url) {
     id: createId("link"),
     title,
     url,
-    icon: getFaviconUrl(url)
+    icon: getFaviconUrl(url),
   };
 }
 
@@ -3986,35 +4672,57 @@ function showStatus(message) {
 function createIcon(name) {
   const icons = {
     plus: '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>',
-    search: '<svg viewBox="0 0 24 24" focusable="false"><circle cx="11" cy="11" r="7"></circle><path d="m16.2 16.2 4.3 4.3"></path></svg>',
-    "arrow-right": '<svg viewBox="0 0 24 24" focusable="false"><path d="M5 12h13"></path><path d="m13 6 6 6-6 6"></path></svg>',
-    "chevron-down": '<svg viewBox="0 0 24 24" focusable="false"><path d="m7 10 5 5 5-5"></path></svg>',
+    search:
+      '<svg viewBox="0 0 24 24" focusable="false"><circle cx="11" cy="11" r="7"></circle><path d="m16.2 16.2 4.3 4.3"></path></svg>',
+    "arrow-right":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M5 12h13"></path><path d="m13 6 6 6-6 6"></path></svg>',
+    "chevron-down":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m7 10 5 5 5-5"></path></svg>',
     edit: '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 20 4.6-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"></path><path d="m13.5 6.5 4 4"></path></svg>',
-    trash: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>',
-    close: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg>',
-    terminal: '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m7 10 3 2-3 2"></path><path d="M12 15h5"></path></svg>',
-    graduation: '<svg viewBox="0 0 24 24" focusable="false"><path d="m3 8.5 9-4 9 4-9 4-9-4Z"></path><path d="M7 11v4.5c1.3 1.3 3 2 5 2s3.7-.7 5-2V11"></path><path d="M21 9v6"></path></svg>',
-    gamepad: '<svg viewBox="0 0 24 24" focusable="false"><path d="M7 9h10a5 5 0 0 1 4.5 6.9l-.4.9a2.2 2.2 0 0 1-3.6.7L15 16H9l-2.5 2.5a2.2 2.2 0 0 1-3.6-.7l-.4-.9A5 5 0 0 1 7 9Z"></path><path d="M8 13h3"></path><path d="M9.5 11.5v3"></path><path d="M16.5 12.5h.01"></path><path d="M18.5 14.5h.01"></path></svg>',
-    sparkles: '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"></path><path d="M5 15l.9 2.1L8 18l-2.1.9L5 21l-.9-2.1L2 18l2.1-.9L5 15Z"></path><path d="M19 14l.8 1.7 1.7.8-1.7.8L19 19l-.8-1.7-1.7-.8 1.7-.8L19 14Z"></path></svg>',
+    trash:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>',
+    close:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg>',
+    terminal:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m7 10 3 2-3 2"></path><path d="M12 15h5"></path></svg>',
+    graduation:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m3 8.5 9-4 9 4-9 4-9-4Z"></path><path d="M7 11v4.5c1.3 1.3 3 2 5 2s3.7-.7 5-2V11"></path><path d="M21 9v6"></path></svg>',
+    gamepad:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M7 9h10a5 5 0 0 1 4.5 6.9l-.4.9a2.2 2.2 0 0 1-3.6.7L15 16H9l-2.5 2.5a2.2 2.2 0 0 1-3.6-.7l-.4-.9A5 5 0 0 1 7 9Z"></path><path d="M8 13h3"></path><path d="M9.5 11.5v3"></path><path d="M16.5 12.5h.01"></path><path d="M18.5 14.5h.01"></path></svg>',
+    sparkles:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"></path><path d="M5 15l.9 2.1L8 18l-2.1.9L5 21l-.9-2.1L2 18l2.1-.9L5 15Z"></path><path d="M19 14l.8 1.7 1.7.8-1.7.8L19 19l-.8-1.7-1.7-.8 1.7-.8L19 14Z"></path></svg>',
     code: '<svg viewBox="0 0 24 24" focusable="false"><path d="m8 9-4 3 4 3"></path><path d="m16 9 4 3-4 3"></path><path d="m14 5-4 14"></path></svg>',
-    cloud: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 18h11a4 4 0 0 0 .5-8 6 6 0 0 0-11.1-1.9A4.7 4.7 0 0 0 6 18Z"></path></svg>',
+    cloud:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 18h11a4 4 0 0 0 .5-8 6 6 0 0 0-11.1-1.9A4.7 4.7 0 0 0 6 18Z"></path></svg>',
     grid: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><rect x="14" y="14" width="6" height="6"></rect></svg>',
-    folder: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7.5h7l2 2H21v8.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"></path><path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1.5"></path></svg>',
-    spacer: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 8h16"></path><path d="M4 16h16"></path><path d="M12 8v8"></path><path d="m9 11 3-3 3 3"></path><path d="m9 13 3 3 3-3"></path></svg>',
-    "check-list": '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 7 2 2 4-4"></path><path d="M12 8h8"></path><path d="m4 17 2 2 4-4"></path><path d="M12 18h8"></path></svg>',
+    folder:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7.5h7l2 2H21v8.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"></path><path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1.5"></path></svg>',
+    spacer:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 8h16"></path><path d="M4 16h16"></path><path d="M12 8v8"></path><path d="m9 11 3-3 3 3"></path><path d="m9 13 3 3 3-3"></path></svg>',
+    "check-list":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 7 2 2 4-4"></path><path d="M12 8h8"></path><path d="m4 17 2 2 4-4"></path><path d="M12 18h8"></path></svg>',
     note: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 3h9l3 3v15H6V3Z"></path><path d="M14 3v4h4"></path><path d="M9 12h6"></path><path d="M9 16h5"></path></svg>',
     qr: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><path d="M14 14h2v2h-2z"></path><path d="M18 14h2v6h-4v-2"></path></svg>',
-    markdown: '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M7 15V9l3 4 3-4v6"></path><path d="M16 11v4"></path><path d="m14 13 2 2 2-2"></path></svg>',
+    markdown:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M7 15V9l3 4 3-4v6"></path><path d="M16 11v4"></path><path d="m14 13 2 2 2-2"></path></svg>',
     diff: '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 7h8"></path><path d="M6 17h8"></path><path d="M18 5v6"></path><path d="M15 8h6"></path><path d="M15 17h6"></path></svg>',
-    calendar: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M4 10h16"></path></svg>',
-    kanban: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="5" height="16" rx="1"></rect><rect x="10" y="4" width="5" height="10" rx="1"></rect><rect x="16" y="4" width="4" height="13" rx="1"></rect></svg>',
+    calendar:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M4 10h16"></path></svg>',
+    kanban:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="5" height="16" rx="1"></rect><rect x="10" y="4" width="5" height="10" rx="1"></rect><rect x="16" y="4" width="4" height="13" rx="1"></rect></svg>',
     quiz: '<svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 9a2.5 2.5 0 1 1 4.3 1.7c-.9.8-1.8 1.3-1.8 2.8"></path><path d="M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>',
-    compress: '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 9V4h5"></path><path d="m4 4 6 6"></path><path d="M20 15v5h-5"></path><path d="m20 20-6-6"></path><path d="M15 4h5v5"></path><path d="m20 4-6 6"></path><path d="M9 20H4v-5"></path><path d="m4 20 6-6"></path></svg>',
-    uptime: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h4l2-5 4 10 2-5h6"></path></svg>',
-    windows: '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="11" height="14" rx="2"></rect><rect x="10" y="9" width="11" height="10" rx="2"></rect></svg>',
-    check: '<svg viewBox="0 0 24 24" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>',
-    "chevron-left": '<svg viewBox="0 0 24 24" focusable="false"><path d="m15 18-6-6 6-6"></path></svg>',
-    "chevron-right": '<svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"></path></svg>'
+    compress:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 9V4h5"></path><path d="m4 4 6 6"></path><path d="M20 15v5h-5"></path><path d="m20 20-6-6"></path><path d="M15 4h5v5"></path><path d="m20 4-6 6"></path><path d="M9 20H4v-5"></path><path d="m4 20 6-6"></path></svg>',
+    uptime:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h4l2-5 4 10 2-5h6"></path></svg>',
+    windows:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="11" height="14" rx="2"></rect><rect x="10" y="9" width="11" height="10" rx="2"></rect></svg>',
+    check:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>',
+    "chevron-left":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m15 18-6-6 6-6"></path></svg>',
+    "chevron-right":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"></path></svg>',
   };
 
   return icons[name] || icons.grid;
