@@ -1,6 +1,9 @@
 const STORAGE_KEY = "navigateur.newtab.v1";
 const DATA_VERSION = 5;
 const DEFAULT_DASHBOARD_ID = "work";
+const DASHBOARD_DRAG_SWITCH_DELAY_MS = 260;
+const DRAG_AUTO_SCROLL_EDGE_PX = 84;
+const DRAG_AUTO_SCROLL_MAX_STEP_PX = 26;
 
 const searchEngines = [
   {
@@ -329,6 +332,11 @@ const state = {
   data: cloneData(defaultData),
   dialog: null,
   drag: null,
+  dragAutoScrollFrame: null,
+  dragAutoScrollDirection: 0,
+  dragAutoScrollClientY: null,
+  dragDashboardSwitchTimer: null,
+  dragDashboardSwitchId: null,
   editMode: false,
   statusTimer: null,
   uptimeCheckedWidgets: new Set(),
@@ -573,18 +581,11 @@ async function handleDashboardNavClick(event) {
     return;
   }
 
-  const dashboard = getDashboardViews().find(
-    (item) => item.id === tab.dataset.dashboardId,
-  );
-  if (!dashboard || dashboard.id === state.data.selectedDashboard) {
-    return;
-  }
-
-  state.data.selectedDashboard = dashboard.id;
-  syncDashboardNav();
-  render();
-  await saveData(state.data);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  await selectDashboard(tab.dataset.dashboardId, {
+    save: true,
+    scrollTop: true,
+    scrollBehavior: "smooth",
+  });
 }
 
 function handleGlobalKeydown(event) {
@@ -3561,6 +3562,7 @@ function handleDragStart(event) {
     state.drag = {
       type: "widget",
       widgetId: widget.dataset.widgetId,
+      sourceDashboardId: state.data.selectedDashboard,
     };
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", JSON.stringify(state.drag));
@@ -3583,7 +3585,10 @@ function handleDragOver(event) {
     return;
   }
 
+  updateDragAutoScroll(event);
+
   if (state.drag.type === "link") {
+    clearDashboardDragSwitch();
     const linkCard = event.target.closest(".link-card");
     const grid = event.target.closest(".links-grid");
 
@@ -3602,15 +3607,35 @@ function handleDragOver(event) {
   }
 
   if (state.drag.type === "widget") {
+    const dashboardTab = event.target.closest(".dashboard-tab[data-dashboard-id]");
+    if (dashboardTab) {
+      event.preventDefault();
+      clearDropClasses();
+      dashboardTab.closest(".dashboard-tab-item")?.classList.add("is-drop-target");
+      scheduleDashboardDragSwitch(dashboardTab.dataset.dashboardId);
+      return;
+    }
+
+    clearDashboardDragSwitch();
+
     const widget = event.target.closest(".dashboard-widget");
+    const sectionsRoot = event.target.closest("#sectionsRoot");
     if (widget && widget.dataset.widgetId !== state.drag.widgetId) {
       event.preventDefault();
       clearDropClasses();
       widget.classList.add("is-drop-target");
+      return;
+    }
+
+    if (sectionsRoot) {
+      event.preventDefault();
+      clearDropClasses();
+      sectionsRoot.classList.add("is-drop-target");
     }
   }
 
   if (state.drag.type === "dashboard") {
+    clearDashboardDragSwitch();
     const dashboardItem = event.target.closest(".dashboard-tab-draggable");
     if (
       dashboardItem &&
@@ -3652,6 +3677,8 @@ async function handleDrop(event) {
   }
 
   event.preventDefault();
+  stopDragAutoScroll();
+  clearDashboardDragSwitch();
 
   if (state.drag.type === "link") {
     const targetCard = event.target.closest(".link-card");
@@ -3682,9 +3709,44 @@ async function handleDrop(event) {
   }
 
   if (state.drag.type === "widget") {
+    const targetDashboardTab = event.target.closest(
+      ".dashboard-tab[data-dashboard-id]",
+    );
     const targetWidget = event.target.closest(".dashboard-widget");
+    const sectionsRoot = event.target.closest("#sectionsRoot");
+    const movedDashboardId = getDraggedWidgetTargetDashboardId(
+      state.drag,
+      state.data.selectedDashboard,
+    );
+
+    if (targetDashboardTab) {
+      const targetDashboardId = targetDashboardTab.dataset.dashboardId;
+      await selectDashboard(targetDashboardTab.dataset.dashboardId, {
+        save: true,
+        scrollTop: true,
+      });
+      await moveWidget(state.drag.widgetId, null, {
+        targetDashboardId: getDraggedWidgetTargetDashboardId(
+          state.drag,
+          targetDashboardId,
+        ),
+        placeAtEnd: true,
+      });
+      return;
+    }
+
     if (targetWidget) {
-      await moveWidget(state.drag.widgetId, targetWidget.dataset.widgetId);
+      await moveWidget(state.drag.widgetId, targetWidget.dataset.widgetId, {
+        targetDashboardId: movedDashboardId,
+      });
+      return;
+    }
+
+    if (sectionsRoot) {
+      await moveWidget(state.drag.widgetId, null, {
+        targetDashboardId: movedDashboardId,
+        placeAtEnd: true,
+      });
     }
   }
 
@@ -3743,8 +3805,8 @@ async function moveLink(
   await persist("Lien deplace.", { keepDrag: false });
 }
 
-async function moveWidget(sourceWidgetId, targetWidgetId) {
-  if (sourceWidgetId === targetWidgetId) {
+async function moveWidget(sourceWidgetId, targetWidgetId, options = {}) {
+  if (targetWidgetId && sourceWidgetId === targetWidgetId) {
     clearDragState();
     return;
   }
@@ -3760,12 +3822,29 @@ async function moveWidget(sourceWidgetId, targetWidgetId) {
   );
 
   if (sourceIndex < 0 || targetIndex < 0) {
+    if (!options.placeAtEnd || targetWidgetId) {
+      clearDragState();
+      return;
+    }
+  }
+
+  const [widget] = orderedWidgets.splice(sourceIndex, 1);
+  moveWidgetToDashboard(widget, options.targetDashboardId);
+
+  let insertionIndex = targetIndex;
+  if (options.placeAtEnd) {
+    insertionIndex = getWidgetInsertIndexForDashboardEnd(
+      orderedWidgets,
+      options.targetDashboardId,
+    );
+  }
+
+  if (insertionIndex < 0) {
     clearDragState();
     return;
   }
 
-  const [widget] = orderedWidgets.splice(sourceIndex, 1);
-  orderedWidgets.splice(targetIndex, 0, widget);
+  orderedWidgets.splice(insertionIndex, 0, widget);
   orderedWidgets.forEach((item, index) => {
     item.order = index;
   });
@@ -3805,6 +3884,8 @@ async function moveDashboard(sourceDashboardId, targetDashboardId) {
 
 function clearDragState() {
   state.drag = null;
+  clearDashboardDragSwitch();
+  stopDragAutoScroll();
   clearDropClasses();
   document
     .querySelectorAll(".dragging")
@@ -3826,6 +3907,219 @@ function clearDropClasses() {
 function isAfterHalf(event, element) {
   const rect = element.getBoundingClientRect();
   return event.clientX > rect.left + rect.width / 2;
+}
+
+function scheduleDashboardDragSwitch(dashboardId) {
+  if (!dashboardId || state.drag?.type !== "widget") {
+    clearDashboardDragSwitch();
+    return;
+  }
+
+  if (dashboardId === state.data.selectedDashboard) {
+    clearDashboardDragSwitch();
+    return;
+  }
+
+  if (state.dragDashboardSwitchId === dashboardId) {
+    return;
+  }
+
+  clearDashboardDragSwitch();
+  state.dragDashboardSwitchId = dashboardId;
+  state.dragDashboardSwitchTimer = window.setTimeout(() => {
+    const targetDashboardId = state.dragDashboardSwitchId;
+    clearDashboardDragSwitch();
+    if (!targetDashboardId || state.drag?.type !== "widget") {
+      return;
+    }
+
+    void selectDashboard(targetDashboardId, {
+      save: true,
+      scrollTop: true,
+    });
+  }, DASHBOARD_DRAG_SWITCH_DELAY_MS);
+}
+
+function clearDashboardDragSwitch() {
+  if (state.dragDashboardSwitchTimer) {
+    window.clearTimeout(state.dragDashboardSwitchTimer);
+  }
+
+  state.dragDashboardSwitchTimer = null;
+  state.dragDashboardSwitchId = null;
+}
+
+function updateDragAutoScroll(event) {
+  if (!state.drag || typeof event.clientY !== "number") {
+    stopDragAutoScroll();
+    return;
+  }
+
+  state.dragAutoScrollClientY = event.clientY;
+
+  const topEdge = DRAG_AUTO_SCROLL_EDGE_PX;
+  const bottomEdge = window.innerHeight - DRAG_AUTO_SCROLL_EDGE_PX;
+  if (event.clientY <= topEdge) {
+    startDragAutoScroll(-1);
+    return;
+  }
+
+  if (event.clientY >= bottomEdge) {
+    startDragAutoScroll(1);
+    return;
+  }
+
+  stopDragAutoScroll();
+}
+
+function startDragAutoScroll(direction) {
+  if (!direction) {
+    stopDragAutoScroll();
+    return;
+  }
+
+  state.dragAutoScrollDirection = direction;
+  if (state.dragAutoScrollFrame) {
+    return;
+  }
+
+  state.dragAutoScrollFrame = window.requestAnimationFrame(runDragAutoScroll);
+}
+
+function runDragAutoScroll() {
+  state.dragAutoScrollFrame = null;
+
+  if (!state.drag || !state.dragAutoScrollDirection) {
+    return;
+  }
+
+  const maxScroll =
+    document.documentElement.scrollHeight - window.innerHeight;
+  if (maxScroll <= 0) {
+    return;
+  }
+
+  const clientY = Number(state.dragAutoScrollClientY) || 0;
+  const distanceToEdge =
+    state.dragAutoScrollDirection < 0
+      ? Math.max(0, DRAG_AUTO_SCROLL_EDGE_PX - clientY)
+      : Math.max(
+          0,
+          clientY - (window.innerHeight - DRAG_AUTO_SCROLL_EDGE_PX),
+        );
+  const intensity = Math.min(1, distanceToEdge / DRAG_AUTO_SCROLL_EDGE_PX);
+  const step = Math.max(
+    10,
+    Math.round(DRAG_AUTO_SCROLL_MAX_STEP_PX * (0.4 + intensity * 0.6)),
+  );
+  const previousY = window.scrollY;
+  window.scrollBy(0, state.dragAutoScrollDirection * step);
+
+  if (window.scrollY !== previousY) {
+    state.dragAutoScrollFrame = window.requestAnimationFrame(runDragAutoScroll);
+    return;
+  }
+
+  stopDragAutoScroll();
+}
+
+function stopDragAutoScroll() {
+  if (state.dragAutoScrollFrame) {
+    window.cancelAnimationFrame(state.dragAutoScrollFrame);
+  }
+
+  state.dragAutoScrollFrame = null;
+  state.dragAutoScrollDirection = 0;
+  state.dragAutoScrollClientY = null;
+}
+
+function moveWidgetToDashboard(widget, targetDashboardId) {
+  if (!widget || !targetDashboardId || targetDashboardId === fixedDashboardView.id) {
+    return;
+  }
+
+  const dashboardIds = sanitizeDashboardIds([targetDashboardId]);
+  if (!dashboardIds.length) {
+    return;
+  }
+
+  widget.dashboardIds = dashboardIds;
+  if (widget.type === "link-list") {
+    const section = getSection(widget.config?.sectionId);
+    if (section) {
+      section.dashboards = dashboardIds.slice();
+    }
+  }
+}
+
+function getWidgetInsertIndexForDashboardEnd(orderedWidgets, dashboardId) {
+  if (!Array.isArray(orderedWidgets)) {
+    return -1;
+  }
+
+  if (!dashboardId || dashboardId === fixedDashboardView.id) {
+    return orderedWidgets.length;
+  }
+
+  for (let index = orderedWidgets.length - 1; index >= 0; index -= 1) {
+    if (isWidgetVisibleOnDashboard(orderedWidgets[index], dashboardId)) {
+      return index + 1;
+    }
+  }
+
+  return orderedWidgets.length;
+}
+
+function isWidgetVisibleOnDashboard(widget, dashboardId) {
+  if (!widget) {
+    return false;
+  }
+
+  if (dashboardId === fixedDashboardView.id) {
+    return true;
+  }
+
+  return Array.isArray(widget.dashboardIds)
+    ? widget.dashboardIds.includes(dashboardId)
+    : false;
+}
+
+function getDraggedWidgetTargetDashboardId(dragState, dashboardId) {
+  if (
+    !dragState ||
+    dragState.type !== "widget" ||
+    !dashboardId ||
+    dashboardId === fixedDashboardView.id ||
+    dragState.sourceDashboardId === dashboardId
+  ) {
+    return null;
+  }
+
+  return dashboardId;
+}
+
+async function selectDashboard(
+  dashboardId,
+  { save = false, scrollTop = false, scrollBehavior = "auto" } = {},
+) {
+  const dashboard = getDashboardViews().find((item) => item.id === dashboardId);
+  if (!dashboard || dashboard.id === state.data.selectedDashboard) {
+    return false;
+  }
+
+  state.data.selectedDashboard = dashboard.id;
+  syncDashboardNav();
+  render();
+
+  if (scrollTop) {
+    window.scrollTo({ top: 0, behavior: scrollBehavior });
+  }
+
+  if (save) {
+    await saveData(state.data);
+  }
+
+  return true;
 }
 
 async function persist(message, options = {}) {

@@ -1430,7 +1430,8 @@ svg {
 }
 
 .links-grid.is-drop-target,
-.dashboard-widget.is-drop-target {
+.dashboard-widget.is-drop-target,
+.sections.is-drop-target {
   outline: 1px dashed var(--border-strong);
   outline-offset: 7px;
 }
