@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Navigateur New Tab",
-  "description": "Nouvel onglet minimaliste avec recherche intelligente et lignes de liens editables.",
+  "description": "Nouvel onglet minimaliste avec dashboard personnalisable, widgets locaux et recherche intelligente.",
   "version": "1.0.0",
   "permissions": [
     "storage",

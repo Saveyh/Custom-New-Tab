@@ -233,12 +233,9 @@ const defaultData = {
       title: "Travail",
       icon: "folder",
       links: [
-        createSeedLink("Microsoft 365", "https://m365.cloud.microsoft/"),
-        createSeedLink("Osmo Supply", "https://osmo.supply/"),
-        createSeedLink(
-          "Intranet MCProd",
-          "https://intranet-agence-mcprod.netlify.app/",
-        ),
+        createSeedLink("Google Drive", "https://drive.google.com/"),
+        createSeedLink("Notion", "https://www.notion.so/"),
+        createSeedLink("Linear", "https://linear.app/"),
       ],
     },
     {
@@ -246,8 +243,8 @@ const defaultData = {
       title: "Universite",
       icon: "folder",
       links: [
-        createSeedLink("Academia UniNE", "https://academia.unine.ch/"),
-        createSeedLink("Moodle UniNE", "https://moodle.unine.ch/"),
+        createSeedLink("Google Scholar", "https://scholar.google.com/"),
+        createSeedLink("Moodle", "https://moodle.org/"),
       ],
     },
     {
@@ -266,14 +263,17 @@ const defaultData = {
       links: [
         createSeedLink("YouTube", "https://www.youtube.com/"),
         createSeedLink("Twitch", "https://www.twitch.tv/"),
-        createSeedLink("MyTennis", "https://mytennis.ch/"),
+        createSeedLink("Spotify", "https://open.spotify.com/"),
       ],
     },
     {
       id: "section_achats",
       title: "Achats",
       icon: "folder",
-      links: [createSeedLink("Galaxus", "https://www.galaxus.ch/")],
+      links: [
+        createSeedLink("Amazon", "https://www.amazon.com/"),
+        createSeedLink("Galaxus", "https://www.galaxus.ch/"),
+      ],
     },
   ],
 };

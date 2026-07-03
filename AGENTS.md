@@ -34,7 +34,7 @@ Core user-facing features:
 Important persisted constants in `app.js`:
 
 - `STORAGE_KEY = "navigateur.newtab.v1"`
-- `DATA_VERSION = 4`
+- `DATA_VERSION = 5`
 
 If data structures change, preserve migration behavior.
 
@@ -74,6 +74,7 @@ The codebase is already widget-oriented. Existing widget types include:
 - `daily-quiz`
 - `image-compression`
 - `uptime-monitor`
+- `browser-session`
 
 `search` is a system widget. `link-list` is the compatibility bridge for the original section-based dashboard.
 
