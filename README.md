@@ -17,6 +17,19 @@ Most alternatives felt:
 
 So I built my own: fast, compact, customizable, and fully client-side.
 
+## Browser Compatibility
+
+This extension is designed for Chromium-based browsers because it relies on the Chrome Extension API and a `chrome_url_overrides` new tab integration.
+
+That means it should work in browsers such as:
+
+- Chrome
+- Brave
+- Edge
+- other Chromium-based browsers with support for unpacked Chrome extensions
+
+It is not intended for Safari, and it is not currently presented as fully supported on Firefox.
+
 ## Preview
 
 ![Navigateur New Tab preview](references/exemple_visuel.png)
