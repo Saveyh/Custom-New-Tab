@@ -1,38 +1,37 @@
 # Navigateur New Tab
 
-`Navigateur New Tab` est une extension de nouvel onglet locale et minimaliste pour Chromium.
+`Navigateur New Tab` is a local-first, minimalist new tab extension for Chromium browsers.
 
-Au lieu d'ouvrir une page vide ou une extension générique, elle affiche un dashboard personnel orienté productivité avec dashboards internes, widgets déplaçables, listes de liens éditables et persistance locale.
+Instead of opening a blank page or a generic start-page extension, it shows a personal dashboard built around quick access, lightweight widgets, editable link collections, and local persistence.
 
-## Pourquoi ce projet existe
+## Why I Built It
 
-Je ne trouvais pas de page de nouvel onglet qui corresponde vraiment à ma façon de travailler.
+I never found a new tab page that matched how I actually work.
 
-Les alternatives que j'essayais étaient souvent :
+Most alternatives felt:
 
-- trop génériques
-- trop dépendantes d'un service externe
-- trop chargées visuellement
-- pas assez flexibles pour organiser travail, université et loisirs
+- too generic
+- too dependent on external services
+- too visually noisy
+- not flexible enough to separate work, university, and leisure
 
-J'ai donc construit ma propre extension : locale, compacte, rapide à charger, et personnalisable sans backend.
+So I built my own: fast, compact, customizable, and fully client-side.
 
-## Aperçu
+## Preview
 
-![Vue calendrier](references/calendar.png)
-![Widget kanban](references/tasks%20kanban.png)
+![Navigateur New Tab preview](references/exemple_visuel.png)
 
-## Fonctionnalités
+## Features
 
-- override complet de la page `new tab`
-- dashboards internes : `Travail`, `Universite`, `Loisirs`, `Tout`
-- widgets déplaçables
-- listes de liens éditables
-- moteur de recherche sélectionnable
-- persistance locale via `chrome.storage.local` avec fallback `localStorage`
-- interface sombre, compacte, sans framework
+- overrides the browser `new tab` page
+- built-in dashboards: `Travail`, `Universite`, `Loisirs`, `Tout`
+- draggable widgets
+- editable link lists
+- selectable search engine
+- local persistence through `chrome.storage.local` with `localStorage` fallback
+- dark, compact, framework-free UI
 
-Widgets actuellement inclus :
+Current widget types:
 
 - `search`
 - `link-list`
@@ -49,29 +48,29 @@ Widgets actuellement inclus :
 - `uptime-monitor`
 - `browser-session`
 
-## Stack
+## Tech Stack
 
 - HTML
 - CSS
-- JavaScript vanilla
+- Vanilla JavaScript
 - Chrome Extension Manifest V3
 
 ## Installation
 
 ### Chrome / Brave / Edge / Arc
 
-1. Télécharge ou clone ce dépôt.
-2. Ouvre la page des extensions du navigateur :
-   - Chrome : `chrome://extensions`
-   - Edge : `edge://extensions`
-   - Brave : `brave://extensions`
-3. Active le mode développeur.
-4. Clique sur `Load unpacked` / `Charger l'extension non empaquetée`.
-5. Sélectionne le dossier [`custom-new-tab`](./custom-new-tab).
+1. Clone or download this repository.
+2. Open your browser extensions page:
+   - Chrome: `chrome://extensions`
+   - Edge: `edge://extensions`
+   - Brave: `brave://extensions`
+3. Enable Developer Mode.
+4. Click `Load unpacked`.
+5. Select the [`custom-new-tab`](./custom-new-tab) folder.
 
-Une fois l'extension chargée, un nouvel onglet affichera le dashboard personnalisé.
+Once loaded, opening a new tab will display the custom dashboard.
 
-## Structure du dépôt
+## Repository Structure
 
 ```text
 custom-new-tab/
@@ -81,26 +80,26 @@ custom-new-tab/
   styles.css
   assets/icon.png
 references/
-  *.png
+  exemple_visuel.png
 AGENTS.md
 MISSION_WIDGETS_DASHBOARD.md
 ```
 
-## Données et confidentialité
+## Privacy
 
-- aucune base de données
-- aucun backend
-- aucune authentification
-- aucune télémétrie
-- tout est stocké localement dans le navigateur
+- no database
+- no backend
+- no authentication
+- no telemetry
+- everything is stored locally in the browser
 
-## Notes pour le code
+## Implementation Notes
 
-- la logique principale vit dans [`custom-new-tab/app.js`](./custom-new-tab/app.js)
-- les listes de liens historiques restent compatibles via `sections`
-- les widgets `link-list` référencent encore ces sections avec `config.sectionId`
-- la migration de données reste importante pour ne pas casser les installations existantes
+- most of the application logic lives in [`custom-new-tab/app.js`](./custom-new-tab/app.js)
+- legacy link data still remains compatible through `sections`
+- `link-list` widgets still reference those sections via `config.sectionId`
+- migration safety matters to avoid breaking existing installs
 
-## Licence
+## License
 
-Ce projet est distribué sous licence MIT. Voir [`LICENSE`](./LICENSE).
+This project is released under the MIT License. See [`LICENSE`](./LICENSE).
