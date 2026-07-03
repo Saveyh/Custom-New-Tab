@@ -121,6 +121,33 @@ When editing:
 - verify whether a capability already exists in `app.js` before adding a second implementation
 - keep UI changes consistent with the existing dark style
 
+## Versioning, Releases, And Packages
+
+When an agent changes this project, it should treat versioning and public releases as product decisions, not automatic steps.
+
+Versioning guidance:
+
+- use semantic versioning style for public versions
+- prefer `v1.0.0-beta` or another pre-release tag when the core experience works but some widgets are incomplete or unreliable
+- prefer `v1.0.0` only when the public-facing core is considered stable and the visible feature set is not misleading
+- do not invent higher versions such as `v1.1.1` for a first public release unless earlier public releases actually existed
+- if extension behavior changes materially, make sure `custom-new-tab/manifest.json` version stays aligned with the intended release version
+- if persisted data structures change, review whether `DATA_VERSION` or migration logic must also change
+
+Release guidance:
+
+- do not create a new GitHub release for every small commit
+- create or recommend a release when the repository reaches a meaningful public milestone
+- for incomplete but shareable milestones, mark the GitHub release as `pre-release`
+- release notes should clearly separate stable core behavior from incomplete or experimental widgets
+
+Package guidance:
+
+- this project does not need npm or another package registry
+- the useful distributable package is a `.zip` of the `custom-new-tab/` folder
+- prefer attaching that zip as a GitHub release asset when the user wants a friendlier install path for non-technical users
+- do not package the whole repository when the goal is browser installation; the extension folder is the installable unit
+
 ## References
 
 Use `references/` only when a task needs visual fidelity for a widget. Use `MISSION_WIDGETS_DASHBOARD.md` when a task needs product intent or implementation history.
