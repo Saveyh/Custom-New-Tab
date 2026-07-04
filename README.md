@@ -1,6 +1,6 @@
-# Navigateur New Tab
+# Custom New Tab
 
-`Navigateur New Tab` is a local-first, minimalist new tab extension for Chromium browsers.
+`Custom New Tab` is a free, local-first, minimalist new tab extension for Chromium browsers.
 
 Instead of opening a blank page or a generic start-page extension, it shows a personal dashboard built around quick access, lightweight widgets, editable link collections, and local persistence.
 
