@@ -95,7 +95,6 @@ custom-new-tab/
 references/
   exemple_visuel.png
 AGENTS.md
-MISSION_WIDGETS_DASHBOARD.md
 ```
 
 ## Privacy

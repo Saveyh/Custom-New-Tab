@@ -9,3 +9,10 @@ Desktop.ini
 dist/
 build/
 coverage/
+
+node_modules/
+.env
+.env.local
+dist/
+build/
+.agents/

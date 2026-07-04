@@ -1,9 +1,12 @@
 const STORAGE_KEY = "navigateur.newtab.v1";
-const DATA_VERSION = 5;
-const DEFAULT_DASHBOARD_ID = "work";
+const DATA_VERSION = 7;
+const DEFAULT_DASHBOARD_ID = "home";
 const DASHBOARD_DRAG_SWITCH_DELAY_MS = 260;
 const DRAG_AUTO_SCROLL_EDGE_PX = 84;
 const DRAG_AUTO_SCROLL_MAX_STEP_PX = 26;
+const POMODORO_WORK_SECONDS = 25 * 60;
+const POMODORO_BREAK_SECONDS = 5 * 60;
+const POMODORO_TOTAL_SESSIONS = 8;
 
 const searchEngines = [
   {
@@ -49,31 +52,32 @@ const sectionIconOptions = [
 
 const defaultDashboards = [
   {
-    id: "work",
-    label: "Travail",
-    icon: "terminal",
+    id: "home",
+    label: "Home",
+    icon: "home",
     order: 0,
   },
   {
-    id: "university",
-    label: "Universite",
-    icon: "graduation",
+    id: "workspace",
+    label: "Workspace",
+    icon: "briefcase",
     order: 1,
   },
   {
-    id: "leisure",
-    label: "Loisirs",
-    icon: "gamepad",
+    id: "focus",
+    label: "Focus",
+    icon: "target",
     order: 2,
   },
 ];
 
-const fixedDashboardView = {
-  id: "all",
-  label: "Tout",
-  icon: "grid",
-  order: Number.MAX_SAFE_INTEGER,
-};
+const qrVersionDefinitions = [
+  { version: 1, dataCodewords: 19, eccCodewords: 7, alignment: [] },
+  { version: 2, dataCodewords: 34, eccCodewords: 10, alignment: [6, 18] },
+  { version: 3, dataCodewords: 55, eccCodewords: 15, alignment: [6, 22] },
+  { version: 4, dataCodewords: 80, eccCodewords: 20, alignment: [6, 26] },
+  { version: 5, dataCodewords: 108, eccCodewords: 26, alignment: [6, 30] },
+];
 
 const dashboardIconOptions = [
   { id: "terminal", label: "Terminal" },
@@ -84,6 +88,35 @@ const dashboardIconOptions = [
   { id: "cloud", label: "Cloud" },
   { id: "folder", label: "Folder" },
   { id: "grid", label: "Grid" },
+  { id: "briefcase", label: "Briefcase" },
+  { id: "rocket", label: "Rocket" },
+  { id: "book", label: "Book" },
+  { id: "bookmark", label: "Bookmark" },
+  { id: "brain", label: "Brain" },
+  { id: "camera", label: "Camera" },
+  { id: "compass", label: "Compass" },
+  { id: "cpu", label: "CPU" },
+  { id: "database", label: "Database" },
+  { id: "flask", label: "Flask" },
+  { id: "globe", label: "Globe" },
+  { id: "headphones", label: "Headphones" },
+  { id: "heart", label: "Heart" },
+  { id: "home", label: "Home" },
+  { id: "image", label: "Image" },
+  { id: "key", label: "Key" },
+  { id: "lightning", label: "Lightning" },
+  { id: "lock", label: "Lock" },
+  { id: "map", label: "Map" },
+  { id: "moon", label: "Moon" },
+  { id: "music", label: "Music" },
+  { id: "palette", label: "Palette" },
+  { id: "pencil", label: "Pencil" },
+  { id: "shield", label: "Shield" },
+  { id: "star", label: "Star" },
+  { id: "sun", label: "Sun" },
+  { id: "target", label: "Target" },
+  { id: "timer", label: "Timer" },
+  { id: "wrench", label: "Wrench" },
 ];
 
 const widgetDefinitions = [
@@ -144,6 +177,18 @@ const widgetDefinitions = [
     description: "A simple calendar showing the current day, week, or month",
   },
   {
+    type: "clock",
+    label: "Clock",
+    icon: "timer",
+    description: "An analog clock synced with the current local device time",
+  },
+  {
+    type: "pomodoro",
+    label: "Pomodoro Timer",
+    icon: "timer",
+    description: "A focused 25/5 pomodoro cycle with 8 work sessions",
+  },
+  {
     type: "kanban",
     label: "Kanban Tasks",
     icon: "kanban",
@@ -178,14 +223,9 @@ const widgetDefinitions = [
 ];
 
 const defaultSectionDashboardIds = {
-  section_ai_services: ["work"],
-  section_developer_resources: ["work"],
-  section_hosting_deployment: ["work"],
-  section_travail: ["university"],
-  section_universite: ["university"],
-  section_creation: ["university"],
-  section_loisirs: ["leisure"],
-  section_achats: ["leisure"],
+  section_home_favorites: ["home"],
+  section_workspace_google: ["workspace"],
+  section_workspace_tools: ["workspace"],
 };
 
 const defaultData = {
@@ -196,83 +236,38 @@ const defaultData = {
   widgets: createDefaultWidgets(),
   sections: [
     {
-      id: "section_ai_services",
-      title: "AI Services",
-      icon: "sparkles",
+      id: "section_home_favorites",
+      title: "Favoris",
+      icon: "home",
       links: [
-        createSeedLink("ChatGPT", "https://chatgpt.com/"),
-        createSeedLink("Claude", "https://claude.ai/"),
-        createSeedLink("Gemini", "https://gemini.google.com/"),
-        createSeedLink("NotebookLM", "https://notebooklm.google.com/"),
-        createSeedLink("Mistral", "https://chat.mistral.ai/"),
-        createSeedLink("Cloud AI", "https://cloud.ai/"),
+        createSeedLink("Gmail", "https://mail.google.com/"),
+        createSeedLink("Google Calendar", "https://calendar.google.com/"),
+        createSeedLink("Google Drive", "https://drive.google.com/"),
+        createSeedLink("YouTube", "https://www.youtube.com/"),
       ],
     },
     {
-      id: "section_developer_resources",
-      title: "Developpement",
-      icon: "code",
-      links: [
-        createSeedLink("GitHub", "https://github.com/"),
-        createSeedLink("Supabase", "https://supabase.com/"),
-      ],
-    },
-    {
-      id: "section_hosting_deployment",
-      title: "Hosting & Monitoring",
-      icon: "cloud",
-      links: [
-        createSeedLink("Vercel", "https://vercel.com/dashboard"),
-        createSeedLink("Netlify", "https://app.netlify.com/"),
-        createSeedLink("UptimeRobot", "https://dashboard.uptimerobot.com/"),
-        createSeedLink("Infomaniak Manager", "https://manager.infomaniak.com/"),
-      ],
-    },
-    {
-      id: "section_travail",
-      title: "Travail",
+      id: "section_workspace_google",
+      title: "Google Workspace",
       icon: "folder",
       links: [
         createSeedLink("Google Drive", "https://drive.google.com/"),
+        createSeedLink("Google Docs", "https://docs.google.com/document/"),
+        createSeedLink("Google Sheets", "https://docs.google.com/spreadsheets/"),
+        createSeedLink("Google Calendar", "https://calendar.google.com/"),
         createSeedLink("Notion", "https://www.notion.so/"),
-        createSeedLink("Linear", "https://linear.app/"),
+        createSeedLink("Slack", "https://slack.com/signin"),
       ],
     },
     {
-      id: "section_universite",
-      title: "Universite",
-      icon: "folder",
+      id: "section_workspace_tools",
+      title: "Tools",
+      icon: "briefcase",
       links: [
-        createSeedLink("Google Scholar", "https://scholar.google.com/"),
-        createSeedLink("Moodle", "https://moodle.org/"),
-      ],
-    },
-    {
-      id: "section_creation",
-      title: "Creation",
-      icon: "grid",
-      links: [
-        createSeedLink("Canva", "https://canva.com/"),
-        createSeedLink("Pinterest", "https://fr.pinterest.com/"),
-      ],
-    },
-    {
-      id: "section_loisirs",
-      title: "Loisirs",
-      icon: "grid",
-      links: [
-        createSeedLink("YouTube", "https://www.youtube.com/"),
-        createSeedLink("Twitch", "https://www.twitch.tv/"),
-        createSeedLink("Spotify", "https://open.spotify.com/"),
-      ],
-    },
-    {
-      id: "section_achats",
-      title: "Achats",
-      icon: "folder",
-      links: [
-        createSeedLink("Amazon", "https://www.amazon.com/"),
-        createSeedLink("Galaxus", "https://www.galaxus.ch/"),
+        createSeedLink("GitHub", "https://github.com/"),
+        createSeedLink("Vercel", "https://vercel.com/dashboard"),
+        createSeedLink("Netlify", "https://app.netlify.com/"),
+        createSeedLink("Osmo", "https://osmo.supply/"),
       ],
     },
   ],
@@ -331,6 +326,7 @@ const removedSeedHosts = [
 const state = {
   data: cloneData(defaultData),
   dialog: null,
+  contextMenu: null,
   drag: null,
   dragAutoScrollFrame: null,
   dragAutoScrollDirection: 0,
@@ -338,9 +334,13 @@ const state = {
   dragDashboardSwitchTimer: null,
   dragDashboardSwitchId: null,
   editMode: false,
+  editModeNoticeDismissed: false,
+  resize: null,
   statusTimer: null,
   uptimeCheckedWidgets: new Set(),
   searchMenuWidgetId: null,
+  clockTimer: null,
+  pomodoroTimer: null,
 };
 
 const ui = {
@@ -350,6 +350,7 @@ const ui = {
   editToggle: document.getElementById("editToggle"),
   sectionsRoot: document.getElementById("sectionsRoot"),
   statusMessage: document.getElementById("statusMessage"),
+  editModeNotice: document.getElementById("editModeNotice"),
   editorDialog: document.getElementById("editorDialog"),
   editorForm: document.getElementById("editorForm"),
   dialogTitle: document.getElementById("dialogTitle"),
@@ -358,6 +359,7 @@ const ui = {
   dialogClose: document.getElementById("dialogClose"),
   dialogCancel: document.getElementById("dialogCancel"),
   formError: document.getElementById("formError"),
+  contextMenuLayer: document.getElementById("contextMenuLayer"),
 };
 
 document.addEventListener("DOMContentLoaded", init);
@@ -366,6 +368,8 @@ async function init() {
   paintStaticIcons();
   renderDashboardNav();
   bindEvents();
+  ensureClockTickerRunning();
+  ensurePomodoroTickerRunning();
 
   try {
     state.data = await loadData();
@@ -390,9 +394,14 @@ function bindEvents() {
   ui.editorDialog.addEventListener("click", handleDialogBackdropClick);
 
   document.addEventListener("click", handleDocumentClick);
+  document.addEventListener("contextmenu", handleDocumentContextMenu);
   document.addEventListener("keydown", handleGlobalKeydown);
   document.addEventListener("input", handleDocumentInput);
   document.addEventListener("change", handleDocumentChange);
+  document.addEventListener("pointerdown", handleDocumentPointerDown);
+  document.addEventListener("pointermove", handleDocumentPointerMove);
+  document.addEventListener("pointerup", handleDocumentPointerUp);
+  document.addEventListener("pointercancel", handleDocumentPointerUp);
   document.addEventListener("submit", handleDocumentSubmit);
   document.addEventListener("dragstart", handleDragStart);
   document.addEventListener("dragover", handleDragOver);
@@ -478,9 +487,9 @@ function renderDashboardNav() {
     .map(
       (dashboard) => `
         <div
-          class="dashboard-tab-item ${dashboard.id === fixedDashboardView.id ? "is-fixed" : "dashboard-tab-draggable"}"
+          class="dashboard-tab-item dashboard-tab-draggable"
           data-dashboard-drag-id="${dashboard.id}"
-          draggable="${state.editMode && dashboard.id !== fixedDashboardView.id ? "true" : "false"}"
+          draggable="${state.editMode ? "true" : "false"}"
         >
           <button
             class="dashboard-tab"
@@ -492,7 +501,7 @@ function renderDashboardNav() {
             <span class="dashboard-tab-label">${escapeHtml(dashboard.label)}</span>
           </button>
           ${
-            state.editMode && dashboard.id !== fixedDashboardView.id
+            state.editMode
               ? `
                 <div class="dashboard-tab-actions">
                   <button class="small-icon-button" type="button" data-action="edit-dashboard" data-dashboard-id="${dashboard.id}" aria-label="Modifier le dashboard" title="Modifier">${createIcon("edit")}</button>
@@ -590,8 +599,25 @@ async function handleDashboardNavClick(event) {
 
 function handleGlobalKeydown(event) {
   if (event.key === "Escape") {
+    closeContextMenu();
     closeSearchMenus();
     return;
+  }
+
+  if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+    const linkCard = event.target.closest(".link-card");
+    if (!linkCard) {
+      return;
+    }
+
+    event.preventDefault();
+    const rect = linkCard.getBoundingClientRect();
+    openContextMenu({
+      sectionId: linkCard.dataset.sectionId,
+      linkId: linkCard.dataset.linkId,
+      x: rect.left + Math.min(rect.width - 18, 42),
+      y: rect.top + Math.min(rect.height - 18, 42),
+    });
   }
 }
 
@@ -626,7 +652,12 @@ function closeSearchMenus() {
 }
 
 function toggleEditMode() {
+  if (state.editMode && state.resize) {
+    clearClockResizeState();
+  }
+  closeContextMenu();
   state.editMode = !state.editMode;
+  state.editModeNoticeDismissed = !state.editMode;
   ui.body.classList.toggle("is-editing", state.editMode);
   ui.editToggle.setAttribute(
     "aria-label",
@@ -636,6 +667,10 @@ function toggleEditMode() {
 }
 
 async function handleDocumentClick(event) {
+  if (!event.target.closest(".context-menu")) {
+    closeContextMenu();
+  }
+
   if (!event.target.closest(".search-engine-control")) {
     closeSearchMenus();
   }
@@ -652,6 +687,13 @@ async function handleDocumentClick(event) {
 
   try {
     switch (actionTarget.dataset.action) {
+      case "dismiss-edit-mode-notice":
+        state.editModeNoticeDismissed = true;
+        renderEditModeNotice();
+        break;
+      case "select-dashboard-icon":
+        selectDashboardIcon(actionTarget.dataset.iconId);
+        break;
       case "add-dashboard":
         openDashboardDialog();
         break;
@@ -672,6 +714,7 @@ async function handleDocumentClick(event) {
         await createWidgetFromType(actionTarget.dataset.widgetType);
         break;
       case "toggle-search-engine-menu":
+        closeContextMenu();
         state.searchMenuWidgetId =
           state.searchMenuWidgetId === actionTarget.dataset.widgetId
             ? null
@@ -685,31 +728,86 @@ async function handleDocumentClick(event) {
         );
         break;
       case "delete-widget":
+        closeContextMenu();
         await deleteWidget(actionTarget.dataset.widgetId);
         break;
       case "add-section":
+        closeContextMenu();
         openSectionDialog();
         break;
       case "edit-section":
+        closeContextMenu();
         openSectionDialog(getSection(actionTarget.dataset.sectionId));
         break;
       case "delete-section":
+        closeContextMenu();
         await deleteSection(actionTarget.dataset.sectionId);
         break;
       case "add-link":
+        closeContextMenu();
         openLinkDialog(null, actionTarget.dataset.sectionId);
         break;
       case "edit-link":
+        closeContextMenu();
         openLinkDialog(
           getLink(actionTarget.dataset.sectionId, actionTarget.dataset.linkId),
           actionTarget.dataset.sectionId,
         );
         break;
       case "delete-link":
+        closeContextMenu();
         await deleteLink(
           actionTarget.dataset.sectionId,
           actionTarget.dataset.linkId,
         );
+        break;
+      case "open-link-new-tab":
+        closeContextMenu();
+        await openLinkInNewTab(
+          actionTarget.dataset.sectionId,
+          actionTarget.dataset.linkId,
+        );
+        break;
+      case "copy-link-url":
+        closeContextMenu();
+        await copyLinkUrl(
+          actionTarget.dataset.sectionId,
+          actionTarget.dataset.linkId,
+        );
+        break;
+      case "share-link":
+        closeContextMenu();
+        await shareLink(
+          actionTarget.dataset.sectionId,
+          actionTarget.dataset.linkId,
+        );
+        break;
+      case "duplicate-link":
+        closeContextMenu();
+        await duplicateLink(
+          actionTarget.dataset.sectionId,
+          actionTarget.dataset.linkId,
+        );
+        break;
+      case "move-widget":
+      case "move-link-list-widget":
+        closeContextMenu();
+        await moveWidgetByDirection(
+          actionTarget.dataset.widgetId,
+          actionTarget.dataset.direction,
+        );
+        break;
+      case "duplicate-link-list-widget":
+        closeContextMenu();
+        await duplicateLinkListWidget(actionTarget.dataset.widgetId);
+        break;
+      case "open-link-list-widget-settings":
+        closeContextMenu();
+        openLinkListWidgetSettings(actionTarget.dataset.widgetId);
+        break;
+      case "delete-link-list-widget":
+        closeContextMenu();
+        await deleteLinkListWidget(actionTarget.dataset.widgetId);
         break;
       case "add-todo":
         await addTodoItem(actionTarget.dataset.widgetId);
@@ -788,6 +886,15 @@ async function handleDocumentClick(event) {
           { render: true },
         );
         break;
+      case "toggle-pomodoro":
+        await togglePomodoro(actionTarget.dataset.widgetId);
+        break;
+      case "skip-pomodoro":
+        await skipPomodoroPhase(actionTarget.dataset.widgetId);
+        break;
+      case "reset-pomodoro":
+        await resetPomodoro(actionTarget.dataset.widgetId);
+        break;
       case "add-kanban-card":
         await addKanbanCard(
           actionTarget.dataset.widgetId,
@@ -859,7 +966,7 @@ async function handleDocumentClick(event) {
     }
   } catch (error) {
     console.error(error);
-    showStatus("Action impossible.");
+    showStatus(getActionErrorMessage(error, "Action impossible."));
   }
 }
 
@@ -927,8 +1034,9 @@ async function handleDocumentInput(event) {
       await updateWidgetConfig(
         widgetId,
         { value: input.value },
-        { render: true },
+        { render: false },
       );
+      refreshQRCodePreview(widgetId, input);
       break;
     case "markdown-text":
       await updateWidgetConfig(
@@ -965,8 +1073,9 @@ async function handleDocumentInput(event) {
       await updateWidgetConfig(
         widgetId,
         { quality: Number(input.value) },
-        { render: true },
+        { render: false },
       );
+      refreshImageQualityValue(input);
       break;
     case "kanban-card-title":
       await updateKanbanCardTitle(
@@ -993,12 +1102,142 @@ async function handleDocumentChange(event) {
   }
 }
 
+function handleDocumentPointerDown(event) {
+  if (!state.editMode) {
+    return;
+  }
+
+  const handle = event.target.closest("[data-clock-resize-handle='true']");
+  if (!handle) {
+    return;
+  }
+
+  const widgetId = handle.dataset.widgetId;
+  const widget = getWidget(widgetId);
+  const face = handle.closest("[data-clock-widget='true']");
+  if (!widget || !face) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const rect = face.getBoundingClientRect();
+  state.resize = {
+    widgetId,
+    pointerId: event.pointerId,
+    faceSelector: `[data-widget-id="${widgetId}"] [data-clock-widget="true"]`,
+    centerX: rect.left + rect.width / 2,
+    centerY: rect.top + rect.height / 2,
+    liveSize: getClockWidgetSize(widget),
+  };
+
+  handle.setPointerCapture?.(event.pointerId);
+  ui.body.classList.add("is-resizing-clock");
+}
+
+function handleDocumentPointerMove(event) {
+  if (!state.resize || state.resize.pointerId !== event.pointerId) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const nextSize = clampClockSizeFromPointer(
+    event.clientX,
+    event.clientY,
+    state.resize.centerX,
+    state.resize.centerY,
+  );
+  state.resize.liveSize = nextSize;
+
+  const face = document.querySelector(state.resize.faceSelector);
+  if (face instanceof HTMLElement) {
+    face.style.setProperty("--clock-size", `${nextSize}px`);
+  }
+}
+
+async function handleDocumentPointerUp(event) {
+  if (!state.resize || state.resize.pointerId !== event.pointerId) {
+    return;
+  }
+
+  const resizeState = state.resize;
+  clearClockResizeState();
+
+  await updateWidgetConfig(
+    resizeState.widgetId,
+    { size: resizeState.liveSize },
+    { render: true, message: "Taille de l'horloge mise a jour." },
+  );
+}
+
+function clampClockSizeFromPointer(clientX, clientY, centerX, centerY) {
+  const horizontal = Math.max(110, clientX - centerX);
+  const vertical = Math.max(110, clientY - centerY);
+  return clampNumber(Math.max(horizontal, vertical) * 2, 220, 520, 320);
+}
+
+function clearClockResizeState() {
+  state.resize = null;
+  ui.body.classList.remove("is-resizing-clock");
+}
+
+function handleDocumentContextMenu(event) {
+  event.preventDefault();
+
+  if (event.target.closest(".context-menu")) {
+    return;
+  }
+
+  const linkCard = event.target.closest(".link-card");
+  if (!linkCard) {
+    closeContextMenu();
+    return;
+  }
+
+  openContextMenu({
+    sectionId: linkCard.dataset.sectionId,
+    linkId: linkCard.dataset.linkId,
+    x: event.clientX,
+    y: event.clientY,
+  });
+}
+
 function render() {
   ui.body.classList.toggle("is-editing", state.editMode);
   renderDashboardNav();
   syncDashboardNav();
   renderWidgets();
+  renderEditModeNotice();
+  renderContextMenu();
+  updateClockWidgets();
+  updatePomodoroWidgets();
   scheduleVisibleUptimeChecks();
+}
+
+function renderEditModeNotice() {
+  const shouldShowNotice = state.editMode && !state.editModeNoticeDismissed;
+  ui.editModeNotice.classList.toggle("is-visible", shouldShowNotice);
+  ui.editModeNotice.setAttribute("aria-hidden", shouldShowNotice ? "false" : "true");
+
+  if (!shouldShowNotice) {
+    ui.editModeNotice.innerHTML = "";
+    return;
+  }
+
+  ui.editModeNotice.innerHTML = `
+    <div class="edit-mode-notice-card">
+      <span class="edit-mode-notice-text">Edit mode is enabled.</span>
+      <button
+        class="edit-mode-notice-close"
+        type="button"
+        data-action="dismiss-edit-mode-notice"
+        aria-label="Masquer la notification du mode edition"
+        title="Masquer"
+      >${createIcon("close")}</button>
+    </div>
+  `;
 }
 
 function renderWidgets() {
@@ -1021,10 +1260,6 @@ function renderWidgets() {
 function getVisibleWidgets() {
   const dashboard = getSelectedDashboard();
   const widgets = state.data.widgets.slice().sort((a, b) => a.order - b.order);
-  if (dashboard.id === "all") {
-    return widgets;
-  }
-
   return widgets.filter((widget) => widget.dashboardIds.includes(dashboard.id));
 }
 
@@ -1043,6 +1278,8 @@ const widgetRegistry = {
   "markdown-editor": renderMarkdownEditorWidget,
   "text-diff": renderTextDiffWidget,
   calendar: renderCalendarWidget,
+  clock: renderClockWidget,
+  pomodoro: renderPomodoroWidget,
   kanban: renderKanbanWidget,
   "daily-quiz": renderDailyQuizWidget,
   "image-compression": renderImageCompressionWidget,
@@ -1065,7 +1302,7 @@ function renderSearchWidget(widget) {
         state.editMode
           ? `
             <div class="search-widget-actions">
-              <button class="small-icon-button" type="button" data-action="delete-widget" data-widget-id="${widget.id}" aria-label="Supprimer le widget" title="Supprimer le widget">${createIcon("trash")}</button>
+              ${renderWidgetEditControls(widget.id)}
             </div>
           `
           : ""
@@ -1129,30 +1366,36 @@ function renderLinkListWidget(widget) {
           <h2>${escapeHtml(section.title)}</h2>
         </div>
         <div class="section-actions">
+          ${renderWidgetMoveControls(widget.id, { className: "widget-move-controls-inline" })}
           <button
-            class="small-icon-button"
+            class="section-action-add"
             type="button"
             data-action="add-link"
             data-section-id="${section.id}"
             aria-label="Ajouter un lien"
             title="Ajouter un lien"
-          >${createIcon("plus")}</button>
-          <button
-            class="small-icon-button"
-            type="button"
-            data-action="edit-section"
-            data-section-id="${section.id}"
-            aria-label="Modifier la ligne"
-            title="Modifier la ligne"
-          >${createIcon("edit")}</button>
-          <button
-            class="small-icon-button"
-            type="button"
-            data-action="delete-section"
-            data-section-id="${section.id}"
-            aria-label="Supprimer la ligne"
-            title="Supprimer la ligne"
-          >${createIcon("trash")}</button>
+          >
+            <span aria-hidden="true">${createIcon("plus")}</span>
+            <span>Ajouter un lien</span>
+          </button>
+          <div class="section-action-bubbles" aria-label="Edition de la section">
+            <button
+              class="small-icon-button"
+              type="button"
+              data-action="edit-section"
+              data-section-id="${section.id}"
+              aria-label="Modifier la ligne"
+              title="Modifier la ligne"
+            >${createIcon("edit")}</button>
+            <button
+              class="small-icon-button"
+              type="button"
+              data-action="delete-section"
+              data-section-id="${section.id}"
+              aria-label="Supprimer la ligne"
+              title="Supprimer la ligne"
+            >${createIcon("trash")}</button>
+          </div>
         </div>
       </div>
 
@@ -1174,10 +1417,11 @@ function renderWidgetCard(widget, bodyMarkup, options = {}) {
   const title = options.title || widget.title || definition.label;
   const description = options.description || "";
   const compactClass = options.compact ? " widget-card-compact" : "";
+  const cardClass = options.cardClass || "";
 
   return `
     <section
-      class="dashboard-widget widget-card${compactClass}"
+      class="dashboard-widget widget-card${compactClass}${cardClass}"
       data-widget-id="${widget.id}"
       data-widget-type="${widget.type}"
       draggable="${state.editMode ? "true" : "false"}"
@@ -1190,7 +1434,7 @@ function renderWidgetCard(widget, bodyMarkup, options = {}) {
         <div class="widget-actions">
           ${
             state.editMode
-              ? `<button class="small-icon-button" type="button" data-action="delete-widget" data-widget-id="${widget.id}" aria-label="Supprimer le widget" title="Supprimer le widget">${createIcon("trash")}</button>`
+              ? renderWidgetEditControls(widget.id)
               : ""
           }
           ${options.actions || ""}
@@ -1305,14 +1549,13 @@ function renderQuickNoteWidget(widget) {
 function renderQRCodeWidget(widget) {
   const value =
     normalizeText(widget.config?.value) || "https://startpagehq.com";
-  const matrix = createPseudoQRMatrix(value);
-  const cells = matrix
-    .map((row) =>
-      row
-        .map((cell) => `<span class="${cell ? "is-on" : ""}"></span>`)
-        .join(""),
-    )
-    .join("");
+  const qrCode = createQRCodeModel(value);
+  const cells = qrCode.matrix ? renderQRCodeCells(qrCode.matrix) : "";
+  const errorMarkup = qrCode.error
+    ? `<p class="widget-muted" data-qr-error>${escapeHtml(qrCode.error)}</p>`
+    : `<p class="widget-muted" data-qr-error hidden></p>`;
+  const downloadDisabled = qrCode.matrix ? "" : "disabled";
+  const qrSize = qrCode.size || 29;
 
   return renderWidgetCard(
     widget,
@@ -1320,13 +1563,164 @@ function renderQRCodeWidget(widget) {
       <div class="widget-panel qr-widget">
         <div class="widget-toolbar-row">
           <input class="widget-input" type="text" value="${escapeHtml(value)}" data-widget-id="${widget.id}" data-widget-input="qr-value" placeholder="Text or URL" />
-          <button class="text-button" type="button" data-action="download-qr-preview" data-widget-id="${widget.id}">Download</button>
+          <button class="text-button" type="button" data-action="download-qr-preview" data-widget-id="${widget.id}" ${downloadDisabled}>Download</button>
           <button class="text-button" type="button" data-action="reset-qr" data-widget-id="${widget.id}">Reset</button>
         </div>
-        <div class="qr-preview" aria-label="QR preview">${cells}</div>
+        <div class="qr-preview" data-qr-preview style="--qr-size: ${qrSize}" aria-label="QR preview">${cells}</div>
+        ${errorMarkup}
       </div>
     `,
   );
+}
+
+function renderContextMenu() {
+  if (!ui.contextMenuLayer) {
+    return;
+  }
+
+  const menuState = state.contextMenu;
+  if (!menuState) {
+    ui.contextMenuLayer.innerHTML = "";
+    return;
+  }
+
+  const link = getLink(menuState.sectionId, menuState.linkId);
+  const section = getSection(menuState.sectionId);
+  const widget = getLinkListWidgetBySectionId(menuState.sectionId);
+  if (
+    !link ||
+    !section ||
+    !widget ||
+    !isWidgetVisibleOnDashboard(widget, state.data.selectedDashboard)
+  ) {
+    state.contextMenu = null;
+    ui.contextMenuLayer.innerHTML = "";
+    return;
+  }
+
+  ui.contextMenuLayer.innerHTML = `
+    <div class="context-menu" role="menu" aria-label="Link actions">
+      <div class="context-menu-section">
+        ${createContextMenuItemMarkup("open-link-new-tab", "external-link", "Open in New Tab", menuState)}
+        ${createContextMenuItemMarkup("copy-link-url", "copy", "Copy Link URL", menuState)}
+        ${createContextMenuItemMarkup("share-link", "share", "Share Link", menuState)}
+        ${createContextMenuItemMarkup("edit-link", "edit", "Edit Link", menuState)}
+        ${createContextMenuItemMarkup("duplicate-link", "duplicate", "Duplicate Link", menuState)}
+        ${createContextMenuItemMarkup("delete-link", "trash", "Delete Link", menuState, { danger: true })}
+      </div>
+      <div class="context-menu-separator"></div>
+      <div class="context-menu-section">
+        <div class="context-menu-label">WIDGET LINKS</div>
+        ${createContextMenuItemMarkup("add-link", "plus", "Add Link", menuState)}
+        ${createContextMenuMoveMarkup(widget.id)}
+        ${createContextMenuItemMarkup("duplicate-link-list-widget", "duplicate-plus", "Duplicate Widget", { widgetId: widget.id })}
+        ${createContextMenuItemMarkup("open-link-list-widget-settings", "settings", "Widget Settings", { widgetId: widget.id })}
+        ${createContextMenuItemMarkup("delete-link-list-widget", "trash", "Delete Widget", { widgetId: widget.id }, { danger: true })}
+      </div>
+    </div>
+  `;
+
+  const menu = ui.contextMenuLayer.querySelector(".context-menu");
+  if (menu) {
+    positionContextMenu(menu, menuState.x, menuState.y);
+  }
+}
+
+function createContextMenuItemMarkup(
+  action,
+  icon,
+  label,
+  data = {},
+  options = {},
+) {
+  const attributes = Object.entries(data)
+    .filter(([, value]) => normalizeText(value))
+    .map(
+      ([key, value]) =>
+        ` data-${camelToKebab(key)}="${escapeHtml(String(value))}"`,
+    )
+    .join("");
+
+  return `
+    <button
+      class="context-menu-item${options.danger ? " is-danger" : ""}"
+      type="button"
+      role="menuitem"
+      data-action="${action}"${attributes}
+    >
+      <span class="context-menu-icon" aria-hidden="true">${createIcon(icon)}</span>
+      <span class="context-menu-text">${label}</span>
+    </button>
+  `;
+}
+
+function createContextMenuMoveMarkup(widgetId) {
+  return `
+    <div class="context-menu-move">
+      <span class="context-menu-icon" aria-hidden="true">${createIcon("move-vertical")}</span>
+      <span class="context-menu-text">Move</span>
+      <div class="context-menu-move-controls" role="group" aria-label="Move widget">
+        <button class="context-menu-move-button" type="button" data-action="move-link-list-widget" data-widget-id="${widgetId}" data-direction="bottom" aria-label="Move to bottom" title="Move to bottom">${createIcon("arrow-down-to-line")}</button>
+        <button class="context-menu-move-button" type="button" data-action="move-link-list-widget" data-widget-id="${widgetId}" data-direction="down" aria-label="Move down" title="Move down">${createIcon("arrow-down")}</button>
+        <button class="context-menu-move-button" type="button" data-action="move-link-list-widget" data-widget-id="${widgetId}" data-direction="up" aria-label="Move up" title="Move up">${createIcon("arrow-up")}</button>
+        <button class="context-menu-move-button" type="button" data-action="move-link-list-widget" data-widget-id="${widgetId}" data-direction="top" aria-label="Move to top" title="Move to top">${createIcon("arrow-up-to-line")}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderWidgetEditControls(widgetId, options = {}) {
+  const className = normalizeText(options.className);
+
+  return `
+    <div class="widget-edit-controls${className ? ` ${className}` : ""}" role="group" aria-label="Actions du widget">
+      ${renderWidgetMoveControls(widgetId, { className: "widget-move-controls-inline" })}
+      <div class="widget-edit-controls-divider" aria-hidden="true"></div>
+      <button class="small-icon-button" type="button" data-action="delete-widget" data-widget-id="${widgetId}" aria-label="Supprimer le widget" title="Supprimer le widget">${createIcon("trash")}</button>
+    </div>
+  `;
+}
+
+function renderWidgetMoveControls(widgetId, options = {}) {
+  const className = normalizeText(options.className);
+
+  return `
+    <div class="widget-move-controls${className ? ` ${className}` : ""}" role="group" aria-label="Deplacer le widget">
+      <button class="small-icon-button" type="button" data-action="move-widget" data-widget-id="${widgetId}" data-direction="bottom" aria-label="Placer tout en bas" title="Placer tout en bas">${createIcon("arrow-down-to-line")}</button>
+      <button class="small-icon-button" type="button" data-action="move-widget" data-widget-id="${widgetId}" data-direction="down" aria-label="Descendre d'un cran" title="Descendre d'un cran">${createIcon("arrow-down")}</button>
+      <button class="small-icon-button" type="button" data-action="move-widget" data-widget-id="${widgetId}" data-direction="up" aria-label="Monter d'un cran" title="Monter d'un cran">${createIcon("arrow-up")}</button>
+      <button class="small-icon-button" type="button" data-action="move-widget" data-widget-id="${widgetId}" data-direction="top" aria-label="Placer tout en haut" title="Placer tout en haut">${createIcon("arrow-up-to-line")}</button>
+    </div>
+  `;
+}
+
+function positionContextMenu(menu, x, y) {
+  const gutter = 10;
+  const maxLeft = Math.max(gutter, window.innerWidth - menu.offsetWidth - gutter);
+  const maxTop = Math.max(gutter, window.innerHeight - menu.offsetHeight - gutter);
+  const left = clampNumber(x, gutter, maxLeft, gutter);
+  const top = clampNumber(y, gutter, maxTop, gutter);
+  menu.style.left = `${left}px`;
+  menu.style.top = `${top}px`;
+}
+
+function openContextMenu({ sectionId, linkId, x, y }) {
+  if (!getLink(sectionId, linkId)) {
+    closeContextMenu();
+    return;
+  }
+
+  state.contextMenu = { sectionId, linkId, x, y };
+  renderContextMenu();
+}
+
+function closeContextMenu() {
+  if (!state.contextMenu) {
+    return;
+  }
+
+  state.contextMenu = null;
+  renderContextMenu();
 }
 
 function renderMarkdownEditorWidget(widget) {
@@ -1425,6 +1819,190 @@ function renderCalendarWidget(widget) {
       </div>
     `,
   );
+}
+
+function renderClockWidget(widget) {
+  const size = getClockWidgetSize(widget);
+
+  return `
+    <section
+      class="dashboard-widget clock-widget"
+      data-widget-id="${widget.id}"
+      data-widget-type="${widget.type}"
+      draggable="${state.editMode ? "true" : "false"}"
+    >
+      ${
+        state.editMode
+          ? `
+            <div class="clock-widget-actions">
+              ${renderWidgetEditControls(widget.id)}
+            </div>
+          `
+          : ""
+      }
+      <div class="clock-widget-face" data-clock-widget="true" style="--clock-size: ${size}px">
+        <svg class="clock-widget-dial" viewBox="0 0 320 320" aria-hidden="true">
+          ${renderClockDialMarkup()}
+        </svg>
+        <div class="clock-hand clock-hand-hour" data-clock-hour></div>
+        <div class="clock-hand clock-hand-minute" data-clock-minute></div>
+        <div class="clock-center-dot"></div>
+        <div class="clock-date-label" data-clock-date>${escapeHtml(formatClockDate(new Date()))}</div>
+        ${
+          state.editMode
+            ? `
+              <button
+                class="clock-resize-handle"
+                type="button"
+                draggable="false"
+                data-clock-resize-handle="true"
+                data-widget-id="${widget.id}"
+                aria-label="Redimensionner l'horloge"
+                title="Redimensionner l'horloge"
+              >${createIcon("resize-diagonal")}</button>
+            `
+            : ""
+        }
+      </div>
+    </section>
+  `;
+}
+
+function renderClockDialMarkup() {
+  const center = 160;
+  const marks = Array.from({ length: 60 }, (_, index) => {
+    const angle = ((index / 60) * Math.PI * 2) - Math.PI / 2;
+    const isHour = index % 5 === 0;
+    const inner = isHour ? 132 : 144;
+    const outer = isHour ? 154 : 150;
+    const x1 = center + Math.cos(angle) * inner;
+    const y1 = center + Math.sin(angle) * inner;
+    const x2 = center + Math.cos(angle) * outer;
+    const y2 = center + Math.sin(angle) * outer;
+    return `<line class="clock-tick ${isHour ? "clock-tick-hour" : "clock-tick-minute"}" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"></line>`;
+  }).join("");
+
+  const labels = Array.from({ length: 12 }, (_, index) => {
+    const value = index === 0 ? 12 : index;
+    const angle = ((index / 12) * Math.PI * 2) - Math.PI / 2;
+    const radius = 118;
+    const x = center + Math.cos(angle) * radius;
+    const y = center + Math.sin(angle) * radius + 8;
+    return `<text class="clock-number" x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="middle">${value}</text>`;
+  }).join("");
+
+  return `${marks}${labels}`;
+}
+
+function getClockWidgetSize(widget) {
+  return clampNumber(widget?.config?.size, 220, 520, 320);
+}
+
+function renderPomodoroWidget(widget) {
+  const pomodoro = getResolvedPomodoroState(widget);
+  const isComplete = pomodoro.phase === "complete";
+  const primaryLabel = isComplete
+    ? "Restart"
+    : pomodoro.isRunning
+      ? "Pause"
+      : "Start";
+  const resetDisabled =
+    !pomodoro.isRunning &&
+    pomodoro.phase === "work" &&
+    pomodoro.workSessionsCompleted === 0 &&
+    pomodoro.remainingSeconds === POMODORO_WORK_SECONDS;
+
+  return renderWidgetCard(
+    widget,
+    `
+      <div
+        class="widget-panel pomodoro-widget"
+        data-pomodoro-widget="true"
+        data-widget-id="${widget.id}"
+        data-phase="${escapeHtml(pomodoro.phase)}"
+      >
+        <button
+          class="pomodoro-side-button pomodoro-reset-button"
+          type="button"
+          data-action="reset-pomodoro"
+          data-widget-id="${widget.id}"
+          ${resetDisabled ? "disabled" : ""}
+          aria-label="Reset pomodoro"
+          title="Reset"
+        >
+          <span class="pomodoro-side-button-icon" aria-hidden="true">${createIcon("reset")}</span>
+          <span class="pomodoro-side-button-label">Reset</span>
+        </button>
+
+        <div class="pomodoro-main">
+          <div class="pomodoro-time" data-pomodoro-time>${formatPomodoroTime(pomodoro.remainingSeconds)}</div>
+          <div class="pomodoro-status" data-pomodoro-status>${escapeHtml(getPomodoroStatusLabel(pomodoro))}</div>
+          <div class="pomodoro-progress" data-pomodoro-progress>${renderPomodoroProgressDots(pomodoro.workSessionsCompleted)}</div>
+        </div>
+
+        <div class="pomodoro-side-actions">
+          <button
+            class="pomodoro-side-button pomodoro-primary-button ${pomodoro.isRunning ? "is-running" : ""}"
+            type="button"
+            data-action="toggle-pomodoro"
+            data-widget-id="${widget.id}"
+            aria-label="${escapeHtml(primaryLabel)} pomodoro"
+            title="${escapeHtml(primaryLabel)}"
+          >
+            <span class="pomodoro-side-button-icon" aria-hidden="true">${createIcon(
+              pomodoro.isRunning ? "pause" : "play",
+            )}</span>
+            <span class="pomodoro-side-button-label" data-pomodoro-primary-label>${escapeHtml(primaryLabel)}</span>
+          </button>
+          <button
+            class="pomodoro-side-button pomodoro-skip-button"
+            type="button"
+            data-action="skip-pomodoro"
+            data-widget-id="${widget.id}"
+            ${isComplete ? "disabled" : ""}
+            aria-label="Skip pomodoro"
+            title="Skip"
+          >
+            <span class="pomodoro-side-button-icon" aria-hidden="true">${createIcon("skip")}</span>
+            <span class="pomodoro-side-button-label">Skip</span>
+          </button>
+        </div>
+      </div>
+    `,
+    {
+      cardClass: " pomodoro-widget-card",
+    },
+  );
+}
+
+function formatPomodoroTime(totalSeconds) {
+  const safeSeconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function getPomodoroStatusLabel(pomodoro) {
+  if (pomodoro.phase === "complete") {
+    return "Completed";
+  }
+
+  if (pomodoro.phase === "break") {
+    return pomodoro.isRunning ? "Break" : "Break Ready";
+  }
+
+  if (pomodoro.isRunning) {
+    return "Focus";
+  }
+
+  return pomodoro.workSessionsCompleted > 0 ? "Ready to Focus" : "Ready";
+}
+
+function renderPomodoroProgressDots(workSessionsCompleted) {
+  return Array.from({ length: POMODORO_TOTAL_SESSIONS }, (_, index) => {
+    const isDone = index < workSessionsCompleted;
+    return `<span class="pomodoro-progress-dot ${isDone ? "is-done" : ""}" aria-hidden="true"></span>`;
+  }).join("");
 }
 
 function renderKanbanWidget(widget) {
@@ -1685,35 +2263,96 @@ function getWidgetDefinition(type) {
 }
 
 function createDefaultWidgets() {
-  const searchWidget = {
-    id: "widget_search_primary",
-    type: "search",
-    title: "Search",
-    dashboardIds: defaultDashboards.map((dashboard) => dashboard.id),
-    order: 0,
-    config: { engineId: "google" },
-  };
-  const linkWidgets = [
-    { sectionId: "section_ai_services", title: "AI Services" },
-    { sectionId: "section_developer_resources", title: "Developpement" },
-    { sectionId: "section_hosting_deployment", title: "Hosting & Monitoring" },
-    { sectionId: "section_travail", title: "Travail" },
-    { sectionId: "section_universite", title: "Universite" },
-    { sectionId: "section_creation", title: "Creation" },
-    { sectionId: "section_loisirs", title: "Loisirs" },
-    { sectionId: "section_achats", title: "Achats" },
-  ];
-
   return [
-    searchWidget,
-    ...linkWidgets.map((item, index) => ({
-      id: `widget_link_${item.sectionId}`,
+    {
+      id: "widget_clock_home",
+      type: "clock",
+      title: "Clock",
+      dashboardIds: ["home"],
+      order: 0,
+      config: {},
+    },
+    {
+      id: "widget_search_primary",
+      type: "search",
+      title: "Search",
+      dashboardIds: ["home"],
+      order: 1,
+      config: { engineId: "google" },
+    },
+    {
+      id: "widget_link_section_home_favorites",
       type: "link-list",
-      title: item.title,
-      dashboardIds: defaultSectionDashboardIds[item.sectionId] || [],
-      order: index + 1,
-      config: { sectionId: item.sectionId },
-    })),
+      title: "Favoris",
+      dashboardIds: ["home"],
+      order: 2,
+      config: { sectionId: "section_home_favorites" },
+    },
+    {
+      id: "widget_note_home",
+      type: "quick-note",
+      title: "Note",
+      dashboardIds: ["home"],
+      order: 3,
+      config: { text: "", updatedAt: "" },
+    },
+    {
+      id: "widget_todo_workspace",
+      type: "todo",
+      title: "To-Do",
+      dashboardIds: ["workspace"],
+      order: 4,
+      config: {
+        items: [
+          { id: createId("todo"), text: "Review priorities", done: false },
+          {
+            id: createId("todo"),
+            text: "Ship one useful improvement",
+            done: false,
+          },
+        ],
+      },
+    },
+    {
+      id: "widget_link_section_workspace_google",
+      type: "link-list",
+      title: "Google Workspace",
+      dashboardIds: ["workspace"],
+      order: 5,
+      config: { sectionId: "section_workspace_google" },
+    },
+    {
+      id: "widget_link_section_workspace_tools",
+      type: "link-list",
+      title: "Tools",
+      dashboardIds: ["workspace"],
+      order: 6,
+      config: { sectionId: "section_workspace_tools" },
+    },
+    {
+      id: "widget_note_workspace",
+      type: "quick-note",
+      title: "Note",
+      dashboardIds: ["workspace"],
+      order: 7,
+      config: { text: "", updatedAt: "" },
+    },
+    {
+      id: "widget_pomodoro_focus",
+      type: "pomodoro",
+      title: "Pomodoro Timer",
+      dashboardIds: ["focus"],
+      order: 8,
+      config: createPomodoroConfig(),
+    },
+    {
+      id: "widget_kanban_focus",
+      type: "kanban",
+      title: "Kanban Tasks",
+      dashboardIds: ["focus"],
+      order: 9,
+      config: createDefaultWidgetConfig("kanban"),
+    },
   ];
 }
 
@@ -1753,6 +2392,10 @@ function createDefaultWidgetConfig(type) {
       };
     case "calendar":
       return { month: new Date().toISOString() };
+    case "clock":
+      return { size: 320 };
+    case "pomodoro":
+      return createPomodoroConfig();
     case "kanban":
       return {
         columns: [
@@ -1838,7 +2481,7 @@ function getMutableDashboards() {
 }
 
 function getDashboardViews(sourceData = state.data) {
-  return [...getStoredDashboards(sourceData), fixedDashboardView];
+  return getStoredDashboards(sourceData);
 }
 
 function getNextDashboardOrder() {
@@ -1953,7 +2596,7 @@ async function deleteDashboard(dashboardId) {
   if (state.data.selectedDashboard === dashboardId) {
     state.data.selectedDashboard =
       getStoredDashboards({ dashboards: state.data.dashboards })[0]?.id ||
-      fixedDashboardView.id;
+      DEFAULT_DASHBOARD_ID;
   }
 
   await persist("Dashboard supprime.");
@@ -2102,45 +2745,389 @@ function formatDateTime(value) {
   }).format(date);
 }
 
-// TODO: replace this deterministic visual placeholder with a standards-compliant local QR encoder.
-function createPseudoQRMatrix(value) {
-  const size = 29;
-  const matrix = Array.from({ length: size }, () =>
-    Array.from({ length: size }, () => false),
-  );
-  const reserved = Array.from({ length: size }, () =>
-    Array.from({ length: size }, () => false),
-  );
-  const hash = hashString(value);
-
-  addFinderPattern(matrix, reserved, 0, 0);
-  addFinderPattern(matrix, reserved, size - 7, 0);
-  addFinderPattern(matrix, reserved, 0, size - 7);
-
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      if (reserved[y][x]) {
-        continue;
-      }
-      const bit = (hash + x * 17 + y * 31 + x * y * 7) % 11;
-      matrix[y][x] = bit === 0 || bit === 3 || bit === 7;
-    }
+function formatClockDate(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
   }
 
-  return matrix;
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "long",
+    day: "numeric",
+  }).format(date);
 }
 
-function addFinderPattern(matrix, reserved, startX, startY) {
-  for (let y = 0; y < 7; y += 1) {
-    for (let x = 0; x < 7; x += 1) {
-      const globalX = startX + x;
-      const globalY = startY + y;
-      const onOuter = x === 0 || y === 0 || x === 6 || y === 6;
-      const onInner = x >= 2 && x <= 4 && y >= 2 && y <= 4;
-      matrix[globalY][globalX] = onOuter || onInner;
-      reserved[globalY][globalX] = true;
-    }
+function ensureClockTickerRunning() {
+  if (state.clockTimer) {
+    return;
   }
+
+  state.clockTimer = window.setInterval(() => {
+    updateClockWidgets();
+  }, 1000);
+}
+
+function ensurePomodoroTickerRunning() {
+  if (state.pomodoroTimer) {
+    return;
+  }
+
+  state.pomodoroTimer = window.setInterval(() => {
+    updatePomodoroWidgets();
+  }, 1000);
+}
+
+function updateClockWidgets() {
+  const clockElements = document.querySelectorAll("[data-clock-widget]");
+  if (!clockElements.length) {
+    return;
+  }
+
+  const now = new Date();
+  const minutes = now.getMinutes() + now.getSeconds() / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
+  const hourAngle = hours * 30;
+  const minuteAngle = minutes * 6;
+  const dateLabel = formatClockDate(now);
+
+  clockElements.forEach((element) => {
+    const hourHand = element.querySelector("[data-clock-hour]");
+    const minuteHand = element.querySelector("[data-clock-minute]");
+    const dateElement = element.querySelector("[data-clock-date]");
+
+    if (hourHand instanceof HTMLElement) {
+      hourHand.style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
+    }
+
+    if (minuteHand instanceof HTMLElement) {
+      minuteHand.style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
+    }
+
+    if (dateElement instanceof HTMLElement) {
+      dateElement.textContent = dateLabel;
+    }
+  });
+}
+
+function updatePomodoroWidgets() {
+  const pomodoroElements = document.querySelectorAll("[data-pomodoro-widget]");
+  if (!pomodoroElements.length) {
+    return;
+  }
+
+  pomodoroElements.forEach((element) => {
+    if (!(element instanceof HTMLElement)) {
+      return;
+    }
+
+    const widgetId = element.dataset.widgetId || "";
+    const widget = getWidget(widgetId);
+    if (!widget) {
+      return;
+    }
+
+    const pomodoro = getResolvedPomodoroState(widget);
+    element.dataset.phase = pomodoro.phase;
+
+    const timeElement = element.querySelector("[data-pomodoro-time]");
+    if (timeElement instanceof HTMLElement) {
+      timeElement.textContent = formatPomodoroTime(pomodoro.remainingSeconds);
+    }
+
+    const statusElement = element.querySelector("[data-pomodoro-status]");
+    if (statusElement instanceof HTMLElement) {
+      statusElement.textContent = getPomodoroStatusLabel(pomodoro);
+    }
+
+    const progressElement = element.querySelector("[data-pomodoro-progress]");
+    if (progressElement instanceof HTMLElement) {
+      progressElement.innerHTML = renderPomodoroProgressDots(
+        pomodoro.workSessionsCompleted,
+      );
+    }
+
+    const primaryButton = element.querySelector(
+      "[data-action='toggle-pomodoro']",
+    );
+    const primaryLabel = element.querySelector("[data-pomodoro-primary-label]");
+    const nextPrimaryLabel =
+      pomodoro.phase === "complete"
+        ? "Restart"
+        : pomodoro.isRunning
+          ? "Pause"
+          : "Start";
+
+    if (primaryButton instanceof HTMLButtonElement) {
+      primaryButton.classList.toggle("is-running", pomodoro.isRunning);
+      primaryButton.title = nextPrimaryLabel;
+      primaryButton.setAttribute(
+        "aria-label",
+        `${nextPrimaryLabel} pomodoro`,
+      );
+
+      const iconTarget = primaryButton.querySelector(
+        ".pomodoro-side-button-icon",
+      );
+      if (iconTarget instanceof HTMLElement) {
+        iconTarget.innerHTML = createIcon(
+          pomodoro.isRunning ? "pause" : "play",
+        );
+      }
+    }
+
+    if (primaryLabel instanceof HTMLElement) {
+      primaryLabel.textContent = nextPrimaryLabel;
+    }
+
+    const skipButton = element.querySelector("[data-action='skip-pomodoro']");
+    if (skipButton instanceof HTMLButtonElement) {
+      skipButton.disabled = pomodoro.phase === "complete";
+    }
+
+    const resetButton = element.querySelector("[data-action='reset-pomodoro']");
+    if (resetButton instanceof HTMLButtonElement) {
+      resetButton.disabled =
+        !pomodoro.isRunning &&
+        pomodoro.phase === "work" &&
+        pomodoro.workSessionsCompleted === 0 &&
+        pomodoro.remainingSeconds === POMODORO_WORK_SECONDS;
+    }
+  });
+}
+
+function createPomodoroConfig(overrides = {}) {
+  return {
+    phase: "work",
+    isRunning: false,
+    workSessionsCompleted: 0,
+    remainingSeconds: POMODORO_WORK_SECONDS,
+    phaseEndsAt: "",
+    ...overrides,
+  };
+}
+
+function getPomodoroPhaseDuration(phase) {
+  return phase === "break" ? POMODORO_BREAK_SECONDS : POMODORO_WORK_SECONDS;
+}
+
+function normalizePomodoroPhase(phase) {
+  return ["work", "break", "complete"].includes(phase) ? phase : "work";
+}
+
+function getResolvedPomodoroState(widgetOrConfig, now = new Date()) {
+  const sourceConfig =
+    widgetOrConfig && widgetOrConfig.config
+      ? widgetOrConfig.config
+      : widgetOrConfig;
+  const base = sanitizeWidgetConfig("pomodoro", sourceConfig || {});
+  let phase = base.phase;
+  let isRunning = base.isRunning;
+  let workSessionsCompleted = base.workSessionsCompleted;
+  let phaseEndsAt = base.phaseEndsAt;
+
+  if (phase === "complete") {
+    return {
+      ...base,
+      phase,
+      isRunning: false,
+      workSessionsCompleted,
+      remainingSeconds: 0,
+      phaseEndsAt: "",
+    };
+  }
+
+  if (!isRunning) {
+    return {
+      ...base,
+      phase,
+      isRunning: false,
+      workSessionsCompleted,
+      remainingSeconds: clampNumber(
+        base.remainingSeconds,
+        0,
+        POMODORO_WORK_SECONDS,
+        getPomodoroPhaseDuration(phase),
+      ),
+      phaseEndsAt: "",
+    };
+  }
+
+  let phaseEndMs = Date.parse(phaseEndsAt || "");
+  if (!Number.isFinite(phaseEndMs)) {
+    phaseEndMs = now.getTime() + getPomodoroPhaseDuration(phase) * 1000;
+  }
+
+  while (isRunning && phase !== "complete" && phaseEndMs <= now.getTime()) {
+    const nextState = advancePomodoroState({
+      phase,
+      isRunning,
+      workSessionsCompleted,
+    });
+    phase = nextState.phase;
+    isRunning = nextState.isRunning;
+    workSessionsCompleted = nextState.workSessionsCompleted;
+
+    if (!isRunning || phase === "complete") {
+      return {
+        ...base,
+        phase: "complete",
+        isRunning: false,
+        workSessionsCompleted,
+        remainingSeconds: 0,
+        phaseEndsAt: "",
+      };
+    }
+
+    phaseEndMs += getPomodoroPhaseDuration(phase) * 1000;
+    phaseEndsAt = new Date(phaseEndMs).toISOString();
+  }
+
+  return {
+    ...base,
+    phase,
+    isRunning,
+    workSessionsCompleted,
+    remainingSeconds: Math.max(
+      0,
+      Math.ceil((phaseEndMs - now.getTime()) / 1000),
+    ),
+    phaseEndsAt: new Date(phaseEndMs).toISOString(),
+  };
+}
+
+function advancePomodoroState(stateLike) {
+  const phase = normalizePomodoroPhase(stateLike?.phase);
+  const completed = clampNumber(
+    stateLike?.workSessionsCompleted,
+    0,
+    POMODORO_TOTAL_SESSIONS,
+    0,
+  );
+
+  if (phase === "work") {
+    const nextCompleted = Math.min(POMODORO_TOTAL_SESSIONS, completed + 1);
+    if (nextCompleted >= POMODORO_TOTAL_SESSIONS) {
+      return {
+        phase: "complete",
+        isRunning: false,
+        workSessionsCompleted: nextCompleted,
+        remainingSeconds: 0,
+        phaseEndsAt: "",
+      };
+    }
+
+    return {
+      phase: "break",
+      isRunning: true,
+      workSessionsCompleted: nextCompleted,
+      remainingSeconds: POMODORO_BREAK_SECONDS,
+      phaseEndsAt: "",
+    };
+  }
+
+  if (phase === "break") {
+    return {
+      phase: "work",
+      isRunning: true,
+      workSessionsCompleted: completed,
+      remainingSeconds: POMODORO_WORK_SECONDS,
+      phaseEndsAt: "",
+    };
+  }
+
+  return {
+    phase: "complete",
+    isRunning: false,
+    workSessionsCompleted: completed,
+    remainingSeconds: 0,
+    phaseEndsAt: "",
+  };
+}
+
+async function togglePomodoro(widgetId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const current = getResolvedPomodoroState(widget);
+  const now = new Date();
+
+  if (current.phase === "complete") {
+    await updateWidgetConfig(
+      widgetId,
+      createPomodoroConfig({
+        isRunning: true,
+        phaseEndsAt: new Date(
+          now.getTime() + POMODORO_WORK_SECONDS * 1000,
+        ).toISOString(),
+      }),
+      { render: true },
+    );
+    return;
+  }
+
+  if (current.isRunning) {
+    await updateWidgetConfig(
+      widgetId,
+      {
+        phase: current.phase,
+        isRunning: false,
+        workSessionsCompleted: current.workSessionsCompleted,
+        remainingSeconds: current.remainingSeconds,
+        phaseEndsAt: "",
+      },
+      { render: true },
+    );
+    return;
+  }
+
+  await updateWidgetConfig(
+    widgetId,
+    {
+      phase: current.phase,
+      isRunning: true,
+      workSessionsCompleted: current.workSessionsCompleted,
+      remainingSeconds: current.remainingSeconds,
+      phaseEndsAt: new Date(
+        now.getTime() + current.remainingSeconds * 1000,
+      ).toISOString(),
+    },
+    { render: true },
+  );
+}
+
+async function skipPomodoroPhase(widgetId) {
+  const widget = getWidget(widgetId);
+  if (!widget) {
+    return;
+  }
+
+  const current = getResolvedPomodoroState(widget);
+  if (current.phase === "complete") {
+    return;
+  }
+
+  const next = advancePomodoroState(current);
+  const now = new Date();
+  await updateWidgetConfig(
+    widgetId,
+    next.phase === "complete"
+      ? next
+      : {
+          ...next,
+          isRunning: true,
+          phaseEndsAt: new Date(
+            now.getTime() + next.remainingSeconds * 1000,
+          ).toISOString(),
+        },
+    { render: true },
+  );
+}
+
+async function resetPomodoro(widgetId) {
+  await updateWidgetConfig(widgetId, createPomodoroConfig(), { render: true });
 }
 
 function hashString(value) {
@@ -2158,7 +3145,13 @@ function downloadPseudoQR(widgetId) {
     return;
   }
 
-  const matrix = createPseudoQRMatrix(widget.config?.value || "");
+  const qrCode = createQRCodeModel(widget.config?.value || "");
+  if (!qrCode.matrix) {
+    showStatus(qrCode.error || "QR impossible a generer.");
+    return;
+  }
+
+  const matrix = qrCode.matrix;
   const cellSize = 10;
   const quietZone = 4;
   const canvas = document.createElement("canvas");
@@ -2187,8 +3180,496 @@ function downloadPseudoQR(widgetId) {
     if (!blob) {
       return;
     }
-    downloadBlob(blob, "qr-preview.png");
+    downloadBlob(blob, "qr-code.png");
   }, "image/png");
+}
+
+function refreshQRCodePreview(widgetId, input) {
+  const widget = getWidget(widgetId);
+  const panel = input.closest(".qr-widget");
+  const preview = panel?.querySelector("[data-qr-preview]");
+  const error = panel?.querySelector("[data-qr-error]");
+  const downloadButton = panel?.querySelector(
+    "[data-action='download-qr-preview']",
+  );
+  if (!widget || !preview) {
+    return;
+  }
+
+  const qrCode = createQRCodeModel(widget.config?.value || "");
+  preview.innerHTML = qrCode.matrix ? renderQRCodeCells(qrCode.matrix) : "";
+  preview.style.setProperty("--qr-size", String(qrCode.size || 29));
+
+  if (error) {
+    error.textContent = qrCode.error || "";
+    error.hidden = !qrCode.error;
+  }
+
+  if (downloadButton instanceof HTMLButtonElement) {
+    downloadButton.disabled = !qrCode.matrix;
+  }
+}
+
+function refreshImageQualityValue(input) {
+  input
+    .closest(".widget-field-inline")
+    ?.querySelector(".widget-value")
+    ?.replaceChildren(`${Math.round(Number(input.value || 0) * 100)}%`);
+}
+
+function renderQRCodeCells(matrix) {
+  return matrix
+    .map((row) =>
+      row
+        .map((cell) => `<span class="${cell ? "is-on" : ""}"></span>`)
+        .join(""),
+    )
+    .join("");
+}
+
+function createQRCodeModel(value) {
+  const bytes = new TextEncoder().encode(toStringValue(value));
+  const versionDefinition = qrVersionDefinitions.find(
+    (item) => getQRCodeRequiredBits(bytes.length) <= item.dataCodewords * 8,
+  );
+  if (!versionDefinition) {
+    return {
+      matrix: null,
+      size: 29,
+      error: "Texte trop long pour le generateur QR local (106 octets UTF-8 max).",
+    };
+  }
+
+  const dataCodewords = buildQRCodeDataCodewords(
+    bytes,
+    versionDefinition.dataCodewords,
+  );
+  const eccCodewords = buildQRCodeErrorCorrectionCodewords(
+    dataCodewords,
+    versionDefinition.eccCodewords,
+  );
+  const baseMatrix = createQRCodeBaseMatrix(versionDefinition);
+  placeQRCodeDataBits(
+    baseMatrix.matrix,
+    baseMatrix.isFunction,
+    dataCodewords.concat(eccCodewords),
+  );
+  const bestMask = chooseQRCodeMask(baseMatrix.matrix, baseMatrix.isFunction);
+  applyQRCodeMask(baseMatrix.matrix, baseMatrix.isFunction, bestMask);
+  drawQRCodeFormatBits(
+    baseMatrix.matrix,
+    baseMatrix.isFunction,
+    versionDefinition.version,
+    bestMask,
+  );
+
+  return {
+    matrix: baseMatrix.matrix,
+    size: baseMatrix.matrix.length,
+    version: versionDefinition.version,
+  };
+}
+
+function getQRCodeRequiredBits(byteLength) {
+  return 4 + 8 + byteLength * 8;
+}
+
+function buildQRCodeDataCodewords(bytes, dataCodewordCount) {
+  const capacityBits = dataCodewordCount * 8;
+  const bits = [];
+  appendQRCodeBits(bits, 0b0100, 4);
+  appendQRCodeBits(bits, bytes.length, 8);
+  [...bytes].forEach((byte) => appendQRCodeBits(bits, byte, 8));
+  appendQRCodeBits(bits, 0, Math.min(4, capacityBits - bits.length));
+
+  while (bits.length % 8 !== 0) {
+    bits.push(false);
+  }
+
+  const codewords = [];
+  for (let index = 0; index < bits.length; index += 8) {
+    let value = 0;
+    for (let offset = 0; offset < 8; offset += 1) {
+      value = (value << 1) | (bits[index + offset] ? 1 : 0);
+    }
+    codewords.push(value);
+  }
+
+  const padBytes = [0xec, 0x11];
+  let padIndex = 0;
+  while (codewords.length < dataCodewordCount) {
+    codewords.push(padBytes[padIndex % padBytes.length]);
+    padIndex += 1;
+  }
+
+  return codewords;
+}
+
+function appendQRCodeBits(target, value, bitCount) {
+  for (let index = bitCount - 1; index >= 0; index -= 1) {
+    target.push(Boolean((value >>> index) & 1));
+  }
+}
+
+function buildQRCodeErrorCorrectionCodewords(dataCodewords, eccCount) {
+  const generator = createQRCodeReedSolomonGenerator(eccCount);
+  const remainder = Array.from({ length: eccCount }, () => 0);
+
+  dataCodewords.forEach((codeword) => {
+    const factor = codeword ^ remainder.shift();
+    remainder.push(0);
+    generator.forEach((coefficient, index) => {
+      remainder[index] ^= multiplyQRCodeGalois(factor, coefficient);
+    });
+  });
+
+  return remainder;
+}
+
+function createQRCodeReedSolomonGenerator(degree) {
+  let coefficients = [1];
+  for (let root = 0; root < degree; root += 1) {
+    const next = Array.from({ length: coefficients.length + 1 }, () => 0);
+    coefficients.forEach((coefficient, index) => {
+      next[index] ^= multiplyQRCodeGalois(
+        coefficient,
+        getQRCodeGaloisPower(root),
+      );
+      next[index + 1] ^= coefficient;
+    });
+    coefficients = next;
+  }
+  return coefficients.slice(0, -1);
+}
+
+function multiplyQRCodeGalois(left, right) {
+  let result = 0;
+  let a = left;
+  let b = right;
+  while (b > 0) {
+    if (b & 1) {
+      result ^= a;
+    }
+    a <<= 1;
+    if (a & 0x100) {
+      a ^= 0x11d;
+    }
+    b >>>= 1;
+  }
+  return result;
+}
+
+function getQRCodeGaloisPower(exponent) {
+  let result = 1;
+  for (let index = 0; index < exponent; index += 1) {
+    result = multiplyQRCodeGalois(result, 0x02);
+  }
+  return result;
+}
+
+function createQRCodeBaseMatrix(versionDefinition) {
+  const size = versionDefinition.version * 4 + 17;
+  const matrix = Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => false),
+  );
+  const isFunction = Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => false),
+  );
+
+  const setFunctionModule = (x, y, dark) => {
+    if (x < 0 || y < 0 || x >= size || y >= size) {
+      return;
+    }
+    matrix[y][x] = dark;
+    isFunction[y][x] = true;
+  };
+
+  drawQRCodeFinderPattern(matrix, isFunction, 0, 0);
+  drawQRCodeFinderPattern(matrix, isFunction, size - 7, 0);
+  drawQRCodeFinderPattern(matrix, isFunction, 0, size - 7);
+
+  for (let index = 8; index < size - 8; index += 1) {
+    if (!isFunction[6][index]) {
+      setFunctionModule(index, 6, index % 2 === 0);
+    }
+    if (!isFunction[index][6]) {
+      setFunctionModule(6, index, index % 2 === 0);
+    }
+  }
+
+  versionDefinition.alignment.forEach((centerY) => {
+    versionDefinition.alignment.forEach((centerX) => {
+      if (
+        (centerX === 6 && centerY === 6) ||
+        (centerX === 6 && centerY === size - 7) ||
+        (centerX === size - 7 && centerY === 6)
+      ) {
+        return;
+      }
+      drawQRCodeAlignmentPattern(matrix, isFunction, centerX, centerY);
+    });
+  });
+
+  setFunctionModule(8, size - 8, true);
+  reserveQRCodeFormatArea(isFunction);
+
+  return { matrix, isFunction };
+}
+
+function drawQRCodeFinderPattern(matrix, isFunction, startX, startY) {
+  for (let y = -1; y <= 7; y += 1) {
+    for (let x = -1; x <= 7; x += 1) {
+      const currentX = startX + x;
+      const currentY = startY + y;
+      if (
+        currentX < 0 ||
+        currentY < 0 ||
+        currentX >= matrix.length ||
+        currentY >= matrix.length
+      ) {
+        continue;
+      }
+
+      const isSeparator = x === -1 || x === 7 || y === -1 || y === 7;
+      const isOuter = x === 0 || x === 6 || y === 0 || y === 6;
+      const isInner = x >= 2 && x <= 4 && y >= 2 && y <= 4;
+      matrix[currentY][currentX] = !isSeparator && (isOuter || isInner);
+      isFunction[currentY][currentX] = true;
+    }
+  }
+}
+
+function drawQRCodeAlignmentPattern(matrix, isFunction, centerX, centerY) {
+  for (let y = -2; y <= 2; y += 1) {
+    for (let x = -2; x <= 2; x += 1) {
+      const currentX = centerX + x;
+      const currentY = centerY + y;
+      matrix[currentY][currentX] = Math.max(Math.abs(x), Math.abs(y)) !== 1;
+      isFunction[currentY][currentX] = true;
+    }
+  }
+}
+
+function reserveQRCodeFormatArea(isFunction) {
+  const size = isFunction.length;
+  for (let index = 0; index < 9; index += 1) {
+    if (index !== 6) {
+      isFunction[8][index] = true;
+      isFunction[index][8] = true;
+    }
+  }
+
+  for (let index = 0; index < 8; index += 1) {
+    isFunction[8][size - 1 - index] = true;
+    isFunction[size - 1 - index][8] = true;
+  }
+}
+
+function placeQRCodeDataBits(matrix, isFunction, codewords) {
+  const size = matrix.length;
+  let bitIndex = 0;
+  let upward = true;
+
+  for (let right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) {
+      right -= 1;
+    }
+
+    for (let vertical = 0; vertical < size; vertical += 1) {
+      const y = upward ? size - 1 - vertical : vertical;
+      for (let offset = 0; offset < 2; offset += 1) {
+        const x = right - offset;
+        if (isFunction[y][x]) {
+          continue;
+        }
+        matrix[y][x] = getQRCodeBit(codewords, bitIndex);
+        bitIndex += 1;
+      }
+    }
+
+    upward = !upward;
+  }
+}
+
+function getQRCodeBit(codewords, bitIndex) {
+  const codeword = codewords[Math.floor(bitIndex / 8)] || 0;
+  return Boolean((codeword >>> (7 - (bitIndex % 8))) & 1);
+}
+
+function chooseQRCodeMask(matrix, isFunction) {
+  let bestMask = 0;
+  let bestPenalty = Number.POSITIVE_INFINITY;
+
+  for (let mask = 0; mask < 8; mask += 1) {
+    const candidate = matrix.map((row) => row.slice());
+    applyQRCodeMask(candidate, isFunction, mask);
+    drawQRCodeFormatBits(candidate, isFunction, null, mask);
+    const penalty = calculateQRCodePenalty(candidate);
+    if (penalty < bestPenalty) {
+      bestPenalty = penalty;
+      bestMask = mask;
+    }
+  }
+
+  return bestMask;
+}
+
+function applyQRCodeMask(matrix, isFunction, mask) {
+  const size = matrix.length;
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      if (isFunction[y][x] || !getQRCodeMaskBit(mask, x, y)) {
+        continue;
+      }
+      matrix[y][x] = !matrix[y][x];
+    }
+  }
+}
+
+function getQRCodeMaskBit(mask, x, y) {
+  switch (mask) {
+    case 0:
+      return (x + y) % 2 === 0;
+    case 1:
+      return y % 2 === 0;
+    case 2:
+      return x % 3 === 0;
+    case 3:
+      return (x + y) % 3 === 0;
+    case 4:
+      return (Math.floor(y / 2) + Math.floor(x / 3)) % 2 === 0;
+    case 5:
+      return ((x * y) % 2) + ((x * y) % 3) === 0;
+    case 6:
+      return (((x * y) % 2) + ((x * y) % 3)) % 2 === 0;
+    case 7:
+      return (((x + y) % 2) + ((x * y) % 3)) % 2 === 0;
+    default:
+      return false;
+  }
+}
+
+function drawQRCodeFormatBits(matrix, isFunction, version, mask) {
+  const size = matrix.length;
+  const formatBits = getQRCodeFormatBits(mask);
+  const setFormatModule = (x, y, bitIndex) => {
+    matrix[y][x] = Boolean((formatBits >>> bitIndex) & 1);
+    isFunction[y][x] = true;
+  };
+
+  for (let index = 0; index <= 5; index += 1) {
+    setFormatModule(8, index, index);
+  }
+  setFormatModule(8, 7, 6);
+  setFormatModule(8, 8, 7);
+  setFormatModule(7, 8, 8);
+  for (let index = 9; index < 15; index += 1) {
+    setFormatModule(14 - index, 8, index);
+  }
+
+  for (let index = 0; index < 8; index += 1) {
+    setFormatModule(size - 1 - index, 8, index);
+  }
+  for (let index = 8; index < 15; index += 1) {
+    setFormatModule(8, size - 15 + index, index);
+  }
+
+  if (version != null) {
+    matrix[size - 8][8] = true;
+  }
+}
+
+function getQRCodeFormatBits(mask) {
+  const data = (0b01 << 3) | mask;
+  let remainder = data << 10;
+  for (let bit = 14; bit >= 10; bit -= 1) {
+    if ((remainder >>> bit) & 1) {
+      remainder ^= 0x537 << (bit - 10);
+    }
+  }
+  return ((data << 10) | remainder) ^ 0x5412;
+}
+
+function calculateQRCodePenalty(matrix) {
+  const size = matrix.length;
+  let penalty = 0;
+
+  for (let y = 0; y < size; y += 1) {
+    penalty += calculateQRCodeRunPenalty(matrix[y]);
+  }
+
+  for (let x = 0; x < size; x += 1) {
+    const column = Array.from({ length: size }, (_, y) => matrix[y][x]);
+    penalty += calculateQRCodeRunPenalty(column);
+  }
+
+  for (let y = 0; y < size - 1; y += 1) {
+    for (let x = 0; x < size - 1; x += 1) {
+      const color = matrix[y][x];
+      if (
+        color === matrix[y][x + 1] &&
+        color === matrix[y + 1][x] &&
+        color === matrix[y + 1][x + 1]
+      ) {
+        penalty += 3;
+      }
+    }
+  }
+
+  const patternA = "10111010000";
+  const patternB = "00001011101";
+  for (let y = 0; y < size; y += 1) {
+    penalty += calculateQRCodePatternPenalty(
+      matrix[y],
+      patternA,
+      patternB,
+    );
+  }
+  for (let x = 0; x < size; x += 1) {
+    const column = Array.from({ length: size }, (_, y) => matrix[y][x]);
+    penalty += calculateQRCodePatternPenalty(column, patternA, patternB);
+  }
+
+  const darkModules = matrix.reduce(
+    (total, row) => total + row.filter(Boolean).length,
+    0,
+  );
+  const totalModules = size * size;
+  const darkRatio = (darkModules * 100) / totalModules;
+  penalty += Math.floor(Math.abs(darkRatio - 50) / 5) * 10;
+
+  return penalty;
+}
+
+function calculateQRCodeRunPenalty(line) {
+  let penalty = 0;
+  let runLength = 1;
+
+  for (let index = 1; index <= line.length; index += 1) {
+    if (index < line.length && line[index] === line[index - 1]) {
+      runLength += 1;
+      continue;
+    }
+
+    if (runLength >= 5) {
+      penalty += runLength - 2;
+    }
+    runLength = 1;
+  }
+
+  return penalty;
+}
+
+function calculateQRCodePatternPenalty(line, patternA, patternB) {
+  const text = line.map((item) => (item ? "1" : "0")).join("");
+  let penalty = 0;
+  for (let index = 0; index <= text.length - 11; index += 1) {
+    const slice = text.slice(index, index + 11);
+    if (slice === patternA || slice === patternB) {
+      penalty += 40;
+    }
+  }
+  return penalty;
 }
 
 function renderMarkdownPreview(markdown) {
@@ -3013,25 +4494,20 @@ async function checkUptimeService(service) {
   let entry;
 
   try {
-    const response = await fetch(service.url, {
-      method: "GET",
-      mode: "no-cors",
-      cache: "no-store",
-      signal: controller.signal,
-    });
+    const response = await fetchUptimeResponse(service.url, controller.signal);
+    const status =
+      response.status >= 200 && response.status < 400 ? "up" : "down";
     entry = {
-      status: response.ok || response.type === "opaque" ? "up" : "down",
-      code:
-        response.type === "opaque"
-          ? "reachable"
-          : String(response.status || "unknown"),
+      status,
+      code: String(response.status || "unknown"),
       latency: Math.round(performance.now() - startedAt),
       checkedAt: new Date().toISOString(),
     };
   } catch (error) {
+    const statusInfo = getUptimeErrorStatus(error);
     entry = {
-      status: "down",
-      code: error.name === "AbortError" ? "timeout" : "error",
+      status: statusInfo.status,
+      code: statusInfo.code,
       latency: Math.round(performance.now() - startedAt),
       checkedAt: new Date().toISOString(),
     };
@@ -3045,6 +4521,53 @@ async function checkUptimeService(service) {
       .concat(entry)
       .slice(-18),
   };
+}
+
+async function fetchUptimeResponse(url, signal) {
+  const requestOptions = {
+    cache: "no-store",
+    redirect: "follow",
+    signal,
+  };
+  try {
+    return await fetch(url, {
+      ...requestOptions,
+      method: "HEAD",
+    });
+  } catch (error) {
+    const isHeadOnlyFailure =
+      error instanceof TypeError ||
+      (error instanceof Error &&
+        /head|method|405|501/i.test(error.message || ""));
+    if (!isHeadOnlyFailure) {
+      throw error;
+    }
+  }
+
+  return fetch(url, {
+    ...requestOptions,
+    method: "GET",
+  });
+}
+
+function getUptimeErrorStatus(error) {
+  if (error?.name === "AbortError") {
+    return { status: "down", code: "timeout" };
+  }
+
+  if (!isExtensionRuntimeAvailable()) {
+    return { status: "unknown", code: "blocked" };
+  }
+
+  return { status: "down", code: "error" };
+}
+
+function isExtensionRuntimeAvailable() {
+  return (
+    typeof chrome !== "undefined" &&
+    Boolean(chrome.runtime?.id) &&
+    location.protocol === "chrome-extension:"
+  );
 }
 
 function downloadTextFile(filename, content, mimeType) {
@@ -3236,22 +4759,49 @@ function openDashboardDialog(dashboard = null) {
       <label for="dashboardLabel">Nom</label>
       <input id="dashboardLabel" name="label" type="text" maxlength="32" value="${escapeHtml(dashboard?.label || "")}" required />
     </div>
-    <div class="field">
-      <label for="dashboardIcon">Icone</label>
-      <select id="dashboardIcon" name="icon">
-        ${dashboardIconOptions
-          .map(
-            (option) => `
-              <option value="${option.id}" ${option.id === (dashboard?.icon || "grid") ? "selected" : ""}>
-                ${escapeHtml(option.label)}
-              </option>
-            `,
-          )
-          .join("")}
-      </select>
-    </div>
+    ${renderDashboardIconPicker(dashboard?.icon || "grid")}
   `;
   openDialog();
+}
+
+function renderDashboardIconPicker(selectedIcon) {
+  const currentOption = getDashboardIconOption(selectedIcon);
+
+  return `
+    <div class="field">
+      <label for="dashboardIcon">Icone</label>
+      <div class="dashboard-icon-picker">
+        <input id="dashboardIcon" name="icon" type="hidden" value="${escapeHtml(currentOption.id)}" />
+        <div class="dashboard-icon-picker-current" data-dashboard-icon-current>
+          <span class="dashboard-icon-picker-preview" aria-hidden="true">${createIcon(currentOption.id)}</span>
+          <div class="dashboard-icon-picker-current-meta">
+            <strong data-dashboard-icon-current-label>${escapeHtml(currentOption.label)}</strong>
+            <span>Apercu de l'icone selectionnee</span>
+          </div>
+        </div>
+        <div class="dashboard-icon-grid" role="listbox" aria-label="Choisir une icone pour le dashboard">
+          ${dashboardIconOptions
+            .map(
+              (option) => `
+                <button
+                  class="dashboard-icon-option ${option.id === currentOption.id ? "is-selected" : ""}"
+                  type="button"
+                  data-action="select-dashboard-icon"
+                  data-icon-id="${option.id}"
+                  data-icon-label="${escapeHtml(option.label)}"
+                  aria-label="${escapeHtml(option.label)}"
+                  aria-pressed="${option.id === currentOption.id ? "true" : "false"}"
+                  title="${escapeHtml(option.label)}"
+                >
+                  <span aria-hidden="true">${createIcon(option.id)}</span>
+                </button>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function openLinkDialog(link = null, sectionId = null) {
@@ -3519,6 +5069,182 @@ async function deleteLink(sectionId, linkId) {
 
   section.links = section.links.filter((item) => item.id !== linkId);
   await persist("Lien supprime.");
+}
+
+async function openLinkInNewTab(sectionId, linkId) {
+  const link = getLink(sectionId, linkId);
+  if (!link) {
+    return;
+  }
+
+  if (typeof chrome !== "undefined" && chrome.tabs?.create) {
+    chrome.tabs.create({ url: link.url });
+    return;
+  }
+
+  window.open(link.url, "_blank", "noopener,noreferrer");
+}
+
+async function copyLinkUrl(sectionId, linkId) {
+  const link = getLink(sectionId, linkId);
+  if (!link) {
+    return;
+  }
+
+  await copyText(link.url);
+}
+
+async function shareLink(sectionId, linkId) {
+  const link = getLink(sectionId, linkId);
+  if (!link) {
+    return;
+  }
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: link.title, url: link.url });
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        return;
+      }
+    }
+  }
+
+  await copyText(link.url);
+}
+
+async function duplicateLink(sectionId, linkId) {
+  const section = getSection(sectionId);
+  const link = getLink(sectionId, linkId);
+  if (!section || !link) {
+    return;
+  }
+
+  const sourceIndex = section.links.findIndex((item) => item.id === linkId);
+  if (sourceIndex < 0) {
+    return;
+  }
+
+  const duplicate = {
+    ...link,
+    id: createId("link"),
+    title: createDuplicateLabel(link.title),
+  };
+
+  section.links.splice(sourceIndex + 1, 0, duplicate);
+  await persist("Lien duplique.");
+}
+
+function openLinkListWidgetSettings(widgetId) {
+  const widget = getWidget(widgetId);
+  const section = getSection(widget?.config?.sectionId);
+  if (!widget || !section) {
+    return;
+  }
+
+  openSectionDialog(section);
+}
+
+async function deleteLinkListWidget(widgetId) {
+  const widget = getWidget(widgetId);
+  const sectionId = widget?.config?.sectionId;
+  if (!widget || !sectionId) {
+    return;
+  }
+
+  await deleteSection(sectionId);
+}
+
+async function duplicateLinkListWidget(widgetId) {
+  const widget = getWidget(widgetId);
+  const section = getSection(widget?.config?.sectionId);
+  if (!widget || !section) {
+    return;
+  }
+
+  const clonedSection = {
+    ...section,
+    id: createId("section"),
+    title: createDuplicateLabel(section.title),
+    dashboards: sanitizeDashboardIds(widget.dashboardIds),
+    links: section.links.map((link) => ({
+      ...link,
+      id: createId("link"),
+    })),
+  };
+
+  const duplicateWidget = createWidget(
+    "link-list",
+    clonedSection.title,
+    clonedSection.dashboards,
+    { sectionId: clonedSection.id },
+  );
+
+  const orderedWidgets = state.data.widgets
+    .slice()
+    .sort((a, b) => a.order - b.order);
+  const sourceIndex = orderedWidgets.findIndex((item) => item.id === widgetId);
+
+  state.data.sections.push(clonedSection);
+  if (sourceIndex < 0) {
+    orderedWidgets.push(duplicateWidget);
+  } else {
+    orderedWidgets.splice(sourceIndex + 1, 0, duplicateWidget);
+  }
+
+  orderedWidgets.forEach((item, index) => {
+    item.order = index;
+  });
+  state.data.widgets = orderedWidgets;
+  await persist("Widget duplique.");
+}
+
+async function moveWidgetByDirection(widgetId, direction) {
+  const visibleWidgets = getVisibleWidgets();
+  const dashboardId = state.data.selectedDashboard;
+  const currentIndex = visibleWidgets.findIndex((widget) => widget.id === widgetId);
+  if (currentIndex < 0) {
+    return;
+  }
+
+  if (direction === "top") {
+    if (currentIndex === 0) {
+      return;
+    }
+    await moveWidget(widgetId, visibleWidgets[0].id);
+    return;
+  }
+
+  if (direction === "up") {
+    if (currentIndex <= 0) {
+      return;
+    }
+    await moveWidget(widgetId, visibleWidgets[currentIndex - 1].id);
+    return;
+  }
+
+  if (direction === "down") {
+    if (currentIndex === visibleWidgets.length - 1) {
+      return;
+    }
+    const target = visibleWidgets[currentIndex + 1];
+    await moveWidget(widgetId, target?.id || null, {
+      placeAtEnd: !target,
+      targetDashboardId: !target ? dashboardId : null,
+    });
+    return;
+  }
+
+  if (direction === "bottom") {
+    if (currentIndex === visibleWidgets.length - 1) {
+      return;
+    }
+    await moveWidget(widgetId, null, {
+      placeAtEnd: true,
+      targetDashboardId: dashboardId,
+    });
+  }
 }
 
 function handleDragStart(event) {
@@ -4034,7 +5760,7 @@ function stopDragAutoScroll() {
 }
 
 function moveWidgetToDashboard(widget, targetDashboardId) {
-  if (!widget || !targetDashboardId || targetDashboardId === fixedDashboardView.id) {
+  if (!widget || !targetDashboardId) {
     return;
   }
 
@@ -4057,10 +5783,6 @@ function getWidgetInsertIndexForDashboardEnd(orderedWidgets, dashboardId) {
     return -1;
   }
 
-  if (!dashboardId || dashboardId === fixedDashboardView.id) {
-    return orderedWidgets.length;
-  }
-
   for (let index = orderedWidgets.length - 1; index >= 0; index -= 1) {
     if (isWidgetVisibleOnDashboard(orderedWidgets[index], dashboardId)) {
       return index + 1;
@@ -4075,10 +5797,6 @@ function isWidgetVisibleOnDashboard(widget, dashboardId) {
     return false;
   }
 
-  if (dashboardId === fixedDashboardView.id) {
-    return true;
-  }
-
   return Array.isArray(widget.dashboardIds)
     ? widget.dashboardIds.includes(dashboardId)
     : false;
@@ -4089,7 +5807,6 @@ function getDraggedWidgetTargetDashboardId(dragState, dashboardId) {
     !dragState ||
     dragState.type !== "widget" ||
     !dashboardId ||
-    dashboardId === fixedDashboardView.id ||
     dragState.sourceDashboardId === dashboardId
   ) {
     return null;
@@ -4174,16 +5891,14 @@ function sanitizeData(input) {
   )
     ? data.selectedEngine
     : defaultData.selectedEngine;
-  const selectedDashboard =
-    data.selectedDashboard === fixedDashboardView.id ||
-    allowedDashboardIds.has(data.selectedDashboard)
-      ? data.selectedDashboard
-      : dashboards[0]?.id || fixedDashboardView.id;
+  const selectedDashboard = allowedDashboardIds.has(data.selectedDashboard)
+    ? data.selectedDashboard
+    : dashboards[0]?.id || DEFAULT_DASHBOARD_ID;
   const version = Number.isFinite(Number(data.version))
     ? Number(data.version)
     : 0;
 
-  return {
+  const sanitized = {
     version,
     selectedEngine,
     selectedDashboard,
@@ -4201,6 +5916,49 @@ function sanitizeData(input) {
           .filter(Boolean)
       : [],
   };
+
+  sanitized.widgets = reconcileSystemWidgets(
+    sanitized.widgets,
+    sanitized.dashboards,
+  );
+  sanitized.widgets = reconcileDefaultSeedWidgets(sanitized.widgets);
+  return sanitized;
+}
+
+function getDashboardIconOption(iconId) {
+  return (
+    dashboardIconOptions.find((option) => option.id === iconId) ||
+    dashboardIconOptions.find((option) => option.id === "grid") ||
+    dashboardIconOptions[0]
+  );
+}
+
+function selectDashboardIcon(iconId) {
+  const option = getDashboardIconOption(iconId);
+  const input = ui.dialogFields.querySelector("#dashboardIcon");
+  if (!(input instanceof HTMLInputElement)) {
+    return;
+  }
+
+  input.value = option.id;
+
+  ui.dialogFields
+    .querySelectorAll(".dashboard-icon-option")
+    .forEach((button) => {
+      const isSelected = button.dataset.iconId === option.id;
+      button.classList.toggle("is-selected", isSelected);
+      button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+    });
+
+  const preview = ui.dialogFields.querySelector("[data-dashboard-icon-current]");
+  if (preview) {
+    preview.querySelector(".dashboard-icon-picker-preview").innerHTML =
+      createIcon(option.id);
+    const label = preview.querySelector("[data-dashboard-icon-current-label]");
+    if (label) {
+      label.textContent = option.label;
+    }
+  }
 }
 
 function sanitizeDashboard(dashboard, index = 0) {
@@ -4343,6 +6101,28 @@ function sanitizeWidgetConfig(type, config) {
     case "calendar":
       return {
         month: sanitizeDateString(source.month) || new Date().toISOString(),
+      };
+    case "clock":
+      return {
+        size: clampNumber(source.size, 220, 520, 320),
+      };
+    case "pomodoro":
+      return {
+        phase: normalizePomodoroPhase(source.phase),
+        isRunning: Boolean(source.isRunning),
+        workSessionsCompleted: clampNumber(
+          source.workSessionsCompleted,
+          0,
+          POMODORO_TOTAL_SESSIONS,
+          0,
+        ),
+        remainingSeconds: clampNumber(
+          source.remainingSeconds,
+          0,
+          POMODORO_WORK_SECONDS,
+          getPomodoroPhaseDuration(normalizePomodoroPhase(source.phase)),
+        ),
+        phaseEndsAt: normalizeText(source.phaseEndsAt),
       };
     case "kanban":
       return { columns: sanitizeKanbanColumns(source.columns) };
@@ -4571,7 +6351,7 @@ function sanitizeDashboardIds(
 
 function getNewWidgetDashboardIds() {
   const dashboard = getSelectedDashboard();
-  return dashboard.id === "all" ? [] : [dashboard.id];
+  return dashboard ? [dashboard.id] : [];
 }
 
 function sanitizeLink(link) {
@@ -4613,6 +6393,15 @@ function migrateData(data) {
   migrated.widgets = Array.isArray(migrated.widgets) ? migrated.widgets : [];
 
   if (shouldApplySeedMigration) {
+    const existingDashboardIds = new Set(
+      (migrated.dashboards || []).map((dashboard) => dashboard.id),
+    );
+    defaultDashboards.forEach((dashboard) => {
+      if (!existingDashboardIds.has(dashboard.id)) {
+        migrated.dashboards.push({ ...dashboard });
+      }
+    });
+
     migrated.sections = migrated.sections
       .filter((section) => !removedTitles.has(normalizeKey(section.title)))
       .map((section) => ({
@@ -4667,13 +6456,11 @@ function migrateData(data) {
     migrated.widgets,
     migrated.dashboards,
   );
-  migrated.selectedDashboard =
-    migrated.selectedDashboard === fixedDashboardView.id ||
-    migrated.dashboards.some(
-      (dashboard) => dashboard.id === migrated.selectedDashboard,
-    )
-      ? migrated.selectedDashboard
-      : migrated.dashboards[0]?.id || DEFAULT_DASHBOARD_ID;
+  migrated.selectedDashboard = migrated.dashboards.some(
+    (dashboard) => dashboard.id === migrated.selectedDashboard,
+  )
+    ? migrated.selectedDashboard
+    : migrated.dashboards[0]?.id || DEFAULT_DASHBOARD_ID;
 
   return sanitizeData(migrated);
 }
@@ -4735,7 +6522,6 @@ function createLinkListWidgetFromSection(section, order) {
 
 function reconcileSystemWidgets(widgets, dashboards) {
   const reconciled = widgets.slice().sort((a, b) => a.order - b.order);
-  const dashboardIds = dashboards.map((dashboard) => dashboard.id);
   const searchWidget = reconciled.find((widget) => widget.type === "search");
 
   if (!searchWidget) {
@@ -4743,12 +6529,10 @@ function reconcileSystemWidgets(widgets, dashboards) {
       id: "widget_search_primary",
       type: "search",
       title: "Search",
-      dashboardIds,
+      dashboardIds: ["home"],
       order: 0,
       config: { engineId: "google" },
     });
-  } else if (!searchWidget.dashboardIds?.length) {
-    searchWidget.dashboardIds = dashboardIds;
   }
 
   reconciled.forEach((widget, index) => {
@@ -4756,6 +6540,113 @@ function reconcileSystemWidgets(widgets, dashboards) {
   });
 
   return reconciled;
+}
+
+function reconcileDefaultSeedWidgets(widgets) {
+  const allowedDashboardIds = new Set(
+    defaultDashboards.map((dashboard) => dashboard.id),
+  );
+  const reconciled = widgets.slice().sort((a, b) => a.order - b.order);
+  const existingIds = new Set(reconciled.map((widget) => widget.id));
+
+  createDefaultWidgets()
+    .filter((widget) => widget.type !== "link-list")
+    .forEach((seedWidget) => {
+      if (existingIds.has(seedWidget.id)) {
+        return;
+      }
+
+      const sanitizedSeedWidget = sanitizeWidget(
+        seedWidget,
+        seedWidget.order,
+        allowedDashboardIds,
+      );
+      if (!sanitizedSeedWidget) {
+        return;
+      }
+
+      reconciled.push(sanitizedSeedWidget);
+      existingIds.add(sanitizedSeedWidget.id);
+    });
+
+  return enforceSeedWidgetLayout(reconciled);
+}
+
+function enforceSeedWidgetLayout(widgets) {
+  const orderedWidgets = widgets.slice().sort((a, b) => a.order - b.order);
+
+  moveWidgetById(
+    orderedWidgets,
+    "widget_todo_workspace",
+    () =>
+      orderedWidgets.findIndex((widget) =>
+        Array.isArray(widget.dashboardIds) &&
+        widget.dashboardIds.includes("workspace"),
+      ),
+  );
+
+  moveWidgetById(
+    orderedWidgets,
+    "widget_note_workspace",
+    () => {
+      let lastWorkspaceIndex = -1;
+      orderedWidgets.forEach((widget, index) => {
+        if (
+          Array.isArray(widget.dashboardIds) &&
+          widget.dashboardIds.includes("workspace")
+        ) {
+          lastWorkspaceIndex = index;
+        }
+      });
+
+      return lastWorkspaceIndex + 1;
+    },
+  );
+
+  moveWidgetById(
+    orderedWidgets,
+    "widget_pomodoro_focus",
+    () =>
+      orderedWidgets.findIndex((widget) =>
+        Array.isArray(widget.dashboardIds) &&
+        widget.dashboardIds.includes("focus"),
+      ),
+  );
+
+  moveWidgetById(
+    orderedWidgets,
+    "widget_kanban_focus",
+    () => {
+      const focusPomodoroIndex = orderedWidgets.findIndex(
+        (widget) => widget.id === "widget_pomodoro_focus",
+      );
+      return focusPomodoroIndex >= 0
+        ? focusPomodoroIndex + 1
+        : orderedWidgets.findIndex((widget) =>
+            Array.isArray(widget.dashboardIds) &&
+            widget.dashboardIds.includes("focus"),
+          );
+    },
+  );
+
+  orderedWidgets.forEach((widget, index) => {
+    widget.order = index;
+  });
+
+  return orderedWidgets;
+}
+
+function moveWidgetById(widgets, widgetId, getTargetIndex) {
+  const widgetIndex = widgets.findIndex((widget) => widget.id === widgetId);
+  if (widgetIndex < 0) {
+    return;
+  }
+
+  const [widget] = widgets.splice(widgetIndex, 1);
+  const targetIndex = getTargetIndex();
+  const boundedTargetIndex =
+    targetIndex < 0 ? widgets.length : Math.min(targetIndex, widgets.length);
+  widgets.splice(boundedTargetIndex, 0, widget);
 }
 
 function getMigratedSectionTitle(section) {
@@ -4852,6 +6743,15 @@ function getSection(sectionId) {
   );
 }
 
+function getLinkListWidgetBySectionId(sectionId) {
+  return (
+    state.data.widgets.find(
+      (widget) =>
+        widget.type === "link-list" && widget.config?.sectionId === sectionId,
+    ) || null
+  );
+}
+
 function getLink(sectionId, linkId) {
   return (
     getSection(sectionId)?.links.find((link) => link.id === linkId) || null
@@ -4918,6 +6818,12 @@ function normalizeText(value) {
   return String(value || "").trim();
 }
 
+function getActionErrorMessage(error, fallbackMessage) {
+  const message =
+    error instanceof Error ? normalizeText(error.message) : "";
+  return message || fallbackMessage;
+}
+
 function requireText(value, message) {
   const text = normalizeText(value);
   if (!text) {
@@ -4940,8 +6846,17 @@ function createId(prefix) {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
 }
 
+function createDuplicateLabel(value) {
+  const label = normalizeText(value) || "Item";
+  return /\bcopy\b$/i.test(label) ? label : `${label} Copy`;
+}
+
 function cloneData(data) {
   return JSON.parse(JSON.stringify(data));
+}
+
+function camelToKebab(value) {
+  return String(value || "").replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 }
 
 function escapeHtml(value) {
@@ -4970,13 +6885,42 @@ function createIcon(name) {
       '<svg viewBox="0 0 24 24" focusable="false"><circle cx="11" cy="11" r="7"></circle><path d="m16.2 16.2 4.3 4.3"></path></svg>',
     "arrow-right":
       '<svg viewBox="0 0 24 24" focusable="false"><path d="M5 12h13"></path><path d="m13 6 6 6-6 6"></path></svg>',
+    "arrow-up":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 19V5"></path><path d="m6 11 6-6 6 6"></path></svg>',
+    "arrow-down":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14"></path><path d="m18 13-6 6-6-6"></path></svg>',
+    "arrow-up-to-line":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M5 5h14"></path><path d="M12 19V9"></path><path d="m6 15 6-6 6 6"></path></svg>',
+    "arrow-down-to-line":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M5 19h14"></path><path d="M12 5v10"></path><path d="m18 13-6 6-6-6"></path></svg>',
     "chevron-down":
       '<svg viewBox="0 0 24 24" focusable="false"><path d="m7 10 5 5 5-5"></path></svg>',
     edit: '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 20 4.6-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"></path><path d="m13.5 6.5 4 4"></path></svg>',
     trash:
       '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>',
+    copy: '<svg viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="11" height="11" rx="2"></rect><rect x="4" y="4" width="11" height="11" rx="2"></rect></svg>',
     close:
       '<svg viewBox="0 0 24 24" focusable="false"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg>',
+    share:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M5 14v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"></path></svg>',
+    duplicate:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg>',
+    "duplicate-plus":
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect><path d="M12 8v4"></path><path d="M10 10h4"></path></svg>',
+    settings:
+      '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9c0 .7.4 1.3 1 1.5H21a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1Z"></path></svg>',
+    play:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m9 7 8 5-8 5Z"></path></svg>',
+    pause:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M9 7v10"></path><path d="M15 7v10"></path></svg>',
+    skip:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m6 7 7 5-7 5Z"></path><path d="m13 7 7 5-7 5Z"></path></svg>',
+    reset:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M4.5 10a8 8 0 1 0 2.4-4.9"></path><path d="M4 4v6h6"></path></svg>',
+    "external-link":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M14 5h5v5"></path><path d="m10 14 9-9"></path><path d="M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"></path></svg>',
+    "move-vertical":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m12 4-3 3"></path><path d="m12 4 3 3"></path><path d="M12 20V4"></path><path d="m12 20-3-3"></path><path d="m12 20 3-3"></path></svg>',
     terminal:
       '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m7 10 3 2-3 2"></path><path d="M12 15h5"></path></svg>',
     graduation:
@@ -4991,6 +6935,55 @@ function createIcon(name) {
     grid: '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><rect x="14" y="14" width="6" height="6"></rect></svg>',
     folder:
       '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7.5h7l2 2H21v8.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"></path><path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1.5"></path></svg>',
+    briefcase:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="7" width="18" height="12" rx="2"></rect><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2"></path><path d="M3 11h18"></path></svg>',
+    rocket:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M14 4c3 0 5 2.4 5 5.4 0 4-3.2 7.2-7.2 7.2H8.5L5 20l1.4-3.5V12.2C6.4 8.2 9.6 5 13.6 5H14Z"></path><path d="M9 15 6 12"></path><circle cx="14.5" cy="9.5" r="1.2"></circle></svg>',
+    book: '<svg viewBox="0 0 24 24" focusable="false"><path d="M5 4.5h11a3 3 0 0 1 3 3V19H8a3 3 0 0 0-3 3V4.5Z"></path><path d="M8 19h11"></path></svg>',
+    bookmark:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M7 4h10v16l-5-3-5 3V4Z"></path></svg>',
+    brain:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M9 6.5a3 3 0 0 1 5.5-1.6A3.2 3.2 0 0 1 19 8a3 3 0 0 1-1 5.8V15a3 3 0 0 1-3 3h-1"></path><path d="M9 6.5A3 3 0 0 0 5 9.2a3 3 0 0 0 0 5.6V15a3 3 0 0 0 3 3h1"></path><path d="M12 5v14"></path><path d="M9 10h1"></path><path d="M14 10h1"></path></svg>',
+    camera:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 8h4l1.5-2h5L16 8h4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>',
+    compass:
+      '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8"></circle><path d="m14.8 9.2-1.9 4.7-4.7 1.9 1.9-4.7 4.7-1.9Z"></path></svg>',
+    cpu: '<svg viewBox="0 0 24 24" focusable="false"><rect x="7" y="7" width="10" height="10" rx="2"></rect><path d="M9 1v4"></path><path d="M15 1v4"></path><path d="M9 19v4"></path><path d="M15 19v4"></path><path d="M1 9h4"></path><path d="M1 15h4"></path><path d="M19 9h4"></path><path d="M19 15h4"></path></svg>',
+    database:
+      '<svg viewBox="0 0 24 24" focusable="false"><ellipse cx="12" cy="6" rx="7" ry="3"></ellipse><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"></path><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"></path></svg>',
+    flask:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M10 3h4"></path><path d="M11 3v6l-5 8.2A2 2 0 0 0 7.7 20h8.6a2 2 0 0 0 1.7-2.8L13 9V3"></path><path d="M9 13h6"></path></svg>',
+    globe:
+      '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18"></path><path d="M12 3a14 14 0 0 0 0 18"></path></svg>',
+    headphones:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 13a8 8 0 0 1 16 0"></path><rect x="4" y="13" width="4" height="7" rx="2"></rect><rect x="16" y="13" width="4" height="7" rx="2"></rect></svg>',
+    heart:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"></path></svg>',
+    home: '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 11 8-6 8 6"></path><path d="M6 10.5V20h12v-9.5"></path></svg>',
+    image:
+      '<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="5" width="16" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="m20 16-4.5-4.5L8 19"></path></svg>',
+    key: '<svg viewBox="0 0 24 24" focusable="false"><circle cx="8.5" cy="15.5" r="3.5"></circle><path d="M11 13l9-9"></path><path d="M17 4h3v3"></path><path d="M15 6h3"></path></svg>',
+    lightning:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M13 2 6 13h5l-1 9 8-12h-5l0-8Z"></path></svg>',
+    lock: '<svg viewBox="0 0 24 24" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 1 1 8 0v3"></path></svg>',
+    map: '<svg viewBox="0 0 24 24" focusable="false"><path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2V6Z"></path><path d="M9 4v14"></path><path d="M15 6v14"></path></svg>',
+    moon: '<svg viewBox="0 0 24 24" focusable="false"><path d="M19 14.5A7.5 7.5 0 1 1 9.5 5a6.5 6.5 0 0 0 9.5 9.5Z"></path></svg>',
+    music:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M14 4v11.5a2.5 2.5 0 1 1-2-2.4V6l8-2v9.5a2.5 2.5 0 1 1-2-2.4V4"></path></svg>',
+    palette:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 4a8 8 0 1 0 0 16h1.5a2.5 2.5 0 0 0 0-5H12a2 2 0 0 1 0-4h5a3 3 0 0 0 3-3 8 8 0 0 0-8-4Z"></path><circle cx="7.5" cy="11" r="1"></circle><circle cx="10" cy="8.5" r="1"></circle><circle cx="14" cy="8.5" r="1"></circle></svg>',
+    pencil:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="m4 20 4.5-1 9-9a2.1 2.1 0 0 0-3-3l-9 9L4 20Z"></path><path d="m13.5 6.5 4 4"></path></svg>',
+    shield:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3 5 6v5c0 5 3.3 8 7 10 3.7-2 7-5 7-10V6l-7-3Z"></path></svg>',
+    star: '<svg viewBox="0 0 24 24" focusable="false"><path d="m12 4 2.5 5.2 5.8.8-4.2 4 1 5.8-5.1-2.8-5.1 2.8 1-5.8-4.2-4 5.8-.8L12 4Z"></path></svg>',
+    sun: '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v3"></path><path d="M12 19v3"></path><path d="m4.9 4.9 2.1 2.1"></path><path d="m17 17 2.1 2.1"></path><path d="M2 12h3"></path><path d="M19 12h3"></path><path d="m4.9 19.1 2.1-2.1"></path><path d="m17 7 2.1-2.1"></path></svg>',
+    target:
+      '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle></svg>',
+    timer:
+      '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="13" r="7"></circle><path d="M12 13 15.5 9.5"></path><path d="M9 2h6"></path><path d="M12 6V2"></path></svg>',
+    wrench:
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M21 7.5a4.5 4.5 0 0 1-6.2 4.2l-7.4 7.4a1.8 1.8 0 1 1-2.5-2.5l7.4-7.4A4.5 4.5 0 0 1 16.5 3l-2.4 2.4 4.1 4.1L21 7.5Z"></path></svg>',
     spacer:
       '<svg viewBox="0 0 24 24" focusable="false"><path d="M4 8h16"></path><path d="M4 16h16"></path><path d="M12 8v8"></path><path d="m9 11 3-3 3 3"></path><path d="m9 13 3 3 3-3"></path></svg>',
     "check-list":
@@ -5011,6 +7004,8 @@ function createIcon(name) {
       '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h4l2-5 4 10 2-5h6"></path></svg>',
     windows:
       '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="11" height="14" rx="2"></rect><rect x="10" y="9" width="11" height="10" rx="2"></rect></svg>',
+    "resize-diagonal":
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M8 16 16 8"></path><path d="M10 8h6v6"></path></svg>',
     check:
       '<svg viewBox="0 0 24 24" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>',
     "chevron-left":

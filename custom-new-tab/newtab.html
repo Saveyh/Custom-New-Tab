@@ -55,6 +55,14 @@
       <main id="sectionsRoot" class="sections" aria-label="Liens rapides"></main>
     </div>
 
+    <div
+      id="editModeNotice"
+      class="edit-mode-notice"
+      role="status"
+      aria-live="polite"
+      aria-hidden="true"
+    ></div>
+
     <dialog id="editorDialog" class="dialog">
       <form id="editorForm" class="dialog-panel" method="dialog" novalidate>
         <div class="dialog-header">
@@ -79,6 +87,8 @@
         </div>
       </form>
     </dialog>
+
+    <div id="contextMenuLayer" class="context-menu-layer" aria-live="polite"></div>
 
     <script src="app.js"></script>
   </body>

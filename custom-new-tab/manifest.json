@@ -1,13 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Navigateur New Tab",
-  "description": "Nouvel onglet minimaliste avec dashboard personnalisable, widgets locaux et recherche intelligente.",
+  "name": "Custom New Tab",
+  "description": "Minimalist new tab page with a customizable dashboard, local widgets, and smart search.",
   "version": "1.0.0",
-  "permissions": [
-    "storage",
-    "tabs",
-    "windows"
-  ],
+  "permissions": ["storage", "tabs", "windows"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
