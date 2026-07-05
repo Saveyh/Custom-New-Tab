@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!doctype html>
+<html lang="fr" class="hide-scrollbar">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,11 +20,15 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="hide-scrollbar">
     <div class="app-shell">
       <header class="topbar">
         <div class="dashboard-nav-group">
-          <nav id="dashboardNav" class="dashboard-nav" aria-label="Dashboards"></nav>
+          <nav
+            id="dashboardNav"
+            class="dashboard-nav"
+            aria-label="Dashboards"
+          ></nav>
           <div
             id="dashboardNavActions"
             class="dashboard-nav-actions"
@@ -50,9 +54,18 @@
         </div>
       </header>
 
-      <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+      <p
+        id="statusMessage"
+        class="status-message"
+        role="status"
+        aria-live="polite"
+      ></p>
 
-      <main id="sectionsRoot" class="sections" aria-label="Liens rapides"></main>
+      <main
+        id="sectionsRoot"
+        class="sections"
+        aria-label="Liens rapides"
+      ></main>
     </div>
 
     <div
@@ -80,15 +93,25 @@
         <p id="formError" class="form-error" role="alert"></p>
 
         <div class="dialog-actions">
-          <button id="dialogCancel" class="text-button" type="button">Annuler</button>
-          <button id="dialogSubmit" class="text-button text-button-primary" type="submit">
+          <button id="dialogCancel" class="text-button" type="button">
+            Annuler
+          </button>
+          <button
+            id="dialogSubmit"
+            class="text-button text-button-primary"
+            type="submit"
+          >
             Enregistrer
           </button>
         </div>
       </form>
     </dialog>
 
-    <div id="contextMenuLayer" class="context-menu-layer" aria-live="polite"></div>
+    <div
+      id="contextMenuLayer"
+      class="context-menu-layer"
+      aria-live="polite"
+    ></div>
 
     <script src="app.js"></script>
   </body>

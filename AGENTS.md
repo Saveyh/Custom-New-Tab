@@ -24,6 +24,19 @@ Core user-facing features:
 - `references/`: visual references for several widgets
 - `MISSION_WIDGETS_DASHBOARD.md`: product/history document describing the widget direction
 
+## Current Public Release State
+
+The project has already reached its first official public release: `v1.0.0`.
+
+Agents must not treat this repository as an unreleased prototype anymore. Future versioning decisions should be made relative to the existing `v1.0.0` release.
+
+Practical consequence:
+
+- small internal changes normally stay as commits only
+- user-facing fixes may become patch versions (`v1.0.1`, `v1.0.2`, etc.)
+- user-facing feature additions may become minor versions (`v1.1.0`, `v1.2.0`, etc.)
+- breaking or major product/architecture changes may become major versions (`v2.0.0`, etc.)
+
 ## How The App Works
 
 - `manifest.json` overrides the browser new-tab page with `newtab.html`
@@ -120,33 +133,168 @@ When editing:
 - keep widget behavior and storage changes backwards-compatible
 - verify whether a capability already exists in `app.js` before adding a second implementation
 - keep UI changes consistent with the existing dark style
+- keep changes focused on the requested task
+- avoid unrelated refactors unless they are necessary for the requested change
 
 ## Versioning, Releases, And Packages
 
 When an agent changes this project, it should treat versioning and public releases as product decisions, not automatic steps.
 
-Versioning guidance:
+The repository already has a first official release: `v1.0.0`. Do not use pre-`v1.0.0` language unless the user explicitly asks to discuss historical releases.
 
-- use semantic versioning style for public versions
-- prefer `v1.0.0-beta` or another pre-release tag when the core experience works but some widgets are incomplete or unreliable
-- prefer `v1.0.0` only when the public-facing core is considered stable and the visible feature set is not misleading
-- do not invent higher versions such as `v1.1.1` for a first public release unless earlier public releases actually existed
-- if extension behavior changes materially, make sure `custom-new-tab/manifest.json` version stays aligned with the intended release version
-- if persisted data structures change, review whether `DATA_VERSION` or migration logic must also change
+### Versioning Guidance
 
-Release guidance:
+Use semantic versioning style for public versions:
 
-- do not create a new GitHub release for every small commit
-- create or recommend a release when the repository reaches a meaningful public milestone
-- for incomplete but shareable milestones, mark the GitHub release as `pre-release`
-- release notes should clearly separate stable core behavior from incomplete or experimental widgets
+- `PATCH` (`v1.0.1`, `v1.0.2`, etc.): backwards-compatible bug fixes or small user-facing corrections after a published release
+- `MINOR` (`v1.1.0`, `v1.2.0`, etc.): backwards-compatible user-facing features, new widgets, or meaningful improvements
+- `MAJOR` (`v2.0.0`, etc.): breaking changes, major product direction changes, storage resets, or large architecture changes that affect existing users
 
-Package guidance:
+Do not bump the project version for every commit.
 
-- this project does not need npm or another package registry
-- the useful distributable package is a `.zip` of the `custom-new-tab/` folder
-- prefer attaching that zip as a GitHub release asset when the user wants a friendlier install path for non-technical users
-- do not package the whole repository when the goal is browser installation; the extension folder is the installable unit
+Do not create a Git tag for every commit.
+
+Do not create a GitHub release for every commit.
+
+Do not create a new distributable zip for every minor internal change.
+
+If extension behavior changes materially and the change is intended for public distribution, make sure `custom-new-tab/manifest.json` version stays aligned with the intended release version.
+
+If persisted data structures change, review whether `DATA_VERSION` or migration logic must also change.
+
+If a change affects stored user data, preserve backwards compatibility or add a safe migration path.
+
+### Small-Change Policy
+
+Small changes usually need only a normal commit and push.
+
+Examples of changes that usually need only a commit:
+
+- removing an unwanted scrollbar
+- adjusting margins, spacing, colors, or typography
+- fixing a small responsive layout issue
+- cleaning up code without changing behavior
+- improving comments or internal naming
+- fixing a minor visual bug that does not affect installability or the public release state
+- changing purely internal implementation details without changing user-visible behavior
+
+For these changes, do not automatically:
+
+- bump `manifest.json` version
+- create a Git tag
+- create a GitHub release
+- create or attach a new zip package
+
+### When To Recommend A Patch Release
+
+Recommend a patch release when the change fixes something meaningful for users of the already published `v1.0.0` release.
+
+Examples:
+
+- a widget is visibly broken
+- saved data fails to load
+- drag and drop stops working
+- dashboard navigation breaks
+- browser installation fails
+- layout is broken enough to affect normal use
+- a published release contains a regression
+
+Patch release example:
+
+- current release: `v1.0.0`
+- fix committed: broken widget rendering
+- next public release: `v1.0.1`
+
+### When To Recommend A Minor Release
+
+Recommend a minor release when the change adds a meaningful user-facing capability while remaining compatible with existing data.
+
+Examples:
+
+- adding a new widget type
+- adding a new dashboard feature
+- improving import/export behavior
+- adding a new customization option
+- adding a meaningful browser-session capability
+- improving the dashboard system without breaking existing dashboards
+
+Minor release example:
+
+- current release: `v1.0.0`
+- feature committed: new weather widget
+- next public release: `v1.1.0`
+
+### When To Recommend A Major Release
+
+Recommend a major release only for large or breaking changes.
+
+Examples:
+
+- removing or replacing the existing storage model
+- dropping compatibility with old `sections` data
+- changing the extension's core purpose
+- introducing a backend requirement
+- migrating from a local-first app to a server-backed app
+- rewriting the architecture in a way that changes user expectations or breaks existing data
+
+Major release example:
+
+- current release: `v1.x.x`
+- breaking storage redesign committed
+- next public release: `v2.0.0`
+
+### Release Guidance
+
+Do not create or recommend a new GitHub release for every small commit.
+
+Create or recommend a release when the repository reaches a meaningful public milestone.
+
+Because `v1.0.0` already exists, future releases should normally be one of:
+
+- patch release for meaningful fixes
+- minor release for new compatible features
+- major release for breaking changes
+
+Release notes should clearly separate:
+
+- fixes
+- new features
+- changed behavior
+- migration notes, if any
+- known limitations, if any
+
+Do not mark normal post-`v1.0.0` releases as pre-releases unless the user explicitly wants an experimental release channel.
+
+### Package Guidance
+
+This project does not need npm or another package registry.
+
+The useful distributable package is a `.zip` of the `custom-new-tab/` folder.
+
+Prefer attaching that zip as a GitHub release asset when the user wants a friendlier install path for non-technical users.
+
+Do not package the whole repository when the goal is browser installation; the extension folder is the installable unit.
+
+Do not create a new package for every small commit. Package only when creating or preparing a meaningful public release.
+
+## Commit Guidance
+
+Use clear, small commits.
+
+Prefer commit messages that describe the actual change:
+
+- `Fix unwanted page scrollbar`
+- `Improve widget spacing on narrow screens`
+- `Add browser session restore widget`
+- `Fix dashboard migration for legacy sections`
+
+Do not use release-style commit messages unless the commit actually prepares a release.
+
+Examples of release-preparation commits:
+
+- `Prepare v1.0.1 release`
+- `Update manifest version to 1.1.0`
+- `Add release notes for v1.1.0`
 
 ## References
 
@@ -157,7 +305,9 @@ Use `references/` only when a task needs visual fidelity for a widget. Use `MISS
 If you start cold on this repository, assume:
 
 - this is a new-tab browser extension
+- the first official public release is already `v1.0.0`
 - almost all logic lives in `custom-new-tab/app.js`
 - styling lives in `custom-new-tab/styles.css`
 - widgets, dashboards, and link sections are already implemented
 - persistence and migration safety matter more than architectural purity
+- small fixes usually need only a commit, not a version bump, tag, release, or package
