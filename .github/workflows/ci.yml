@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-extension:
+    name: Validate extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check required extension files
+        run: |
+          test -f custom-new-tab/manifest.json
+          test -f custom-new-tab/newtab.html
+          test -f custom-new-tab/app.js
+          test -f custom-new-tab/styles.css
+
+      - name: Validate manifest and references
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const root = 'custom-new-tab';
+          const manifestPath = path.join(root, 'manifest.json');
+
+          function assert(condition, message) {
+            if (!condition) throw new Error(message);
+          }
+
+          function exists(relativePath) {
+            return fs.existsSync(path.join(root, relativePath));
+          }
+
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+          assert(manifest.manifest_version === 3, 'manifest_version must be 3');
+          assert(manifest.chrome_url_overrides?.newtab === 'newtab.html', 'chrome_url_overrides.newtab must point to newtab.html');
+          assert(exists(manifest.chrome_url_overrides.newtab), 'newtab.html referenced by manifest is missing');
+          assert(Array.isArray(manifest.permissions), 'permissions must be an array');
+          assert(manifest.icons && typeof manifest.icons === 'object', 'icons must be declared');
+
+          for (const [size, iconPath] of Object.entries(manifest.icons)) {
+            assert(exists(iconPath), `icon ${size} is missing: ${iconPath}`);
+          }
+
+          const html = fs.readFileSync(path.join(root, manifest.chrome_url_overrides.newtab), 'utf8');
+          assert(html.includes('href="styles.css"'), 'newtab.html must load styles.css');
+          assert(html.includes('src="app.js"'), 'newtab.html must load app.js');
+          NODE
+
+      - name: Check JavaScript syntax
+        run: node --check custom-new-tab/app.js
