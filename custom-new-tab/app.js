@@ -987,6 +987,28 @@ function handleDocumentSubmit(event) {
       showStatus("Site impossible a ajouter.");
     });
   }
+
+  const todoForm = event.target.closest("[data-todo-add-form]");
+  if (todoForm) {
+    event.preventDefault();
+    addTodoItem(todoForm.dataset.widgetId).catch((error) => {
+      console.error(error);
+      showStatus("Tache impossible a ajouter.");
+    });
+    return;
+  }
+
+  const kanbanForm = event.target.closest("[data-kanban-add-form]");
+  if (kanbanForm) {
+    event.preventDefault();
+    addKanbanCard(
+      kanbanForm.dataset.widgetId,
+      kanbanForm.dataset.kanbanColumn,
+    ).catch((error) => {
+      console.error(error);
+      showStatus("Carte impossible a ajouter.");
+    });
+  }
 }
 
 async function handleDocumentInput(event) {
@@ -1499,9 +1521,11 @@ function renderTodoWidget(widget) {
                 ${item.done ? createIcon("check") : ""}
               </button>
               <input class="todo-text-input" type="text" value="${escapeHtml(item.text)}" data-widget-id="${widget.id}" data-todo-id="${item.id}" data-widget-input="todo-text" />
-              <button class="small-icon-button" type="button" data-action="delete-todo" data-widget-id="${widget.id}" data-todo-id="${item.id}" aria-label="Supprimer la tache" title="Supprimer">
-                ${createIcon("close")}
-              </button>
+              ${
+                state.editMode
+                  ? `<button class="small-icon-button todo-delete-button" type="button" data-action="delete-todo" data-widget-id="${widget.id}" data-todo-id="${item.id}" aria-label="Supprimer la tache" title="Supprimer">${createIcon("close")}</button>`
+                  : ""
+              }
             </div>
           `,
         )
@@ -1512,13 +1536,14 @@ function renderTodoWidget(widget) {
     widget,
     `
       <div class="widget-panel todo-widget">
-        <div class="todo-add-row">
+        <form class="todo-add-row" data-todo-add-form data-widget-id="${widget.id}">
           <input class="widget-input" type="text" placeholder="Add a new todo..." data-widget-id="${widget.id}" data-widget-input="todo-new" />
-          <button class="text-button" type="button" data-action="add-todo" data-widget-id="${widget.id}">Add</button>
-        </div>
+          <button class="text-button" type="submit">Add</button>
+        </form>
         <div class="todo-list">${rows}</div>
       </div>
     `,
+    { cardClass: " todo-widget-card" },
   );
 }
 
@@ -1543,6 +1568,7 @@ function renderQuickNoteWidget(widget) {
         </div>
       </div>
     `,
+    { cardClass: " quick-note-widget-card" },
   );
 }
 
@@ -2009,8 +2035,8 @@ function renderKanbanWidget(widget) {
   const columns = getKanbanColumns(widget);
   const cardsMarkup = columns
     .map(
-      (column) => `
-        <div class="kanban-column">
+      (column, columnIndex) => `
+        <div class="kanban-column kanban-column-${column.id} kanban-column-${columnIndex}">
           <div class="kanban-column-title">
             <span class="kanban-dot"></span>
             <strong>${escapeHtml(column.title)}</strong>
@@ -2024,11 +2050,15 @@ function renderKanbanWidget(widget) {
                       (card) => `
                         <article class="kanban-card" data-card-id="${card.id}">
                           <input class="kanban-card-input" type="text" value="${escapeHtml(card.title)}" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" data-widget-input="kanban-card-title" />
-                          <div class="kanban-card-actions">
+                          ${
+                            state.editMode
+                              ? `<div class="kanban-card-actions">
                             <button class="small-icon-button" type="button" data-action="move-kanban-card" data-direction="left" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" aria-label="Deplacer a gauche">${createIcon("chevron-left")}</button>
                             <button class="small-icon-button" type="button" data-action="move-kanban-card" data-direction="right" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" aria-label="Deplacer a droite">${createIcon("chevron-right")}</button>
                             <button class="small-icon-button" type="button" data-action="delete-kanban-card" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-card-id="${card.id}" aria-label="Supprimer">${createIcon("close")}</button>
-                          </div>
+                          </div>`
+                              : ""
+                          }
                         </article>
                       `,
                     )
@@ -2036,10 +2066,10 @@ function renderKanbanWidget(widget) {
                 : `<p class="widget-muted">No cards</p>`
             }
           </div>
-          <div class="kanban-add-row">
+          <form class="kanban-add-row" data-kanban-add-form data-widget-id="${widget.id}" data-kanban-column="${column.id}">
             <input class="widget-input" type="text" placeholder="Add task" data-widget-id="${widget.id}" data-kanban-column="${column.id}" data-widget-input="kanban-new-card" />
-            <button class="text-button" type="button" data-action="add-kanban-card" data-widget-id="${widget.id}" data-kanban-column="${column.id}">Add</button>
-          </div>
+            <button class="text-button" type="submit">Add</button>
+          </form>
         </div>
       `,
     )
@@ -2048,6 +2078,7 @@ function renderKanbanWidget(widget) {
   return renderWidgetCard(
     widget,
     `<div class="widget-panel kanban-widget">${cardsMarkup}</div>`,
+    { cardClass: " kanban-widget-card" },
   );
 }
 

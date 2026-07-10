@@ -629,11 +629,11 @@ svg {
 .widget-card {
   position: relative;
   display: grid;
-  gap: 14px;
+  gap: 18px;
   padding: 18px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #111;
+  border-radius: 18px;
+  background: #202020;
   box-shadow: inset 0 1px 0 rgba(220, 220, 220, 0.03);
 }
 
@@ -683,9 +683,9 @@ svg {
 .widget-title h2 {
   overflow: hidden;
   margin: 0;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 750;
+  color: #b6a98d;
+  font-size: 14px;
+  font-weight: 650;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -694,12 +694,12 @@ svg {
 .widget-title-icon {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #080808;
-  color: var(--muted-strong);
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #a5a5a5;
 }
 
 .widget-title-icon svg {
@@ -757,10 +757,10 @@ svg {
 
 .widget-panel {
   min-width: 0;
-  padding: 14px;
-  border: 1px solid #262626;
-  border-radius: 12px;
-  background: #060606;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .widget-description,
@@ -793,9 +793,9 @@ svg {
 .kanban-card-input {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 12px;
   outline: 0;
-  background: #0b0b0b;
+  background: #242424;
   color: var(--text);
 }
 
@@ -1259,14 +1259,22 @@ svg {
 
 .todo-list {
   display: grid;
-  gap: 8px;
+  gap: 4px;
 }
 
 .todo-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 30px;
+  grid-template-columns: 30px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 16px;
+  min-height: 52px;
+  padding: 0 4px;
+  border-bottom: 1px solid #373737;
+  background: #292929;
+}
+
+.is-editing .todo-row {
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
 }
 
 .todo-row.is-done .todo-text-input {
@@ -1277,16 +1285,73 @@ svg {
 .todo-check {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--border);
+  width: 25px;
+  height: 25px;
+  border: 1px solid #494949;
   border-radius: 999px;
-  background: #101010;
+  background: #353535;
   color: var(--muted-strong);
 }
 
 .quick-note-area {
-  min-height: 190px;
+  min-height: 108px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  resize: vertical;
+}
+
+.quick-note-widget-card .widget-footer-row {
+  display: none;
+}
+
+.is-editing .quick-note-widget-card .widget-footer-row {
+  display: flex;
+}
+
+.todo-widget-card {
+  gap: 16px;
+  padding: 18px 0 0;
+  overflow: hidden;
+}
+
+.todo-widget-card .widget-header {
+  padding: 0 20px;
+}
+
+.todo-widget-card .todo-add-row {
+  margin: 0 20px 4px;
+}
+
+.todo-widget-card .todo-add-row .text-button,
+.kanban-widget-card .kanban-add-row .text-button {
+  display: none;
+}
+
+.todo-widget-card .widget-input {
+  min-height: 40px;
+  padding: 0 12px;
+  border-color: #393939;
+}
+
+.todo-widget-card .todo-text-input,
+.kanban-widget-card .kanban-card-input {
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 15px;
+}
+
+.todo-widget-card .todo-row.is-done .todo-check {
+  border-color: #83f2ad;
+  background: #83f2ad;
+  color: #173524;
+}
+
+.todo-widget-card .todo-row.is-done .todo-text-input {
+  color: #8d8d8d;
 }
 
 .qr-preview {
@@ -1456,7 +1521,7 @@ svg {
 .kanban-widget {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 20px;
   overflow-x: auto;
 }
 
@@ -1464,11 +1529,11 @@ svg {
   display: grid;
   align-content: start;
   min-width: 190px;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #0c0c0c;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .kanban-column-title {
@@ -1476,8 +1541,8 @@ svg {
   grid-template-columns: 10px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  color: var(--muted-strong);
-  font-size: 12px;
+  color: #b0b0b0;
+  font-size: 14px;
 }
 
 .kanban-dot {
@@ -1489,23 +1554,88 @@ svg {
 
 .kanban-card-list {
   display: grid;
-  gap: 8px;
-  min-height: 80px;
+  gap: 10px;
+  min-height: 110px;
 }
 
 .kanban-card {
   display: grid;
   gap: 7px;
-  padding: 9px;
-  border: 1px solid #242424;
-  border-radius: 9px;
-  background: #151515;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #393939;
+  border-radius: 14px;
+  background: #292929;
 }
 
 .kanban-card-actions {
   display: flex;
   justify-content: flex-end;
   gap: 6px;
+}
+
+.kanban-widget-card {
+  padding: 18px 20px 24px;
+}
+
+.kanban-widget-card .kanban-column-title strong {
+  color: #eeeeee;
+}
+
+.kanban-widget-card .kanban-column-title span:last-child {
+  color: #b6a98d;
+}
+
+.kanban-widget-card .kanban-column-todo .kanban-dot,
+.kanban-widget-card .kanban-column-0 .kanban-dot {
+  background: #e6e6e6;
+}
+
+.kanban-widget-card .kanban-column-progress .kanban-dot,
+.kanban-widget-card .kanban-column-1 .kanban-dot {
+  background: #84f4a7;
+}
+
+.kanban-widget-card .kanban-column-done .kanban-dot,
+.kanban-widget-card .kanban-column-2 .kanban-dot {
+  background: #ffb2a3;
+}
+
+.kanban-widget-card .kanban-column-progress .kanban-card,
+.kanban-widget-card .kanban-column-1 .kanban-card {
+  border-color: #314635;
+  background: #253327;
+}
+
+.kanban-widget-card .kanban-column-done .kanban-card,
+.kanban-widget-card .kanban-column-2 .kanban-card {
+  border-color: #513634;
+  background: #422e2b;
+}
+
+.kanban-widget-card .kanban-add-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kanban-widget-card .kanban-add-row .widget-input {
+  min-height: 34px;
+  padding: 0 0 0 30px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+.kanban-widget-card .kanban-add-row::before {
+  position: absolute;
+  margin: 8px 0 0 8px;
+  color: #999;
+  content: "+";
+  font-size: 22px;
+  line-height: 1;
+}
+
+.kanban-widget-card .kanban-add-row {
+  position: relative;
 }
 
 .quiz-category {
@@ -1881,14 +2011,14 @@ svg {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 110px));
   gap: 16px;
-  min-height: 126px;
+  min-height: 110px;
 }
 
 .link-card {
   position: relative;
   display: grid;
   width: 110px;
-  min-height: 126px;
+  min-height: 110px;
   border: 1px solid transparent;
   border-radius: var(--radius-card);
   background: var(--surface);
@@ -1907,12 +2037,12 @@ svg {
 
 .link-hit {
   display: grid;
-  grid-template-rows: 58px minmax(30px, auto);
+  grid-template-rows: 50px minmax(24px, auto);
   justify-items: center;
   align-content: center;
-  gap: 10px;
-  min-height: 124px;
-  padding: 16px 10px 13px;
+  gap: 6px;
+  min-height: 108px;
+  padding: 12px 10px 10px;
   color: inherit;
   text-align: center;
   text-decoration: none;
