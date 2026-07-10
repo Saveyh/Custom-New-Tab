@@ -4825,11 +4825,11 @@ function openLinkDialog(link = null, sectionId = null) {
   ui.dialogFields.innerHTML = `
     <div class="field">
       <label for="linkTitle">Nom</label>
-      <input id="linkTitle" name="title" type="text" maxlength="72" value="${escapeHtml(link?.title || "")}" required />
+      <input id="linkTitle" name="title" type="text" maxlength="72" value="${escapeHtml(link?.title || "")}" required data-link-title />
     </div>
     <div class="field">
       <label for="linkUrl">URL</label>
-      <input id="linkUrl" name="url" type="text" value="${escapeHtml(link?.url || "")}" placeholder="https://example.com" required />
+      <input id="linkUrl" name="url" type="text" value="${escapeHtml(link?.url || "")}" placeholder="https://example.com" required data-link-url />
     </div>
     <div class="field">
       <label for="linkSection">Ligne</label>
@@ -4846,7 +4846,32 @@ function openLinkDialog(link = null, sectionId = null) {
       </select>
     </div>
   `;
+
+  if (!link) {
+    bindSuggestedLinkTitle();
+  }
   openDialog();
+}
+
+function bindSuggestedLinkTitle() {
+  const titleInput = ui.dialogFields.querySelector("[data-link-title]");
+  const urlInput = ui.dialogFields.querySelector("[data-link-url]");
+  let titleWasModified = false;
+
+  titleInput?.addEventListener("input", () => {
+    titleWasModified = true;
+  });
+
+  urlInput?.addEventListener("input", () => {
+    if (titleWasModified || !titleInput) {
+      return;
+    }
+
+    const suggestedTitle = getSuggestedLinkTitle(urlInput.value);
+    if (suggestedTitle) {
+      titleInput.value = suggestedTitle;
+    }
+  });
 }
 
 function openDialog(options = {}) {
@@ -6793,6 +6818,39 @@ function formatHost(url) {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch (error) {
     return url;
+  }
+}
+
+function getSuggestedLinkTitle(rawUrl) {
+  try {
+    const hostname = new URL(normalizeUrl(rawUrl)).hostname.replace(/^www\./i, "");
+    const labels = hostname.split(".").filter(Boolean);
+    if (labels.length < 2) {
+      return "";
+    }
+
+    const countryCodeSuffixes = new Set([
+      "ac",
+      "co",
+      "com",
+      "edu",
+      "gov",
+      "net",
+      "org",
+    ]);
+    const suffixLength =
+      labels.length >= 3 &&
+      labels.at(-1).length === 2 &&
+      countryCodeSuffixes.has(labels.at(-2))
+        ? 2
+        : 1;
+    const siteName = labels.at(-(suffixLength + 1));
+
+    return siteName
+      ? `${siteName.charAt(0).toLocaleUpperCase()}${siteName.slice(1)}`
+      : "";
+  } catch (error) {
+    return "";
   }
 }
 
